@@ -11,7 +11,9 @@ import {
   Unlock,
   Trash2,
   Edit,
-  Users
+  Users,
+  UserPlus,
+  UserMinus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,7 +35,7 @@ export default function HackathonDetails() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { hackathon, loading } = useHackathon(id || '');
-  const { updateHackathonStatus, deleteHackathon } = useHackathons();
+  const { updateHackathonStatus, deleteHackathon, joinHackathon, leaveHackathon } = useHackathons();
   const { announcements, loading: announcementsLoading, createAnnouncement } = useAnnouncements(id || '');
   const { messages, loading: chatLoading, sendMessage } = useChat(id || '');
   const { getProfileById } = useProfiles();
@@ -66,6 +68,29 @@ export default function HackathonDetails() {
   }
 
   const isHackathonCreator = user?.uid === hackathon?.creatorId;
+  const isUserJoined = hackathon?.teamMembers?.includes(user?.uid || '') || false;
+
+  const handleJoinLeave = async () => {
+    if (!hackathon || !user) return;
+    
+    // Prevent join/leave for closed hackathons
+    if (hackathon.status === 'closed') {
+      toast.error('Cannot join or leave a closed hackathon');
+      return;
+    }
+
+    try {
+      if (isUserJoined) {
+        await leaveHackathon(hackathon.id);
+        toast.success('You left the hackathon successfully!');
+      } else {
+        await joinHackathon(hackathon.id);
+        toast.success('You joined the hackathon successfully!');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update hackathon membership');
+    }
+  };
 
   const handlePostAnnouncement = async (title: string, content: string) => {
     try {
@@ -160,6 +185,30 @@ export default function HackathonDetails() {
                 </Badge>
               </div>
               <div className="flex flex-wrap gap-2">
+                {/* Join/Leave Button for Non-Creators */}
+                {!isHackathonCreator && (
+                  <Button
+                    variant={isUserJoined ? 'outline' : 'default'}
+                    size="sm"
+                    onClick={handleJoinLeave}
+                    disabled={hackathon.status === 'closed'}
+                    className="gap-1 text-xs md:text-sm px-2 md:px-3"
+                  >
+                    {isUserJoined ? (
+                      <>
+                        <UserMinus className="h-3 w-3 md:h-4 md:w-4" />
+                        <span className="hidden sm:inline">Leave</span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-3 w-3 md:h-4 md:w-4" />
+                        <span className="hidden sm:inline">Join</span>
+                      </>
+                    )}
+                  </Button>
+                )}
+                
+                {/* Creator Actions */}
                 {isHackathonCreator && (
                   <>
                     <Button
@@ -200,6 +249,8 @@ export default function HackathonDetails() {
                     </Button>
                   </>
                 )}
+                
+                {/* Share Button */}
                 <Button 
                   variant="ghost" 
                   size="sm"
