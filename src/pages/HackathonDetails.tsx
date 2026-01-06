@@ -184,7 +184,9 @@ export default function HackathonDetails() {
                   {hackathon.mode}
                 </Badge>
               </div>
-              <div className="flex flex-wrap gap-2">
+              
+              {/* Action Buttons - Mobile Responsive */}
+              <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
                 {/* Join/Leave Button for Non-Creators */}
                 {!isHackathonCreator && (
                   <Button
@@ -192,17 +194,17 @@ export default function HackathonDetails() {
                     size="sm"
                     onClick={handleJoinLeave}
                     disabled={hackathon.status === 'closed'}
-                    className="gap-1 text-xs md:text-sm px-2 md:px-3"
+                    className="gap-1 text-xs md:text-sm px-3 py-2 min-w-[70px]"
                   >
                     {isUserJoined ? (
                       <>
                         <UserMinus className="h-3 w-3 md:h-4 md:w-4" />
-                        <span className="hidden sm:inline">Leave</span>
+                        <span>Leave</span>
                       </>
                     ) : (
                       <>
                         <UserPlus className="h-3 w-3 md:h-4 md:w-4" />
-                        <span className="hidden sm:inline">Join</span>
+                        <span>Join</span>
                       </>
                     )}
                   </Button>
@@ -215,26 +217,26 @@ export default function HackathonDetails() {
                       variant="outline"
                       size="sm"
                       onClick={() => navigate(`/hackathons/${hackathon.id}/edit`)}
-                      className="gap-1 text-xs md:text-sm px-2 md:px-3"
+                      className="gap-1 text-xs md:text-sm px-3 py-2 min-w-[60px]"
                     >
                       <Edit className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="hidden sm:inline">Edit</span>
+                      <span>Edit</span>
                     </Button>
                     <Button
                       variant={hackathon.status === 'open' ? 'destructive' : 'default'}
                       size="sm"
                       onClick={handleStatusToggle}
-                      className="gap-1 text-xs md:text-sm px-2 md:px-3"
+                      className="gap-1 text-xs md:text-sm px-3 py-2 min-w-[70px]"
                     >
                       {hackathon.status === 'open' ? (
                         <>
                           <Lock className="h-3 w-3 md:h-4 md:w-4" />
-                          <span className="hidden sm:inline">Close</span>
+                          <span>Close</span>
                         </>
                       ) : (
                         <>
                           <Unlock className="h-3 w-3 md:h-4 md:w-4" />
-                          <span className="hidden sm:inline">Reopen</span>
+                          <span>Reopen</span>
                         </>
                       )}
                     </Button>
@@ -242,10 +244,10 @@ export default function HackathonDetails() {
                       variant="destructive"
                       size="sm"
                       onClick={handleDelete}
-                      className="gap-1 text-xs md:text-sm px-2 md:px-3"
+                      className="gap-1 text-xs md:text-sm px-3 py-2 min-w-[70px]"
                     >
                       <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="hidden sm:inline">Delete</span>
+                      <span>Delete</span>
                     </Button>
                   </>
                 )}
@@ -254,7 +256,7 @@ export default function HackathonDetails() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="p-2"
+                  className="gap-1 px-3 py-2 min-w-[65px]"
                   onClick={() => {
                     if (navigator.share) {
                       navigator.share({
@@ -268,7 +270,8 @@ export default function HackathonDetails() {
                     }
                   }}
                 >
-                  <Share2 className="h-4 w-4 md:h-5 md:w-5" />
+                  <Share2 className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-xs md:text-sm">Share</span>
                 </Button>
               </div>
             </div>
