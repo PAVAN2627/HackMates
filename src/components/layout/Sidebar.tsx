@@ -132,27 +132,49 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - Horizontal Bottom Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-sidebar border-t border-sidebar-border">
-        <div className="flex items-center justify-between px-4 py-3">
-          <img 
-            src="/assets/roundlogohackmates.png" 
-            alt="HackMates Logo" 
-            className="h-8 w-8 rounded-full"
-          />
+        <div className="flex items-center justify-around px-2 py-3">
+          {navItems.slice(0, 5).map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  'flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-0',
+                  isActive
+                    ? 'text-primary bg-sidebar-accent'
+                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+                )}
+              >
+                <item.icon className="h-5 w-5 flex-shrink-0" />
+                <span className="text-xs font-medium truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
+          
+          {/* More menu for additional items */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={cn(
+              'flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200',
+              mobileMenuOpen
+                ? 'text-primary bg-sidebar-accent'
+                : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+            )}
           >
-            <Menu className="h-5 w-5" />
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <span className="text-xs font-medium">More</span>
           </Button>
         </div>
 
-        {/* Mobile menu dropdown */}
+        {/* Mobile menu dropdown for additional items */}
         {mobileMenuOpen && (
-          <div className="border-t border-sidebar-border p-4 space-y-2 bg-sidebar-accent/50">
-            {navItems.map((item) => (
+          <div className="border-t border-sidebar-border p-4 space-y-2 bg-sidebar max-h-64 overflow-y-auto">
+            {navItems.slice(5).map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Megaphone, Pin, Calendar } from 'lucide-react';
+import { Megaphone, Pin, Calendar, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
@@ -8,6 +8,7 @@ import { LinkRenderer } from '@/lib/linkDetector';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { RelativeTime, RelativeTimeTooltip } from '@/components/RelativeTime';
 import { useUnreadAnnouncements } from '@/hooks/useUnreadAnnouncements';
+import { Button } from '@/components/ui/button';
 
 interface Announcement {
   id: string;
@@ -26,16 +27,19 @@ export default function Announcements() {
   const { user, loading: authLoading } = useAuth();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
-  const { markAllAsRead } = useUnreadAnnouncements();
+  const { markAllAsRead, markAsRead, unreadAnnouncements } = useUnreadAnnouncements();
+
+  // Check if an announcement is unread
+  const isUnread = (announcementId: string) => {
+    return unreadAnnouncements.some(a => a.id === announcementId);
+  };
 
   useEffect(() => {
     if (!authLoading && user) {
       const unsubscribe = loadAnnouncements();
-      // Mark all announcements as read when the page is viewed
-      markAllAsRead();
       return unsubscribe;
     }
-  }, [authLoading, user, markAllAsRead]);
+  }, [authLoading, user]);
 
   const loadAnnouncements = () => {
     const q = query(collection(db, COLLECTIONS.ANNOUNCEMENTS), orderBy('createdAt', 'desc'));
@@ -160,13 +164,28 @@ export default function Announcements() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold flex items-center gap-3">
-          <Megaphone className="h-8 w-8 text-primary" />
-          My Announcements
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Announcements from hackathons you've joined
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Megaphone className="h-8 w-8 text-primary" />
+              My Announcements
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Announcements from hackathons you've joined
+            </p>
+          </div>
+          {unreadAnnouncements.length > 0 && (
+            <Button
+              onClick={markAllAsRead}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Check className="h-4 w-4" />
+              Mark All as Read ({unreadAnnouncements.length})
+            </Button>
+          )}
+        </div>
       </div>
 
       {announcements.length === 0 ? (
@@ -182,12 +201,33 @@ export default function Announcements() {
           {announcements.map((announcement) => (
             <div
               key={announcement.id}
-              className={`glass rounded-xl p-6 hover:shadow-lg transition-all duration-200 ${
+              className={`glass rounded-xl p-6 hover:shadow-lg transition-all duration-200 relative ${
                 announcement.isPinned 
                   ? 'border-2 border-primary/30 bg-primary/5' 
                   : 'hover:border-primary/20'
+              } ${
+                isUnread(announcement.id) 
+                  ? 'border-l-4 border-l-orange-500 bg-orange-50/50 dark:bg-orange-900/10' 
+                  : ''
               }`}
             >
+              {/* Unread indicator and mark as read button */}
+              {isUnread(announcement.id) && (
+                <div className="absolute top-4 right-4 flex items-center gap-2">
+                  <span className="bg-orange-500 text-white text-xs rounded-full px-2 py-1 font-medium">
+                    New
+                  </span>
+                  <Button
+                    onClick={() => markAsRead(announcement.id)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-orange-100 dark:hover:bg-orange-900/20"
+                    title="Mark as read"
+                  >
+                    <Check className="h-4 w-4 text-orange-600" />
+                  </Button>
+                </div>
+              )}
               {/* Header */}
               <div className="flex items-start gap-3 mb-4">
                 <AvatarUpload 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Send, MessageSquare, Check, CheckCheck } from 'lucide-react';
+import { Send, MessageSquare, Check, CheckCheck, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -87,7 +87,7 @@ export default function MessagesPage() {
     <div className="h-screen bg-background flex flex-col">
       <div className="flex-1 flex overflow-hidden">
         {/* Conversations List */}
-        <div className="w-full md:w-80 border-r border-border bg-card flex flex-col">
+        <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-80 border-r border-border bg-card flex flex-col`}>
           {/* Header */}
           <div className="p-4 border-b border-border">
             <h2 className="text-xl font-bold">Messages</h2>
@@ -195,12 +195,22 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        {/* Chat Area */}
+        {/* Chat Area - Mobile Responsive */}
         {selectedConversation ? (
-          <div className="hidden md:flex flex-1 flex-col">
-            {/* Chat Header */}
-            <div className="p-4 border-b border-border bg-card">
-              <div className="flex items-center gap-4">
+          <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
+            {/* Chat Header - Mobile Responsive */}
+            <div className="p-3 md:p-4 border-b border-border bg-card">
+              <div className="flex items-center gap-3 md:gap-4">
+                {/* Back button for mobile */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="md:hidden p-2"
+                  onClick={() => setSelectedConversation(null)}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                
                 <button
                   onClick={() => selectedUserProfile && handleProfileClick(selectedConversation, selectedUserProfile.name)}
                   className="flex-shrink-0 hover:opacity-80 transition-opacity"
@@ -209,31 +219,31 @@ export default function MessagesPage() {
                     <img
                       src={selectedUserProfile.avatar}
                       alt={selectedUserProfile.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-primary/20"
+                      className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-primary/20"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
-                      <span className="text-primary font-semibold text-lg">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
+                      <span className="text-primary font-semibold text-base md:text-lg">
                         {selectedUserProfile?.name?.charAt(0)?.toUpperCase() || '?'}
                       </span>
                     </div>
                   )}
                 </button>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <button
                     onClick={() => selectedUserProfile && handleProfileClick(selectedConversation, selectedUserProfile.name)}
-                    className="text-left hover:opacity-80 transition-opacity"
+                    className="text-left hover:opacity-80 transition-opacity w-full"
                   >
-                    <h2 className="font-semibold text-lg">{selectedUserProfile?.name || 'Unknown User'}</h2>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <h2 className="font-semibold text-base md:text-lg truncate">{selectedUserProfile?.name || 'Unknown User'}</h2>
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
                       {selectedUserProfile?.college && (
-                        <span>{selectedUserProfile.college}</span>
+                        <span className="truncate">{selectedUserProfile.college}</span>
                       )}
                       {selectedUserProfile?.location && selectedUserProfile?.college && (
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                       )}
                       {selectedUserProfile?.location && (
-                        <span>{selectedUserProfile.location}</span>
+                        <span className="truncate hidden sm:inline">{selectedUserProfile.location}</span>
                       )}
                     </div>
                   </button>
@@ -241,8 +251,8 @@ export default function MessagesPage() {
               </div>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Messages - Mobile Responsive */}
+            <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
               {selectedMessages.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
                   <p>No messages yet. Start the conversation!</p>
@@ -255,7 +265,7 @@ export default function MessagesPage() {
                   return (
                     <div
                       key={msg.id}
-                      className={`flex gap-3 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                      className={`flex gap-2 md:gap-3 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                     >
                       {!isCurrentUser && (
                         <button
@@ -266,10 +276,10 @@ export default function MessagesPage() {
                             <img
                               src={senderProfile.avatar}
                               alt={senderProfile.name}
-                              className="w-8 h-8 rounded-full object-cover"
+                              className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center">
                               <span className="text-primary font-semibold text-xs">
                                 {senderProfile?.name?.charAt(0)?.toUpperCase() || '?'}
                               </span>
@@ -278,9 +288,9 @@ export default function MessagesPage() {
                         </button>
                       )}
                       
-                      <div className={`max-w-xs lg:max-w-md ${isCurrentUser ? 'order-1' : ''}`}>
+                      <div className={`max-w-[75%] md:max-w-xs lg:max-w-md ${isCurrentUser ? 'order-1' : ''}`}>
                         <div
-                          className={`message-bubble px-4 py-3 rounded-2xl ${
+                          className={`message-bubble px-3 py-2 md:px-4 md:py-3 rounded-2xl ${
                             isCurrentUser
                               ? 'bg-primary text-primary-foreground rounded-br-md'
                               : 'bg-muted text-foreground rounded-bl-md'
@@ -314,10 +324,10 @@ export default function MessagesPage() {
                             <img
                               src={profile.avatar}
                               alt={profile.name}
-                              className="w-8 h-8 rounded-full object-cover"
+                              className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center">
                               <span className="text-primary font-semibold text-xs">
                                 {profile?.name?.charAt(0)?.toUpperCase() || '?'}
                               </span>
@@ -332,8 +342,8 @@ export default function MessagesPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 border-t border-border bg-card">
+            {/* Input Area - Mobile Responsive */}
+            <div className="p-3 md:p-4 border-t border-border bg-card">
               <div className="flex gap-2">
                 <Input
                   type="text"
@@ -347,11 +357,13 @@ export default function MessagesPage() {
                     }
                   }}
                   disabled={isSending}
+                  className="text-sm md:text-base"
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={isSending || !messageText.trim()}
                   size="icon"
+                  className="flex-shrink-0"
                 >
                   <Send className="w-4 h-4" />
                 </Button>

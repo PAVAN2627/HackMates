@@ -145,47 +145,47 @@ export default function HackathonDetails() {
           </div>
         )}
         
-        <div className="p-8 relative">
+        <div className="p-6 md:p-8 relative">
           {!hackathon.image && (
             <div className="absolute inset-0 bg-gradient-primary opacity-5" />
           )}
           <div className="relative z-10">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex gap-3">
-                <Badge className={cn('border text-sm', statusColors[hackathon.status as keyof typeof statusColors])}>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 md:mb-6 gap-3">
+              <div className="flex flex-wrap gap-2">
+                <Badge className={cn('border text-xs md:text-sm', statusColors[hackathon.status as keyof typeof statusColors])}>
                   {hackathon.status}
                 </Badge>
-                <Badge variant="outline" className="text-sm">
+                <Badge variant="outline" className="text-xs md:text-sm">
                   {hackathon.mode}
                 </Badge>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {isHackathonCreator && (
                   <>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => navigate(`/hackathons/${hackathon.id}/edit`)}
-                      className="gap-2"
+                      className="gap-1 text-xs md:text-sm px-2 md:px-3"
                     >
-                      <Edit className="h-4 w-4" />
-                      Edit
+                      <Edit className="h-3 w-3 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">Edit</span>
                     </Button>
                     <Button
                       variant={hackathon.status === 'open' ? 'destructive' : 'default'}
                       size="sm"
                       onClick={handleStatusToggle}
-                      className="gap-2"
+                      className="gap-1 text-xs md:text-sm px-2 md:px-3"
                     >
                       {hackathon.status === 'open' ? (
                         <>
-                          <Lock className="h-4 w-4" />
-                          Close
+                          <Lock className="h-3 w-3 md:h-4 md:w-4" />
+                          <span className="hidden sm:inline">Close</span>
                         </>
                       ) : (
                         <>
-                          <Unlock className="h-4 w-4" />
-                          Reopen
+                          <Unlock className="h-3 w-3 md:h-4 md:w-4" />
+                          <span className="hidden sm:inline">Reopen</span>
                         </>
                       )}
                     </Button>
@@ -193,16 +193,17 @@ export default function HackathonDetails() {
                       variant="destructive"
                       size="sm"
                       onClick={handleDelete}
-                      className="gap-2"
+                      className="gap-1 text-xs md:text-sm px-2 md:px-3"
                     >
-                      <Trash2 className="h-4 w-4" />
-                      Delete
+                      <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">Delete</span>
                     </Button>
                   </>
                 )}
                 <Button 
                   variant="ghost" 
-                  size="icon"
+                  size="sm"
+                  className="p-2"
                   onClick={() => {
                     if (navigator.share) {
                       navigator.share({
@@ -216,24 +217,24 @@ export default function HackathonDetails() {
                     }
                   }}
                 >
-                  <Share2 className="h-5 w-5" />
+                  <Share2 className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </div>
             </div>
 
-            <h1 className="text-4xl font-bold mb-4">{hackathon.title}</h1>
-            <p className="text-lg text-muted-foreground mb-6 max-w-3xl">
+            <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">{hackathon.title}</h1>
+            <p className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6 max-w-3xl">
               {hackathon.description}
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-primary" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-4 md:mb-6">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Calendar className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Date & Time</p>
-                  <p className="text-sm font-medium">
+                  <p className="text-xs md:text-sm font-medium">
                     {new Date(`${hackathon.date}T${hackathon.time}`).toLocaleDateString('en-IN', {
                       weekday: 'short',
                       year: 'numeric',
@@ -247,31 +248,31 @@ export default function HackathonDetails() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <MapPin className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <MapPin className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Location</p>
-                  <p className="text-sm font-medium">{hackathon.location}</p>
+                  <p className="text-xs md:text-sm font-medium">{hackathon.location}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Trophy className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Trophy className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Team Size</p>
-                  <p className="text-sm font-medium text-primary">{hackathon.teamSize} members</p>
+                  <p className="text-xs md:text-sm font-medium text-primary">{hackathon.teamSize} members</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Trophy className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Trophy className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Mode</p>
-                  <p className="text-sm font-medium">{hackathon.mode}</p>
+                  <p className="text-xs md:text-sm font-medium">{hackathon.mode}</p>
                 </div>
               </div>
             </div>

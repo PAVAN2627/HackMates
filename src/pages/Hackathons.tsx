@@ -111,35 +111,42 @@ export default function Hackathons() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Discover Hackathons</h1>
-            <p className="text-muted-foreground">Find and join amazing hackathons</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Discover Hackathons</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Find and join amazing hackathons</p>
           </div>
-          <Button onClick={() => navigate('/create-hackathon')} size="lg">
+          <Button 
+            onClick={() => navigate('/create-hackathon')} 
+            size="sm"
+            className="md:size-lg w-full sm:w-auto"
+          >
             <Plus className="w-4 h-4 mr-2" />
-            Post Hackathon
+            <span className="hidden sm:inline">Post Hackathon</span>
+            <span className="sm:hidden">Post</span>
           </Button>
         </div>
 
         {/* Search Bar */}
-        <div className="bg-card border border-border rounded-lg p-4 mb-6">
-          <div className="flex gap-2 mb-4">
+        <div className="bg-card border border-border rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+          <div className="flex flex-col sm:flex-row gap-2 mb-3 md:mb-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search hackathons by title or description..."
+                placeholder="Search hackathons..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 text-sm"
               />
             </div>
             <Button
               variant={showFilters ? 'default' : 'outline'}
               onClick={() => setShowFilters(!showFilters)}
+              size="sm"
+              className="w-full sm:w-auto"
             >
               <Filter className="w-4 h-4 mr-2" />
               Filters
@@ -148,16 +155,16 @@ export default function Hackathons() {
 
           {/* Filters */}
           {showFilters && (
-            <div className="space-y-4 pt-4 border-t border-border">
+            <div className="space-y-3 md:space-y-4 pt-3 md:pt-4 border-t border-border">
               {/* Mode Filter */}
               <div>
-                <label className="text-sm font-medium block mb-2">Mode</label>
-                <div className="grid grid-cols-4 gap-2">
+                <label className="text-xs md:text-sm font-medium block mb-2">Mode</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {(['all', 'online', 'in-person', 'both'] as const).map(mode => (
                     <button
                       key={mode}
                       onClick={() => setSelectedMode(mode)}
-                      className={`px-3 py-2 rounded-md border text-sm font-medium transition-colors ${
+                      className={`px-2 md:px-3 py-2 rounded-md border text-xs md:text-sm font-medium transition-colors ${
                         selectedMode === mode
                           ? 'bg-primary text-primary-foreground border-primary'
                           : 'bg-background border-input hover:border-primary'
@@ -171,13 +178,13 @@ export default function Hackathons() {
 
               {/* Status Filter */}
               <div>
-                <label className="text-sm font-medium block mb-2">Status</label>
+                <label className="text-xs md:text-sm font-medium block mb-2">Status</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['all', 'open', 'closed'] as const).map(status => (
                     <button
                       key={status}
                       onClick={() => setSelectedStatus(status)}
-                      className={`px-3 py-2 rounded-md border text-sm font-medium transition-colors ${
+                      className={`px-2 md:px-3 py-2 rounded-md border text-xs md:text-sm font-medium transition-colors ${
                         selectedStatus === status
                           ? 'bg-primary text-primary-foreground border-primary'
                           : 'bg-background border-input hover:border-primary'
@@ -191,8 +198,8 @@ export default function Hackathons() {
 
               {/* Skills Filter */}
               <div>
-                <label className="text-sm font-medium flex items-center gap-2 mb-2">
-                  <Tag className="w-4 h-4" />
+                <label className="text-xs md:text-sm font-medium flex items-center gap-2 mb-2">
+                  <Tag className="w-3 h-3 md:w-4 md:h-4" />
                   Required Skills
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -200,7 +207,7 @@ export default function Hackathons() {
                     <button
                       key={skill}
                       onClick={() => toggleSkill(skill)}
-                      className={`px-3 py-2 rounded-md border text-xs font-medium transition-colors ${
+                      className={`px-2 md:px-3 py-2 rounded-md border text-xs font-medium transition-colors ${
                         selectedSkills.includes(skill)
                           ? 'bg-primary text-primary-foreground border-primary'
                           : 'bg-background border-input hover:border-primary'
@@ -222,7 +229,7 @@ export default function Hackathons() {
                     setSelectedMode('all');
                     setSelectedStatus('all');
                   }}
-                  className="w-full"
+                  className="w-full text-xs md:text-sm"
                 >
                   Clear Filters
                 </Button>
@@ -233,13 +240,13 @@ export default function Hackathons() {
 
         {/* Results */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-muted-foreground">Loading hackathons...</div>
+          <div className="flex items-center justify-center py-8 md:py-12">
+            <div className="text-sm md:text-base text-muted-foreground">Loading hackathons...</div>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No hackathons found matching your filters</p>
-            <Button variant="outline" onClick={() => {
+          <div className="text-center py-8 md:py-12">
+            <p className="text-sm md:text-base text-muted-foreground mb-4">No hackathons found matching your filters</p>
+            <Button variant="outline" size="sm" onClick={() => {
               setSearchTerm('');
               setSelectedSkills([]);
               setSelectedMode('all');
@@ -250,10 +257,10 @@ export default function Hackathons() {
           </div>
         ) : (
           <>
-            <div className="mb-4 text-sm text-muted-foreground">
+            <div className="mb-3 md:mb-4 text-xs md:text-sm text-muted-foreground">
               Found {filtered.length} hackathon{filtered.length !== 1 ? 's' : ''}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {filtered.map(hackathon => (
                 <HackathonCard
                   key={hackathon.id}

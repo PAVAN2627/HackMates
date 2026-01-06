@@ -149,67 +149,67 @@ export default function CreateHackathon() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="mb-6 md:mb-8">
+            <div className="flex items-center justify-center gap-2 mb-3 md:mb-4">
               <img 
                 src="/assets/roundlogohackmates.png" 
                 alt="HackMates Logo" 
-                className="h-10 w-10 rounded-full"
+                className="h-8 w-8 md:h-10 md:w-10 rounded-full"
               />
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</h1>
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</h1>
             </div>
-            <p className="text-center text-muted-foreground">Post a hackathon and find team members</p>
+            <p className="text-center text-sm md:text-base text-muted-foreground">Post a hackathon and find team members</p>
             <p className="text-center text-xs text-muted-foreground mt-2">Developed by NoobcodersIND</p>
           </div>
 
           {/* Form */}
-          <div className="bg-card border border-border rounded-lg shadow-lg p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-card border border-border rounded-lg shadow-lg p-4 md:p-8">
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
               {/* Basic Information */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
+              <div className="space-y-3 md:space-y-4">
+                <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+                  <FileText className="w-4 h-4 md:w-5 md:h-5" />
                   Hackathon Details
                 </h2>
 
                 <div>
-                  <Label htmlFor="title">Hackathon Title *</Label>
+                  <Label htmlFor="title" className="text-sm">Hackathon Title *</Label>
                   <Input
                     id="title"
                     type="text"
                     placeholder="e.g., AI Innovation Challenge 2024"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className={errors.title ? 'border-red-500' : ''}
+                    className={`text-sm ${errors.title ? 'border-red-500' : ''}`}
                   />
-                  {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}
+                  {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="description" className="text-sm">Description *</Label>
                   <textarea
                     id="description"
                     placeholder="Describe the hackathon, mention what type of members you need (developers, designers, etc.)"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={5}
+                    rows={4}
                     className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm resize-none"
                   />
-                  {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
+                  {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
                 </div>
 
                 {/* Image Upload */}
                 <div>
-                  <Label>Hackathon Poster *</Label>
+                  <Label className="text-sm">Hackathon Poster *</Label>
                   <div className="mt-2">
                     {!imagePreview ? (
-                      <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground mb-2">Upload hackathon poster</p>
-                        <p className="text-xs text-muted-foreground mb-4">PNG, JPG up to 5MB</p>
+                      <div className="border-2 border-dashed border-border rounded-lg p-4 md:p-6 text-center hover:border-primary/50 transition-colors">
+                        <Upload className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-xs md:text-sm text-muted-foreground mb-2">Upload hackathon poster</p>
+                        <p className="text-xs text-muted-foreground mb-3 md:mb-4">PNG, JPG up to 5MB</p>
                         <input
                           type="file"
                           accept="image/*"
@@ -220,6 +220,7 @@ export default function CreateHackathon() {
                         <Button
                           type="button"
                           variant="outline"
+                          size="sm"
                           onClick={() => document.getElementById('image-upload')?.click()}
                         >
                           Choose Image
@@ -230,54 +231,54 @@ export default function CreateHackathon() {
                         <img
                           src={imagePreview}
                           alt="Hackathon poster preview"
-                          className="w-full h-48 object-cover rounded-lg"
+                          className="w-full h-32 md:h-48 object-cover rounded-lg"
                         />
                         <button
                           type="button"
                           onClick={removeImage}
                           className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3 h-3 md:w-4 md:h-4" />
                         </button>
                       </div>
                     )}
                   </div>
-                  {errors.image && <p className="text-sm text-red-500 mt-1">{errors.image}</p>}
+                  {errors.image && <p className="text-xs text-red-500 mt-1">{errors.image}</p>}
                 </div>
               </div>
 
               {/* Location & Timing */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
+              <div className="space-y-3 md:space-y-4">
+                <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+                  <MapPin className="w-4 h-4 md:w-5 md:h-5" />
                   Venue & Schedule
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <Label htmlFor="venue">Venue *</Label>
+                    <Label htmlFor="venue" className="text-sm">Venue *</Label>
                     <Input
                       id="venue"
                       type="text"
                       placeholder="e.g., Tech Park, Bangalore"
                       value={formData.venue}
                       onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                      className={errors.venue ? 'border-red-500' : ''}
+                      className={`text-sm ${errors.venue ? 'border-red-500' : ''}`}
                     />
-                    {errors.venue && <p className="text-sm text-red-500 mt-1">{errors.venue}</p>}
+                    {errors.venue && <p className="text-xs text-red-500 mt-1">{errors.venue}</p>}
                   </div>
 
                   <div>
-                    <Label htmlFor="location">Location *</Label>
+                    <Label htmlFor="location" className="text-sm">Location *</Label>
                     <Input
                       id="location"
                       type="text"
                       placeholder="e.g., Bangalore, India"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      className={errors.location ? 'border-red-500' : ''}
+                      className={`text-sm ${errors.location ? 'border-red-500' : ''}`}
                     />
-                    {errors.location && <p className="text-sm text-red-500 mt-1">{errors.location}</p>}
+                    {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
                   </div>
                 </div>
 
@@ -289,21 +290,21 @@ export default function CreateHackathon() {
                     onTimeChange={(time) => setFormData({ ...formData, time })}
                   />
                   {(errors.date || errors.time) && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-xs text-red-500 mt-1">
                       {errors.date || errors.time}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label>Mode *</Label>
+                  <Label className="text-sm">Mode *</Label>
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {(['online', 'in-person', 'both'] as const).map(option => (
                       <button
                         key={option}
                         type="button"
                         onClick={() => setFormData({ ...formData, mode: option })}
-                        className={`px-4 py-3 rounded-lg border-2 transition-all text-center capitalize ${
+                        className={`px-3 py-2 md:px-4 md:py-3 rounded-lg border-2 transition-all text-center capitalize text-xs md:text-sm ${
                           formData.mode === option
                             ? 'bg-primary border-primary text-primary-foreground'
                             : 'bg-background border-border hover:border-primary/50'
@@ -317,15 +318,15 @@ export default function CreateHackathon() {
               </div>
 
               {/* Team Requirements */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Tag className="w-5 h-5" />
+              <div className="space-y-3 md:space-y-4">
+                <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+                  <Tag className="w-4 h-4 md:w-5 md:h-5" />
                   Team Requirements
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <Label htmlFor="teamSize">Team Size *</Label>
+                    <Label htmlFor="teamSize" className="text-sm">Team Size *</Label>
                     <Input
                       id="teamSize"
                       type="number"
@@ -334,21 +335,21 @@ export default function CreateHackathon() {
                       placeholder="e.g., 4"
                       value={formData.teamSize}
                       onChange={(e) => setFormData({ ...formData, teamSize: parseInt(e.target.value) || 1 })}
-                      className={errors.teamSize ? 'border-red-500' : ''}
+                      className={`text-sm ${errors.teamSize ? 'border-red-500' : ''}`}
                     />
                     <p className="text-xs text-muted-foreground mt-1">Number of members needed (1-20)</p>
-                    {errors.teamSize && <p className="text-sm text-red-500 mt-1">{errors.teamSize}</p>}
+                    {errors.teamSize && <p className="text-xs text-red-500 mt-1">{errors.teamSize}</p>}
                   </div>
 
                   <div>
-                    <Label>Gender Preference</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
+                    <Label className="text-sm">Gender Preference</Label>
+                    <div className="grid grid-cols-2 gap-1 md:gap-2 mt-2">
                       {genderPreferenceOptions.map(option => (
                         <button
                           key={option.value}
                           type="button"
                           onClick={() => setFormData({ ...formData, preferredGender: option.value as any })}
-                          className={`px-3 py-2 rounded-lg border-2 transition-all text-center text-sm ${
+                          className={`px-2 py-2 md:px-3 rounded-lg border-2 transition-all text-center text-xs ${
                             formData.preferredGender === option.value
                               ? 'bg-secondary border-secondary text-secondary-foreground'
                               : 'bg-background border-border hover:border-secondary/50'
@@ -363,20 +364,20 @@ export default function CreateHackathon() {
               </div>
 
               {/* Skills */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Tag className="w-5 h-5" />
+              <div className="space-y-3 md:space-y-4">
+                <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+                  <Tag className="w-4 h-4 md:w-5 md:h-5" />
                   Required Skills (Optional)
                 </h2>
-                <p className="text-sm text-muted-foreground">Tags to help people find your hackathon</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Tags to help people find your hackathon</p>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 max-h-48 md:max-h-60 overflow-y-auto">
                   {skillsOptions.map(skill => (
                     <button
                       key={skill}
                       type="button"
                       onClick={() => handleSkillToggle(skill)}
-                      className={`px-3 py-2 rounded-lg border-2 transition-all text-sm ${
+                      className={`px-2 py-2 md:px-3 rounded-lg border-2 transition-all text-xs ${
                         formData.requiredSkills.includes(skill)
                           ? 'bg-primary border-primary text-primary-foreground'
                           : 'bg-background border-border hover:border-primary/50'
@@ -392,7 +393,7 @@ export default function CreateHackathon() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full"
+                className="w-full text-sm md:text-base"
                 size="lg"
               >
                 {isSubmitting ? 'Creating Hackathon...' : 'Create Hackathon'}
