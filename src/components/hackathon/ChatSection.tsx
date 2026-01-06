@@ -3,15 +3,19 @@ import { Send, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { MessageContextMenu } from '@/components/MessageContextMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { ChatMessage } from '@/hooks/useChat';
 import { LinkRenderer } from '@/lib/linkDetector';
 import { AvatarUpload } from '@/components/AvatarUpload';
+import { toast } from 'sonner';
 
 interface ChatSectionProps {
   messages: ChatMessage[];
   onSendMessage?: (content: string) => void;
+  onEditMessage?: (messageId: string, newContent: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
   onProfileClick?: (userId: string, userName: string) => void;
   loading?: boolean;
   hackathon?: {
@@ -22,9 +26,22 @@ interface ChatSectionProps {
   };
 }
 
-export function ChatSection({ messages, onSendMessage, onProfileClick, loading, hackathon }: ChatSectionProps) {
+export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMessage, onProfileClick, loading, hackathon }: ChatSectionProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    isOpen: boolean;
+    messageId: string;
+    messageContent: string;
+    position: { x: number; y: number };
+    isOwnMessage: boolean;
+  }>({
+    isOpen: false,
+    messageId: '',
+    messageContent: '',
+    position: { x: 0, y: 0 },
+    isOwnMessage: false,
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -61,6 +78,39 @@ export function ChatSection({ messages, onSendMessage, onProfileClick, loading, 
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleMessageLongPress = (messageId: string, messageContent: string, isOwnMessage: boolean, event: React.MouseEvent) => {
+    event.preventDefault();
+    setContextMenu({
+      isOpen: true,
+      messageId,
+      messageContent,
+      position: { x: event.clientX, y: event.clientY },
+      isOwnMessage,
+    });
+  };
+
+  const handleMessageEdit = async (newContent: string) => {
+    if (onEditMessage) {
+      try {
+        await onEditMessage(contextMenu.messageId, newContent);
+        toast.success('Message edited successfully');
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to edit message');
+      }
+    }
+  };
+
+  const handleMessageDelete = async () => {
+    if (onDeleteMessage) {
+      try {
+        await onDeleteMessage(contextMenu.messageId);
+        toast.success('Message deleted successfully');
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to delete message');
+      }
     }
   };
 
@@ -141,16 +191,46 @@ export function ChatSection({ messages, onSendMessage, onProfileClick, loading, 
                     </span>
                   </div>
                   <div className={cn(
-                    'rounded-2xl px-4 py-2 inline-block',
+                    'rounded-2xl px-4 py-2 inline-block cursor-pointer select-none',
                     isOwn 
                       ? 'bg-primary text-primary-foreground rounded-tr-md' 
                       : 'bg-muted rounded-tl-md'
-                  )}>
+                  )}
+                  onContextMenu={(e) => handleMessageLongPress(message.id, message.content, isOwn, e)}
+                  onClick={(e) => {
+                    // Handle long press on mobile (touch and hold)
+                    let pressTimer: NodeJS.Timeout;
+                    const startPress = () => {
+                      pressTimer = setTimeout(() => {
+                        handleMessageLongPress(message.id, message.content, isOwn, e);
+                      }, 500);
+                    };
+                    const endPress = () => {
+                      clearTimeout(pressTimer);
+                    };
+                    
+                    // Add touch event listeners for mobile
+                    const element = e.currentTarget;
+                    element.addEventListener('touchstart', startPress);
+                    element.addEventListener('touchend', endPress);
+                    element.addEventListener('touchcancel', endPress);
+                    
+                    // Cleanup listeners
+                    setTimeout(() => {
+                      element.removeEventListener('touchstart', startPress);
+                      element.removeEventListener('touchend', endPress);
+                      element.removeEventListener('touchcancel', endPress);
+                    }, 100);
+                  }}
+                  >
                     <div className="text-sm">
                       <LinkRenderer 
                         text={message.content} 
                         isOwnMessage={isOwn}
                       />
+                      {message.edited && (
+                        <span className="text-xs opacity-70 ml-2">(edited)</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -205,6 +285,17 @@ export function ChatSection({ messages, onSendMessage, onProfileClick, loading, 
           </p>
         )}
       </div>
+
+      {/* Message Context Menu */}
+      <MessageContextMenu
+        isOpen={contextMenu.isOpen}
+        onClose={() => setContextMenu(prev => ({ ...prev, isOpen: false }))}
+        onEdit={handleMessageEdit}
+        onDelete={handleMessageDelete}
+        messageContent={contextMenu.messageContent}
+        position={contextMenu.position}
+        isOwnMessage={contextMenu.isOwnMessage}
+      />
     </div>
   );
 }

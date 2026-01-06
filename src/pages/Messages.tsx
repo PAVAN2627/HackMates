@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { UserProfileModal } from '@/components/UserProfileModal';
+import { MessageContextMenu } from '@/components/MessageContextMenu';
+import { LinkRenderer } from '@/lib/linkDetector';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useProfiles } from '@/hooks/useProfiles';
@@ -13,13 +15,26 @@ import { toast } from 'sonner';
 export default function MessagesPage() {
   const { user, profile } = useAuth();
   const [searchParams] = useSearchParams();
-  const { messages, sendMessage, markAsRead, markConversationAsRead, getConversation, getConversationList, loading: messagesLoading } = useDirectMessages();
+  const { messages, sendMessage, markAsRead, markConversationAsRead, getConversation, getConversationList, loading: messagesLoading, deleteMessage, editMessage } = useDirectMessages();
   const { getProfileById, loading: profilesLoading } = useProfiles();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [profileModalUser, setProfileModalUser] = useState<{ id: string; name: string } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    isOpen: boolean;
+    messageId: string;
+    messageContent: string;
+    position: { x: number; y: number };
+    isOwnMessage: boolean;
+  }>({
+    isOpen: false,
+    messageId: '',
+    messageContent: '',
+    position: { x: 0, y: 0 },
+    isOwnMessage: false,
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Handle URL parameter for direct conversation
@@ -70,6 +85,35 @@ export default function MessagesPage() {
   const handleProfileClick = (userId: string, userName: string) => {
     setProfileModalUser({ id: userId, name: userName });
     setProfileModalOpen(true);
+  };
+
+  const handleMessageLongPress = (messageId: string, messageContent: string, isOwnMessage: boolean, event: React.MouseEvent) => {
+    event.preventDefault();
+    setContextMenu({
+      isOpen: true,
+      messageId,
+      messageContent,
+      position: { x: event.clientX, y: event.clientY },
+      isOwnMessage,
+    });
+  };
+
+  const handleMessageEdit = async (newContent: string) => {
+    try {
+      await editMessage(contextMenu.messageId, newContent);
+      toast.success('Message edited successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to edit message');
+    }
+  };
+
+  const handleMessageDelete = async () => {
+    try {
+      await deleteMessage(contextMenu.messageId);
+      toast.success('Message deleted successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete message');
+    }
   };
 
   if (!user) {
@@ -168,9 +212,13 @@ export default function MessagesPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between mt-1">
-                          <p className={`text-sm truncate ${unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                            {conv.senderId === user.uid ? 'You: ' : ''}{conv.content}
-                          </p>
+                          <div className={`text-sm truncate ${unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                            <span>{conv.senderId === user.uid ? 'You: ' : ''}</span>
+                            <LinkRenderer 
+                              text={conv.content} 
+                              className="inline"
+                            />
+                          </div>
                           {conv.senderId === user.uid && (
                             <div className="flex-shrink-0 ml-2">
                               {conv.read ? (
@@ -290,13 +338,47 @@ export default function MessagesPage() {
                       
                       <div className={`max-w-[75%] md:max-w-xs lg:max-w-md ${isCurrentUser ? 'order-1' : ''}`}>
                         <div
-                          className={`message-bubble px-3 py-2 md:px-4 md:py-3 rounded-2xl ${
+                          className={`message-bubble px-3 py-2 md:px-4 md:py-3 rounded-2xl cursor-pointer select-none ${
                             isCurrentUser
                               ? 'bg-primary text-primary-foreground rounded-br-md'
                               : 'bg-muted text-foreground rounded-bl-md'
                           }`}
+                          onContextMenu={(e) => handleMessageLongPress(msg.id, msg.content, isCurrentUser, e)}
+                          onClick={(e) => {
+                            // Handle long press on mobile (touch and hold)
+                            let pressTimer: NodeJS.Timeout;
+                            const startPress = () => {
+                              pressTimer = setTimeout(() => {
+                                handleMessageLongPress(msg.id, msg.content, isCurrentUser, e);
+                              }, 500);
+                            };
+                            const endPress = () => {
+                              clearTimeout(pressTimer);
+                            };
+                            
+                            // Add touch event listeners for mobile
+                            const element = e.currentTarget;
+                            element.addEventListener('touchstart', startPress);
+                            element.addEventListener('touchend', endPress);
+                            element.addEventListener('touchcancel', endPress);
+                            
+                            // Cleanup listeners
+                            setTimeout(() => {
+                              element.removeEventListener('touchstart', startPress);
+                              element.removeEventListener('touchend', endPress);
+                              element.removeEventListener('touchcancel', endPress);
+                            }, 100);
+                          }}
                         >
-                          <p className="text-sm break-words leading-relaxed">{msg.content}</p>
+                          <div className="text-sm break-words leading-relaxed">
+                            <LinkRenderer 
+                              text={msg.content} 
+                              isOwnMessage={isCurrentUser}
+                            />
+                            {msg.edited && (
+                              <span className="text-xs opacity-70 ml-2">(edited)</span>
+                            )}
+                          </div>
                         </div>
                         
                         <div className={`flex items-center gap-2 mt-1 px-1 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
@@ -394,6 +476,17 @@ export default function MessagesPage() {
           setProfileModalOpen(false);
           setProfileModalUser(null);
         }}
+      />
+
+      {/* Message Context Menu */}
+      <MessageContextMenu
+        isOpen={contextMenu.isOpen}
+        onClose={() => setContextMenu(prev => ({ ...prev, isOpen: false }))}
+        onEdit={handleMessageEdit}
+        onDelete={handleMessageDelete}
+        messageContent={contextMenu.messageContent}
+        position={contextMenu.position}
+        isOwnMessage={contextMenu.isOwnMessage}
       />
     </div>
   );

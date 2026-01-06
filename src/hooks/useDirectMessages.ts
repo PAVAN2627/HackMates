@@ -10,6 +10,7 @@ import {
   onSnapshot,
   addDoc,
   updateDoc,
+  deleteDoc,
   doc,
   Timestamp,
   getDocs,
@@ -172,6 +173,44 @@ export function useDirectMessages() {
     }
   }, [user, messages, markAsRead]);
 
+  const deleteMessage = useCallback(async (messageId: string) => {
+    if (!user) throw new Error('Must be logged in');
+
+    try {
+      // Check if the message belongs to the current user
+      const message = messages.find(m => m.id === messageId);
+      if (!message || message.senderId !== user.uid) {
+        throw new Error('You can only delete your own messages');
+      }
+
+      const messageRef = doc(db, COLLECTIONS.DIRECT_MESSAGES, messageId);
+      await deleteDoc(messageRef);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to delete message');
+    }
+  }, [user, messages]);
+
+  const editMessage = useCallback(async (messageId: string, newContent: string) => {
+    if (!user) throw new Error('Must be logged in');
+
+    try {
+      // Check if the message belongs to the current user
+      const message = messages.find(m => m.id === messageId);
+      if (!message || message.senderId !== user.uid) {
+        throw new Error('You can only edit your own messages');
+      }
+
+      const messageRef = doc(db, COLLECTIONS.DIRECT_MESSAGES, messageId);
+      await updateDoc(messageRef, { 
+        content: newContent,
+        edited: true,
+        editedAt: Timestamp.now()
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to edit message');
+    }
+  }, [user, messages]);
+
   return {
     messages,
     loading,
@@ -181,5 +220,7 @@ export function useDirectMessages() {
     getConversation,
     getConversationList,
     getUnreadCount,
+    deleteMessage,
+    editMessage,
   };
 }

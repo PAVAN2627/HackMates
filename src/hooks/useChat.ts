@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, COLLECTIONS } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, addDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
 
 export interface ChatMessage {
   id: string;
@@ -12,6 +12,8 @@ export interface ChatMessage {
   createdAt: Date;
   authorName?: string;
   authorAvatar?: string | null;
+  edited?: boolean;
+  editedAt?: Date;
 }
 
 export function useChat(hackathonId: string) {
@@ -63,6 +65,7 @@ export function useChat(hackathonId: string) {
               ...message,
               authorName,
               authorAvatar,
+              editedAt: message.editedAt?.toDate?.() || null,
             };
           })
         );
@@ -105,10 +108,50 @@ export function useChat(hackathonId: string) {
     return addMessage(content, 'text');
   };
 
+  const deleteMessage = async (messageId: string) => {
+    if (!user) throw new Error('Must be logged in');
+
+    try {
+      // Check if the message belongs to the current user
+      const message = messages.find(m => m.id === messageId);
+      if (!message || message.authorId !== user.uid) {
+        throw new Error('You can only delete your own messages');
+      }
+
+      const messageRef = doc(db, COLLECTIONS.HACKATHON_CHAT, messageId);
+      await deleteDoc(messageRef);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to delete message');
+    }
+  };
+
+  const editMessage = async (messageId: string, newContent: string) => {
+    if (!user) throw new Error('Must be logged in');
+
+    try {
+      // Check if the message belongs to the current user
+      const message = messages.find(m => m.id === messageId);
+      if (!message || message.authorId !== user.uid) {
+        throw new Error('You can only edit your own messages');
+      }
+
+      const messageRef = doc(db, COLLECTIONS.HACKATHON_CHAT, messageId);
+      await updateDoc(messageRef, { 
+        content: newContent,
+        edited: true,
+        editedAt: Timestamp.now()
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to edit message');
+    }
+  };
+
   return {
     messages,
     loading,
     addMessage,
     sendMessage,
+    deleteMessage,
+    editMessage,
   };
 }

@@ -70,6 +70,8 @@ export interface DirectMessage {
   content: string;
   createdAt: Date;
   read: boolean;
+  edited?: boolean;
+  editedAt?: Date;
 }
 
 export interface BlogPost {

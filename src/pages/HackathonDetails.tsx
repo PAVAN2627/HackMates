@@ -37,7 +37,7 @@ export default function HackathonDetails() {
   const { hackathon, loading } = useHackathon(id || '');
   const { updateHackathonStatus, deleteHackathon, joinHackathon, leaveHackathon } = useHackathons();
   const { announcements, loading: announcementsLoading, createAnnouncement } = useAnnouncements(id || '');
-  const { messages, loading: chatLoading, sendMessage } = useChat(id || '');
+  const { messages, loading: chatLoading, sendMessage, editMessage, deleteMessage } = useChat(id || '');
   const { getProfileById } = useProfiles();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [profileModalUser, setProfileModalUser] = useState<{ id: string; name: string } | null>(null);
@@ -387,6 +387,8 @@ export default function HackathonDetails() {
           <ChatSection
             messages={messages}
             onSendMessage={handleSendMessage}
+            onEditMessage={editMessage}
+            onDeleteMessage={deleteMessage}
             onProfileClick={handleProfileClick}
             loading={chatLoading}
             hackathon={hackathon ? {
