@@ -11,6 +11,7 @@ import { UserProfile } from '@/types';
 export function useProfiles() {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     // Clear any cached profile data on mount
@@ -19,6 +20,9 @@ export function useProfiles() {
     );
     cacheKeys.forEach(key => localStorage.removeItem(key));
 
+    setLoading(true);
+    console.log('Starting profile fetch...');
+
     // Use createdAt for ordering since all profiles have this field
     const q = query(
       collection(db, COLLECTIONS.USERS), 
@@ -26,49 +30,58 @@ export function useProfiles() {
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const profilesData: UserProfile[] = [];
-      
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'removed') {
-          // Profile removed
-        } else if (change.type === 'modified') {
-          // Profile updated
-        }
-      });
-      
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
+      try {
+        const profilesData: UserProfile[] = [];
         
-        // Ensure we have required fields
-        if (data.name && data.email) {
-          profilesData.push({
-            id: docSnap.id,
-            uid: docSnap.id,
-            ...data,
-            createdAt: data.createdAt?.toDate?.() || new Date(),
-            updatedAt: data.updatedAt?.toDate?.() || data.createdAt?.toDate?.() || new Date(),
-            skills: data.skills || [],
-            interests: data.interests || [],
-          } as UserProfile);
-        }
-      });
-      
-      setProfiles(profilesData);
-      setLoading(false);
-      
-      // Cache profiles for 2 minutes only
-      const cacheData = {
-        profiles: profilesData,
-        timestamp: Date.now()
-      };
-      localStorage.setItem('profiles_cache', JSON.stringify(cacheData));
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          
+          // Ensure we have required fields
+          if (data.name && data.email) {
+            profilesData.push({
+              id: docSnap.id,
+              uid: docSnap.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.() || new Date(),
+              updatedAt: data.updatedAt?.toDate?.() || data.createdAt?.toDate?.() || new Date(),
+              skills: data.skills || [],
+              interests: data.interests || [],
+            } as UserProfile);
+          }
+        });
+        
+        console.log(`Successfully loaded ${profilesData.length} profiles from Firebase`);
+        setProfiles(profilesData);
+        setLoading(false);
+        
+        // Cache profiles for 2 minutes only
+        const cacheData = {
+          profiles: profilesData,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('profiles_cache', JSON.stringify(cacheData));
+      } catch (error) {
+        console.error('Error processing profiles:', error);
+        setProfiles([]);
+        setLoading(false);
+      }
     }, (error) => {
       console.error('Error loading profiles:', error);
+      setProfiles([]);
       setLoading(false);
     });
 
-    return unsubscribe;
-  }, []);
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.warn('Profile loading timeout - setting loading to false');
+      setLoading(false);
+    }, 10000); // Reduced to 10 seconds
+
+    return () => {
+      clearTimeout(timeoutId);
+      unsubscribe();
+    };
+  }, [refreshTrigger]); // Re-run when refreshTrigger changes
 
   const getProfileById = useCallback((userId: string) => {
     const profile = profiles.find(p => p.id === userId || p.uid === userId);
@@ -97,14 +110,14 @@ export function useProfiles() {
   }, [profiles]);
 
   const refreshProfiles = useCallback(() => {
-    // Clear cache and force refresh
+    // Clear cache and force refresh by updating the trigger
     const cacheKeys = Object.keys(localStorage).filter(key => 
       key.startsWith('profile_cache_') || key.startsWith('profiles_cache')
     );
     cacheKeys.forEach(key => localStorage.removeItem(key));
     
-    setLoading(true);
-    // The onSnapshot listener will automatically refresh the data
+    console.log('Refreshing profiles...');
+    setRefreshTrigger(prev => prev + 1);
   }, []);
 
   const searchByName = useCallback((searchTerm: string) => {

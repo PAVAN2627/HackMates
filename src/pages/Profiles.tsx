@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProfileCard } from '@/components/ProfileCard';
 import { UserProfileModal } from '@/components/UserProfileModal';
+import { Loading } from '@/components/Loading';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
@@ -136,7 +137,7 @@ export default function Profiles() {
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Zap className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold">HackHub</h1>
+            <h1 className="text-3xl font-bold">HackMates</h1>
           </div>
           <p className="text-muted-foreground">Search and connect with developers, designers, and creators</p>
           <p className="text-xs text-muted-foreground mt-2">Developed by NoobcodersIND</p>
@@ -285,9 +286,11 @@ export default function Profiles() {
 
         {/* Results */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-muted-foreground">Loading profiles...</div>
-          </div>
+          <Loading 
+            message="Loading profiles..." 
+            size="sm" 
+            inline={true}
+          />
         ) : (
           <>
             <div className="mb-4 text-sm text-muted-foreground">

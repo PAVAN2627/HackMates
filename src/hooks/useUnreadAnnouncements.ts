@@ -124,10 +124,20 @@ export function useUnreadAnnouncements() {
     }
   };
 
+  // Clear read announcements when user logs out
+  const clearReadAnnouncements = () => {
+    if (user?.uid) {
+      localStorage.removeItem(`readAnnouncements_${user.uid}`);
+      setUnreadCount(0);
+      setUnreadAnnouncements([]);
+    }
+  };
+
   return { 
     unreadCount, 
     unreadAnnouncements, 
     markAllAsRead, 
-    markAsRead 
+    markAsRead,
+    clearReadAnnouncements
   };
 }

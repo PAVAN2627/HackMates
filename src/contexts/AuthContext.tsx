@@ -155,6 +155,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      // Clear announcement notifications for current user
+      if (user?.uid) {
+        localStorage.removeItem(`readAnnouncements_${user.uid}`);
+      }
+      
       await firebaseSignOut(auth);
     } catch (error: any) {
       throw new Error(error.message || 'Failed to sign out');
