@@ -42,6 +42,7 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
     position: { x: 0, y: 0 },
     isOwnMessage: false,
   });
+  const [pressedMessageId, setPressedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -83,6 +84,14 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
 
   const handleMessageLongPress = (messageId: string, messageContent: string, isOwnMessage: boolean, event: React.MouseEvent) => {
     event.preventDefault();
+    
+    console.log('Long press detected in ChatSection:', { messageId, messageContent, isOwnMessage });
+    
+    // Add haptic feedback for mobile
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
+    
     setContextMenu({
       isOpen: true,
       messageId,
@@ -133,7 +142,8 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
   }
 
   return (
-    <div className="glass rounded-xl flex flex-col h-[500px]">
+    <>
+      <div className="glass rounded-xl flex flex-col h-[500px]">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
@@ -191,36 +201,78 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
                     </span>
                   </div>
                   <div className={cn(
-                    'rounded-2xl px-4 py-2 inline-block cursor-pointer select-none',
+                    'rounded-2xl px-4 py-2 inline-block cursor-pointer select-none transition-all duration-150',
                     isOwn 
                       ? 'bg-primary text-primary-foreground rounded-tr-md' 
-                      : 'bg-muted rounded-tl-md'
+                      : 'bg-muted rounded-tl-md',
+                    pressedMessageId === message.id ? 'scale-95 opacity-80' : ''
                   )}
                   onContextMenu={(e) => handleMessageLongPress(message.id, message.content, isOwn, e)}
-                  onClick={(e) => {
-                    // Handle long press on mobile (touch and hold)
-                    let pressTimer: NodeJS.Timeout;
-                    const startPress = () => {
-                      pressTimer = setTimeout(() => {
-                        handleMessageLongPress(message.id, message.content, isOwn, e);
-                      }, 500);
-                    };
-                    const endPress = () => {
+                  onTouchStart={(e) => {
+                    const touch = e.touches[0];
+                    const startTime = Date.now();
+                    const startX = touch.clientX;
+                    const startY = touch.clientY;
+                    
+                    const pressTimer = setTimeout(() => {
+                      // Visual feedback for long press
+                      setPressedMessageId(message.id);
+                      
+                      // Prevent text selection during long press
+                      e.preventDefault();
+                      handleMessageLongPress(message.id, message.content, isOwn, {
+                        clientX: startX,
+                        clientY: startY,
+                        preventDefault: () => {}
+                      } as any);
+                      
+                      // Reset visual feedback after menu opens
+                      setTimeout(() => setPressedMessageId(null), 100);
+                    }, 500);
+
+                    const handleTouchEnd = (endEvent: TouchEvent) => {
                       clearTimeout(pressTimer);
+                      setPressedMessageId(null);
+                      const endTime = Date.now();
+                      const duration = endTime - startTime;
+                      
+                      // If it was a quick tap (less than 500ms), allow normal behavior
+                      if (duration < 500) {
+                        // This was a normal tap, don't prevent default
+                        return;
+                      }
+                      
+                      endEvent.preventDefault();
+                      document.removeEventListener('touchend', handleTouchEnd);
+                      document.removeEventListener('touchcancel', handleTouchCancel);
                     };
-                    
-                    // Add touch event listeners for mobile
-                    const element = e.currentTarget;
-                    element.addEventListener('touchstart', startPress);
-                    element.addEventListener('touchend', endPress);
-                    element.addEventListener('touchcancel', endPress);
-                    
-                    // Cleanup listeners
-                    setTimeout(() => {
-                      element.removeEventListener('touchstart', startPress);
-                      element.removeEventListener('touchend', endPress);
-                      element.removeEventListener('touchcancel', endPress);
-                    }, 100);
+
+                    const handleTouchMove = (moveEvent: TouchEvent) => {
+                      const touch = moveEvent.touches[0];
+                      const deltaX = Math.abs(touch.clientX - startX);
+                      const deltaY = Math.abs(touch.clientY - startY);
+                      
+                      // If user moved finger too much, cancel long press
+                      if (deltaX > 10 || deltaY > 10) {
+                        clearTimeout(pressTimer);
+                        setPressedMessageId(null);
+                        document.removeEventListener('touchend', handleTouchEnd);
+                        document.removeEventListener('touchcancel', handleTouchCancel);
+                        document.removeEventListener('touchmove', handleTouchMove);
+                      }
+                    };
+
+                    const handleTouchCancel = () => {
+                      clearTimeout(pressTimer);
+                      setPressedMessageId(null);
+                      document.removeEventListener('touchend', handleTouchEnd);
+                      document.removeEventListener('touchcancel', handleTouchCancel);
+                      document.removeEventListener('touchmove', handleTouchMove);
+                    };
+
+                    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+                    document.addEventListener('touchcancel', handleTouchCancel);
+                    document.addEventListener('touchmove', handleTouchMove, { passive: false });
                   }}
                   >
                     <div className="text-sm">
@@ -285,8 +337,9 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
           </p>
         )}
       </div>
+    </div>
 
-      {/* Message Context Menu */}
+      {/* Message Context Menu - Rendered via Portal */}
       <MessageContextMenu
         isOpen={contextMenu.isOpen}
         onClose={() => setContextMenu(prev => ({ ...prev, isOpen: false }))}
@@ -296,6 +349,6 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
         position={contextMenu.position}
         isOwnMessage={contextMenu.isOwnMessage}
       />
-    </div>
+    </>
   );
 }

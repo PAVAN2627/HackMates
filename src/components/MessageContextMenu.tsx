@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Edit, Trash2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,8 @@ export function MessageContextMenu({
   const [editContent, setEditContent] = useState(messageContent);
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  console.log('MessageContextMenu render:', { isOpen, messageContent, position, isOwnMessage });
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -98,17 +101,29 @@ export function MessageContextMenu({
     }
   };
 
+  // Add haptic feedback for mobile
+  const triggerHapticFeedback = () => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50); // Short vibration
+    }
+  };
+
   if (!isOpen) return null;
 
   // Calculate menu position to keep it within viewport
   const menuStyle = {
     position: 'fixed' as const,
-    left: Math.min(position.x, window.innerWidth - 200),
-    top: Math.min(position.y, window.innerHeight - 150),
-    zIndex: 1000,
+    left: Math.min(Math.max(position.x - 90, 10), window.innerWidth - 200), // Center menu around touch point
+    top: Math.min(Math.max(position.y - 50, 10), window.innerHeight - 200), // Position above touch point
+    zIndex: 9999, // Higher z-index to ensure it appears above everything
   };
 
-  return (
+  // Trigger haptic feedback when menu opens
+  if (isOpen) {
+    triggerHapticFeedback();
+  }
+
+  const menuContent = (
     <div
       ref={menuRef}
       style={menuStyle}
@@ -185,4 +200,7 @@ export function MessageContextMenu({
       )}
     </div>
   );
+
+  // Use portal to render the menu at document body level to avoid z-index issues
+  return createPortal(menuContent, document.body);
 }
