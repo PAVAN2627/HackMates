@@ -155,10 +155,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Clear announcement notifications for current user
+      // Clear all user-specific localStorage data
       if (user?.uid) {
         localStorage.removeItem(`readAnnouncements_${user.uid}`);
+        localStorage.removeItem(`profile_cache_${user.uid}`);
+        localStorage.removeItem(`profile_backup_${user.uid}`);
       }
+      
+      // Clear profile state immediately
+      setProfile(null);
       
       await firebaseSignOut(auth);
     } catch (error: any) {

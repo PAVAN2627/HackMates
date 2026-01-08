@@ -6,12 +6,18 @@ import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'fire
 export function useUnreadAnnouncements() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadAnnouncements, setUnreadAnnouncements] = useState<any[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user?.uid) {
+    // Reset state when user changes (logout/login)
+    if (user?.uid !== currentUserId) {
       setUnreadCount(0);
       setUnreadAnnouncements([]);
+      setCurrentUserId(user?.uid || null);
+    }
+
+    if (!user?.uid) {
       return;
     }
 
@@ -82,8 +88,13 @@ export function useUnreadAnnouncements() {
       }
     });
 
-    return unsubscribe;
-  }, [user?.uid]);
+    return () => {
+      unsubscribe();
+      // Clear state on cleanup
+      setUnreadCount(0);
+      setUnreadAnnouncements([]);
+    };
+  }, [user?.uid, currentUserId]);
 
   const markAllAsRead = async () => {
     if (!user?.uid) return;

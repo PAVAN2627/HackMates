@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
-import { Zap, Mail, Lock, User, MapPin, BookOpen, Tag, MessageSquare, CheckCircle2, Upload, X, ArrowLeft } from 'lucide-react';
+import { Zap, User, MapPin, Tag, MessageSquare, CheckCircle2, Upload, X, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,11 +24,7 @@ const skillsOptions = [
   'GraphQL', 'REST APIs', 'Microservices', 'System Design'
 ];
 
-const locationOptions = [
-  'Online', 'Bangalore', 'Delhi', 'Mumbai', 'Pune', 'Hyderabad', 
-  'Chennai', 'Kolkata', 'Ahmedabad', 'Jaipur', 'Kochi', 'Indore',
-  'Chandigarh', 'Lucknow', 'Nagpur', 'Bhopal', 'Coimbatore', 'Other'
-];
+
 
 const experienceOptions = ['Beginner', 'Intermediate', 'Advanced'];
 const genderOptions = [
@@ -43,6 +39,12 @@ const interestOptions = [
   'Blockchain', 'Game Development', 'IoT', 'Cybersecurity',
   'Cloud Computing', 'DevOps', 'UI/UX Design', 'AR/VR',
   'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Social Impact'
+];
+
+const locationOptions = [
+  'Bangalore', 'Delhi', 'Mumbai', 'Pune', 'Hyderabad', 
+  'Chennai', 'Kolkata', 'Ahmedabad', 'Jaipur', 'Kochi', 'Indore',
+  'Chandigarh', 'Lucknow', 'Nagpur', 'Bhopal', 'Coimbatore', 'Other'
 ];
 
 const registrationSchema = z.object({
@@ -84,7 +86,6 @@ export default function Register() {
     gender: 'prefer-not-to-say' as 'male' | 'female' | 'non-binary' | 'prefer-not-to-say',
     avatar: '' as string,
   });
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -134,7 +135,6 @@ export default function Register() {
         return;
       }
       
-      setAvatarFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -146,7 +146,6 @@ export default function Register() {
   };
 
   const removeAvatar = () => {
-    setAvatarFile(null);
     setAvatarPreview('');
     setFormData(prev => ({ ...prev, avatar: '' }));
   };

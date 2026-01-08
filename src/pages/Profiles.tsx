@@ -28,7 +28,7 @@ const skillsOptions = [
 ];
 
 const locationOptions = [
-  'Online', 'Bangalore', 'Delhi', 'Mumbai', 'Pune', 'Hyderabad', 
+  'Bangalore', 'Delhi', 'Mumbai', 'Pune', 'Hyderabad', 
   'Chennai', 'Kolkata', 'Ahmedabad', 'Jaipur', 'Kochi', 'Indore',
   'Chandigarh', 'Lucknow', 'Nagpur', 'Bhopal', 'Coimbatore', 'Other'
 ];
