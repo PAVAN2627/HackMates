@@ -51,7 +51,7 @@ export function HackathonCard({
         )}
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{hackathon.description}</p>
+      <div className="text-sm text-muted-foreground mb-4 line-clamp-2 whitespace-pre-wrap">{hackathon.description}</div>
 
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-2 text-sm">

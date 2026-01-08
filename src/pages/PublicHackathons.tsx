@@ -273,9 +273,9 @@ export default function PublicHackathons() {
                       </Badge>
                     </div>
 
-                    <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-3 md:mb-4 line-clamp-3">
+                    <div className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-3 md:mb-4 line-clamp-3 whitespace-pre-wrap">
                       {hackathon.description}
-                    </p>
+                    </div>
 
                     {/* Details */}
                     <div className="space-y-1.5 md:space-y-2 mb-3 md:mb-4">

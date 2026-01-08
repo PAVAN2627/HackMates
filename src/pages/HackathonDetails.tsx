@@ -296,9 +296,9 @@ export default function HackathonDetails() {
             </div>
 
             <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">{hackathon.title}</h1>
-            <p className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6 max-w-3xl">
+            <div className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6 max-w-3xl whitespace-pre-wrap">
               {hackathon.description}
-            </p>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-4 md:mb-6">
               <div className="flex items-center gap-2 md:gap-3">
