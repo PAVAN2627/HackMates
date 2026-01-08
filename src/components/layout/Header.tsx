@@ -62,6 +62,7 @@ export function Header() {
               <AvatarUpload 
                 currentAvatar={profile?.avatar}
                 userName={profile?.name}
+                userGender={profile?.gender as any}
                 size="sm"
                 editable={false}
               />

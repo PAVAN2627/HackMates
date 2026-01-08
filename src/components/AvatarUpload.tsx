@@ -3,11 +3,13 @@ import { Camera, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAvatarUrl, getInitials } from '@/lib/avatars';
 import { toast } from 'sonner';
 
 interface AvatarUploadProps {
-  currentAvatar?: string;
+  currentAvatar?: string | null;
   userName?: string;
+  userGender?: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
   onAvatarUpdate?: (avatarUrl: string) => void;
   size?: 'sm' | 'md' | 'lg';
   editable?: boolean;
@@ -16,6 +18,7 @@ interface AvatarUploadProps {
 export function AvatarUpload({ 
   currentAvatar, 
   userName, 
+  userGender = 'prefer-not-to-say',
   onAvatarUpdate, 
   size = 'md',
   editable = true 
@@ -67,46 +70,33 @@ export function AvatarUpload({
 
     setIsUploading(true);
     try {
-      // Upload image to Supabase Storage
-      const fileMetadata = await fileStorage.uploadFile({
-        file,
-        bucket: 'user-avatars',
-        folder: user.id,
-        compress: true,
-        maxWidth: 400,
-        maxHeight: 400,
-        quality: 0.9
-      });
-
-      if (!fileMetadata) {
-        throw new Error('Failed to upload avatar');
-      }
-
-      const avatarUrl = fileMetadata.publicUrl;
-      
-      // Update profile in Supabase
-      const { error } = await supabase
-        .from('profiles')
-        .update({ avatar_url: avatarUrl })
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      
-      // Update auth context
-      if (updateProfile) {
-        updateProfile({ avatar_url: avatarUrl });
-      }
-      
-      // Call callback
-      onAvatarUpdate?.(avatarUrl);
-      
-      toast.success('Avatar updated successfully!');
-      setPreviewUrl(null);
+      // Convert file to base64 for Firebase storage
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64String = e.target?.result as string;
+        
+        try {
+          // Update profile with base64 avatar
+          await updateProfile({ avatar: base64String });
+          
+          // Call callback
+          onAvatarUpdate?.(base64String);
+          
+          toast.success('Avatar updated successfully!');
+          setPreviewUrl(null);
+        } catch (error) {
+          console.error('Avatar upload failed:', error);
+          toast.error('Failed to upload avatar');
+          setPreviewUrl(null);
+        } finally {
+          setIsUploading(false);
+        }
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Avatar upload failed:', error);
       toast.error('Failed to upload avatar');
       setPreviewUrl(null);
-    } finally {
       setIsUploading(false);
     }
   };
@@ -115,18 +105,8 @@ export function AvatarUpload({
     if (!user) return;
 
     try {
-      // Update profile in Supabase
-      const { error } = await supabase
-        .from('profiles')
-        .update({ avatar_url: null })
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      
-      // Update auth context
-      if (updateProfile) {
-        updateProfile({ avatar_url: null });
-      }
+      // Update profile to remove avatar
+      await updateProfile({ avatar: '' });
       
       // Call callback
       onAvatarUpdate?.('');
@@ -139,17 +119,22 @@ export function AvatarUpload({
     }
   };
 
-  // Show the correct avatar based on context
-  // Use a default avatar if none is set
-  const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (userName || 'organizer');
-  const displayAvatar = previewUrl || currentAvatar || (editable && profile?.avatar_url ? profile.avatar_url : null) || defaultAvatar;
+  // Get the appropriate avatar URL based on user's avatar and gender
+  const displayAvatar = previewUrl || getAvatarUrl(
+    currentAvatar || (editable && profile?.avatar ? profile.avatar : null), 
+    userGender || (profile?.gender as any) || 'prefer-not-to-say',
+    userName
+  );
+
+  // Get user initials for fallback
+  const userInitials = getInitials(userName || profile?.name || 'User');
 
   return (
     <div className="relative inline-block">
       <Avatar className={sizeClasses[size]}>
         <AvatarImage src={displayAvatar} alt={userName || 'User avatar'} />
-        <AvatarFallback className="bg-primary/20 text-primary">
-          <User className={size === 'sm' ? 'h-3 w-3' : size === 'md' ? 'h-6 w-6' : 'h-8 w-8'} />
+        <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+          {userInitials}
         </AvatarFallback>
       </Avatar>
 
@@ -179,7 +164,7 @@ export function AvatarUpload({
               )}
             </Button>
             
-            {displayAvatar && (
+            {(currentAvatar || profile?.avatar) && (
               <Button
                 size="sm"
                 variant="destructive"

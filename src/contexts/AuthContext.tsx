@@ -34,6 +34,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         setError(null);
+        
+        // If user changed (logout/login), clear previous user's data
+        if (user && firebaseUser?.uid !== user.uid) {
+          // Clear previous user's localStorage data
+          if (user.uid) {
+            localStorage.removeItem(`readAnnouncements_${user.uid}`);
+            localStorage.removeItem(`profile_cache_${user.uid}`);
+            localStorage.removeItem(`profile_backup_${user.uid}`);
+          }
+        }
+        
+        // If new user logged in, clear their localStorage to start fresh
+        if (firebaseUser?.uid && (!user || firebaseUser.uid !== user.uid)) {
+          localStorage.removeItem(`readAnnouncements_${firebaseUser.uid}`);
+        }
+        
         setUser(firebaseUser);
         
         if (firebaseUser) {
@@ -57,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return unsubscribe;
-  }, []);
+  }, [user?.uid]);
 
   const loadUserProfile = async (uid: string) => {
     try {
@@ -155,18 +171,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Clear all user-specific localStorage data
-      if (user?.uid) {
-        localStorage.removeItem(`readAnnouncements_${user.uid}`);
-        localStorage.removeItem(`profile_cache_${user.uid}`);
-        localStorage.removeItem(`profile_backup_${user.uid}`);
+      const currentUserId = user?.uid;
+      
+      // Clear all user-specific localStorage data before signing out
+      if (currentUserId) {
+        // Clear announcement read status
+        localStorage.removeItem(`readAnnouncements_${currentUserId}`);
+        // Clear profile cache
+        localStorage.removeItem(`profile_cache_${currentUserId}`);
+        localStorage.removeItem(`profile_backup_${currentUserId}`);
       }
       
       // Clear profile state immediately
       setProfile(null);
       
+      // Sign out from Firebase
       await firebaseSignOut(auth);
     } catch (error: any) {
+      console.error('Sign out error:', error);
       throw new Error(error.message || 'Failed to sign out');
     }
   };

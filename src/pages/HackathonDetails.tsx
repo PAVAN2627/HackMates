@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnnouncementSection } from '@/components/hackathon/AnnouncementSection';
 import { ChatSection } from '@/components/hackathon/ChatSection';
+import { RecommendedProfiles } from '@/components/hackathon/RecommendedProfiles.tsx';
 import { UserProfileModal } from '@/components/UserProfileModal';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useAuth } from '@/contexts/AuthContext';
@@ -372,6 +373,11 @@ export default function HackathonDetails() {
               Team Members ({hackathon.teamMembers?.length || 0})
             </TabsTrigger>
           )}
+          {isHackathonCreator && (
+            <TabsTrigger value="recommendations" className="data-[state=active]:bg-background">
+              Recommended Profiles
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="announcements">
@@ -440,6 +446,7 @@ export default function HackathonDetails() {
                           <AvatarUpload
                             currentAvatar={memberProfile?.avatar || null}
                             userName={memberProfile?.name || 'Unknown User'}
+                            userGender={memberProfile?.gender as any}
                             size="md"
                             editable={false}
                           />
@@ -528,6 +535,16 @@ export default function HackathonDetails() {
                 </div>
               )}
             </div>
+          </TabsContent>
+        )}
+
+        {isHackathonCreator && (
+          <TabsContent value="recommendations">
+            <RecommendedProfiles 
+              hackathon={hackathon}
+              onProfileClick={handleProfileClick}
+              onSendMessage={(userId) => navigate(`/messages?with=${userId}`)}
+            />
           </TabsContent>
         )}
       </Tabs>

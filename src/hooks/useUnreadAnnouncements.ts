@@ -9,15 +9,34 @@ export function useUnreadAnnouncements() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { user } = useAuth();
 
+  // Reset everything when user changes (including logout)
   useEffect(() => {
-    // Reset state when user changes (logout/login)
-    if (user?.uid !== currentUserId) {
+    const newUserId = user?.uid || null;
+    
+    if (newUserId !== currentUserId) {
+      // Clear all state immediately
       setUnreadCount(0);
       setUnreadAnnouncements([]);
-      setCurrentUserId(user?.uid || null);
+      
+      // If user logged out, clear their localStorage
+      if (!newUserId && currentUserId) {
+        localStorage.removeItem(`readAnnouncements_${currentUserId}`);
+      }
+      
+      // If new user logged in, clear their localStorage to start fresh
+      if (newUserId && newUserId !== currentUserId) {
+        localStorage.removeItem(`readAnnouncements_${newUserId}`);
+      }
+      
+      setCurrentUserId(newUserId);
     }
+  }, [user?.uid, currentUserId]);
 
+  useEffect(() => {
     if (!user?.uid) {
+      // Ensure state is cleared when no user
+      setUnreadCount(0);
+      setUnreadAnnouncements([]);
       return;
     }
 
@@ -70,10 +89,15 @@ export function useUnreadAnnouncements() {
           }
         }
 
-        // Filter out read announcements
-        const readAnnouncementIds = JSON.parse(
-          localStorage.getItem(`readAnnouncements_${user.uid}`) || '[]'
-        );
+        // Filter out read announcements - check localStorage fresh each time
+        let readAnnouncementIds: string[] = [];
+        try {
+          const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
+          readAnnouncementIds = stored ? JSON.parse(stored) : [];
+        } catch (error) {
+          console.error('Error reading localStorage:', error);
+          readAnnouncementIds = [];
+        }
         
         const unreadAnnouncementsData = announcementsData.filter(
           announcement => !readAnnouncementIds.includes(announcement.id)
@@ -90,11 +114,8 @@ export function useUnreadAnnouncements() {
 
     return () => {
       unsubscribe();
-      // Clear state on cleanup
-      setUnreadCount(0);
-      setUnreadAnnouncements([]);
     };
-  }, [user?.uid, currentUserId]);
+  }, [user?.uid]);
 
   const markAllAsRead = async () => {
     if (!user?.uid) return;

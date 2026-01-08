@@ -3,15 +3,17 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { UserProfile } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { getAvatarUrl, getInitials } from '@/lib/avatars';
 
 interface ProfileCardProps {
   profile: UserProfile;
   onMessage?: (userId: string) => void;
   onViewProfile?: (userId: string, userName: string) => void;
   showContact?: boolean;
+  isMessageLoading?: boolean;
 }
 
-export function ProfileCard({ profile, onMessage, onViewProfile, showContact = true }: ProfileCardProps) {
+export function ProfileCard({ profile, onMessage, onViewProfile, showContact = true, isMessageLoading = false }: ProfileCardProps) {
   const availabilityColor = {
     'online': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     'in-person': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
@@ -38,19 +40,11 @@ export function ProfileCard({ profile, onMessage, onViewProfile, showContact = t
           </div>
           <p className="text-sm text-muted-foreground">{profile.college}</p>
         </div>
-        {profile.avatar ? (
-          <img 
-            src={profile.avatar} 
-            alt={profile.name}
-            className="w-12 h-12 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-primary font-semibold">
-              {profile.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
+        <img 
+          src={getAvatarUrl(profile.avatar, profile.gender as any, profile.name)} 
+          alt={profile.name}
+          className="w-12 h-12 rounded-full object-cover"
+        />
       </div>
 
       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{profile.bio}</p>
@@ -153,9 +147,10 @@ export function ProfileCard({ profile, onMessage, onViewProfile, showContact = t
           variant="outline" 
           size="sm" 
           className="w-full"
+          disabled={isMessageLoading}
         >
           <MessageCircle className="w-4 h-4 mr-2" />
-          Message
+          {isMessageLoading ? 'Sending...' : 'Message'}
         </Button>
       )}
     </Card>

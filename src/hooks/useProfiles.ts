@@ -24,6 +24,7 @@ export function useProfiles() {
     console.log('Starting profile fetch...');
 
     // Use createdAt for ordering since all profiles have this field
+    // Remove any potential limits and get all profiles
     const q = query(
       collection(db, COLLECTIONS.USERS), 
       orderBy('createdAt', 'desc')
@@ -50,7 +51,6 @@ export function useProfiles() {
           }
         });
         
-        console.log(`Successfully loaded ${profilesData.length} profiles from Firebase`);
         setProfiles(profilesData);
         setLoading(false);
         
@@ -116,7 +116,6 @@ export function useProfiles() {
     );
     cacheKeys.forEach(key => localStorage.removeItem(key));
     
-    console.log('Refreshing profiles...');
     setRefreshTrigger(prev => prev + 1);
   }, []);
 

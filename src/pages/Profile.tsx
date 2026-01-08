@@ -368,6 +368,7 @@ export default function Profile() {
               <AvatarUpload
                 currentAvatar={profile.avatar || null}
                 userName={profile.name}
+                userGender={profile.gender as any}
                 size="lg"
                 editable={false}
               />
