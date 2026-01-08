@@ -40,19 +40,10 @@ export function NotificationBell() {
   };
 
   const handleAnnouncementClick = async (announcementId: string) => {
-    try {
-      // Mark announcement as read and wait for it to complete
-      await markAsRead(announcementId);
-      // Small delay to ensure localStorage is updated
-      await new Promise(resolve => setTimeout(resolve, 100));
-      navigate('/announcements');
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Error marking announcement as read:', error);
-      // Still navigate even if marking as read fails
-      navigate('/announcements');
-      setIsOpen(false);
-    }
+    // Mark announcement as read
+    await markAsRead(announcementId);
+    navigate('/announcements');
+    setIsOpen(false);
   };
 
   return (

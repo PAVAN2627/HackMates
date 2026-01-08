@@ -29,9 +29,11 @@ export default function Announcements() {
   const [loading, setLoading] = useState(true);
   const { markAllAsRead, markAsRead, unreadAnnouncements } = useUnreadAnnouncements();
 
-  // Check if an announcement is unread
-  const isUnread = (announcementId: string) => {
-    return unreadAnnouncements.some(a => a.id === announcementId);
+  // Check if an announcement is unread (not in readBy array)
+  const isUnread = (announcement: Announcement) => {
+    if (!user?.uid) return false;
+    const readBy = (announcement as any).readBy || [];
+    return !readBy.includes(user.uid);
   };
 
   useEffect(() => {
@@ -207,13 +209,13 @@ export default function Announcements() {
                   ? 'border-2 border-primary/30 bg-primary/5' 
                   : 'hover:border-primary/20'
               } ${
-                isUnread(announcement.id) 
+                isUnread(announcement) 
                   ? 'border-l-4 border-l-orange-500 bg-orange-50/50 dark:bg-orange-900/10' 
                   : ''
               }`}
             >
               {/* Unread indicator and mark as read button */}
-              {isUnread(announcement.id) && (
+              {isUnread(announcement) && (
                 <div className="absolute top-3 right-3 flex items-center gap-2">
                   <span className="bg-orange-500 text-white text-xs rounded-full px-2 py-1 font-medium">
                     New

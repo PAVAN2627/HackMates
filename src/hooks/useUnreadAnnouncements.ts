@@ -1,30 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, COLLECTIONS } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 
 export function useUnreadAnnouncements() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadAnnouncements, setUnreadAnnouncements] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  // Clear state when user changes or logs out
   useEffect(() => {
     if (!user?.uid) {
       setUnreadCount(0);
       setUnreadAnnouncements([]);
-      return;
-    }
-  }, [user?.uid]);
-
-  useEffect(() => {
-    if (!user?.uid) {
-      setUnreadCount(0);
-      setUnreadAnnouncements([]);
+      setLoading(false);
       return;
     }
 
-    // Listen to all announcements and filter by joined hackathons
+    // Listen to all announcements
     const q = query(
       collection(db, COLLECTIONS.ANNOUNCEMENTS),
       orderBy('createdAt', 'desc')
@@ -73,30 +66,22 @@ export function useUnreadAnnouncements() {
           }
         }
 
-        // Filter out read announcements - always get fresh from localStorage
-        let readAnnouncementIds: string[] = [];
-        try {
-          const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
-          readAnnouncementIds = stored ? JSON.parse(stored) : [];
-          console.log('Loading announcements - Read IDs from localStorage:', readAnnouncementIds);
-        } catch (error) {
-          console.error('Error reading localStorage:', error);
-          readAnnouncementIds = [];
-          // Clear corrupted localStorage
-          localStorage.removeItem(`readAnnouncements_${user.uid}`);
-        }
-        
+        // Filter out read announcements - check readBy array
         const unreadAnnouncementsData = announcementsData.filter(
-          announcement => !readAnnouncementIds.includes(announcement.id)
+          announcement => {
+            const readBy = announcement.readBy || [];
+            return !readBy.includes(user.uid);
+          }
         );
 
-        console.log('Total announcements:', announcementsData.length, 'Unread:', unreadAnnouncementsData.length);
         setUnreadAnnouncements(unreadAnnouncementsData);
         setUnreadCount(unreadAnnouncementsData.length);
+        setLoading(false);
       } catch (error) {
         console.error('Error loading unread announcements:', error);
         setUnreadCount(0);
         setUnreadAnnouncements([]);
+        setLoading(false);
       }
     });
 
@@ -105,76 +90,36 @@ export function useUnreadAnnouncements() {
     };
   }, [user?.uid]);
 
-  const markAllAsRead = async () => {
-    if (!user?.uid) return;
-
-    try {
-      const allAnnouncementIds = unreadAnnouncements.map(a => a.id);
-      if (allAnnouncementIds.length === 0) return;
-      
-      // Get existing read IDs
-      let existingReadIds: string[] = [];
-      try {
-        const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
-        existingReadIds = stored ? JSON.parse(stored) : [];
-      } catch (error) {
-        existingReadIds = [];
-      }
-      
-      const updatedReadIds = [...new Set([...existingReadIds, ...allAnnouncementIds])];
-      localStorage.setItem(`readAnnouncements_${user.uid}`, JSON.stringify(updatedReadIds));
-      
-      // Update state immediately
-      setUnreadCount(0);
-      setUnreadAnnouncements([]);
-    } catch (error) {
-      console.error('Error marking announcements as read:', error);
-    }
-  };
-
-  const markAsRead = async (announcementId: string) => {
+  const markAsRead = useCallback(async (announcementId: string) => {
     if (!user?.uid || !announcementId) return;
 
     try {
-      console.log('Marking announcement as read:', announcementId, 'for user:', user.uid);
-      
-      // Get existing read IDs
-      let existingReadIds: string[] = [];
-      try {
-        const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
-        existingReadIds = stored ? JSON.parse(stored) : [];
-        console.log('Existing read IDs:', existingReadIds);
-      } catch (error) {
-        existingReadIds = [];
-      }
-      
-      if (!existingReadIds.includes(announcementId)) {
-        const updatedReadIds = [...existingReadIds, announcementId];
-        localStorage.setItem(`readAnnouncements_${user.uid}`, JSON.stringify(updatedReadIds));
-        console.log('Updated read IDs:', updatedReadIds);
-        
-        // Update state immediately
-        setUnreadAnnouncements(prev => {
-          const filtered = prev.filter(a => a.id !== announcementId);
-          console.log('Updated unread announcements count:', filtered.length);
-          return filtered;
-        });
-        setUnreadCount(prev => {
-          const newCount = Math.max(0, prev - 1);
-          console.log('Updated unread count:', newCount);
-          return newCount;
-        });
-      } else {
-        console.log('Announcement already marked as read');
-      }
+      const announcementRef = doc(db, COLLECTIONS.ANNOUNCEMENTS, announcementId);
+      await updateDoc(announcementRef, {
+        readBy: arrayUnion(user.uid)
+      });
     } catch (error) {
       console.error('Error marking announcement as read:', error);
     }
-  };
+  }, [user?.uid]);
+
+  const markAllAsRead = useCallback(async () => {
+    if (!user?.uid || unreadAnnouncements.length === 0) return;
+
+    try {
+      const promises = unreadAnnouncements.map(announcement => 
+        markAsRead(announcement.id)
+      );
+      await Promise.all(promises);
+    } catch (error) {
+      console.error('Error marking all announcements as read:', error);
+    }
+  }, [user?.uid, unreadAnnouncements, markAsRead]);
 
   return { 
     unreadCount, 
     unreadAnnouncements, 
+    loading,
     markAllAsRead, 
     markAsRead
   };

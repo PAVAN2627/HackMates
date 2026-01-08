@@ -37,9 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // If user logged out (firebaseUser is null)
         if (!firebaseUser) {
-          // Clear previous user's localStorage data if we had a user before
+          // Clear previous user's cache data if we had a user before
           if (user?.uid) {
-            localStorage.removeItem(`readAnnouncements_${user.uid}`);
             localStorage.removeItem(`profile_cache_${user.uid}`);
             localStorage.removeItem(`profile_backup_${user.uid}`);
           }
@@ -51,8 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // If user changed (different user logged in)
         if (user && firebaseUser.uid !== user.uid) {
-          // Clear previous user's localStorage data
-          localStorage.removeItem(`readAnnouncements_${user.uid}`);
+          // Clear previous user's cache data
           localStorage.removeItem(`profile_cache_${user.uid}`);
           localStorage.removeItem(`profile_backup_${user.uid}`);
         }
@@ -172,10 +170,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const currentUserId = user?.uid;
       
-      // Clear all user-specific localStorage data before signing out
+      // Clear all user-specific cache data before signing out
       if (currentUserId) {
-        // Clear announcement read status
-        localStorage.removeItem(`readAnnouncements_${currentUserId}`);
         // Clear profile cache
         localStorage.removeItem(`profile_cache_${currentUserId}`);
         localStorage.removeItem(`profile_backup_${currentUserId}`);
