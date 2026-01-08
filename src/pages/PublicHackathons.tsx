@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useHackathons } from '@/hooks/useHackathons';
+import { formatTextForDisplay } from '@/lib/textFormatter';
 
 const skillsOptions = ['React', 'Vue.js', 'Angular', 'Node.js', 'Express.js', 'Next.js', 'Python', 'Django', 'Flask', 'Java', 'TypeScript', 'DevOps', 'Cloud', 'ML', 'Web3', 'Mobile', 'UI/UX', 'Data Science'];
 
@@ -274,7 +275,7 @@ export default function PublicHackathons() {
                     </div>
 
                     <div className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-3 md:mb-4 line-clamp-3 whitespace-pre-wrap">
-                      {hackathon.description}
+                      {formatTextForDisplay(hackathon.description)}
                     </div>
 
                     {/* Details */}

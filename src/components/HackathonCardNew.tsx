@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Hackathon } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { formatTextForDisplay } from '@/lib/textFormatter';
 
 interface HackathonCardProps {
   hackathon: Hackathon;
@@ -51,7 +52,7 @@ export function HackathonCard({
         )}
       </div>
 
-      <div className="text-sm text-muted-foreground mb-4 line-clamp-2 whitespace-pre-wrap">{hackathon.description}</div>
+      <div className="text-sm text-muted-foreground mb-4 line-clamp-2 whitespace-pre-wrap">{formatTextForDisplay(hackathon.description)}</div>
 
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-2 text-sm">

@@ -29,6 +29,7 @@ import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useChat } from '@/hooks/useChat';
 import { useProfiles } from '@/hooks/useProfiles';
 import { cn } from '@/lib/utils';
+import { formatTextForDisplay } from '@/lib/textFormatter';
 import { toast } from 'sonner';
 
 export default function HackathonDetails() {
@@ -297,7 +298,7 @@ export default function HackathonDetails() {
 
             <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">{hackathon.title}</h1>
             <div className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6 max-w-3xl whitespace-pre-wrap">
-              {hackathon.description}
+              {formatTextForDisplay(hackathon.description)}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-4 md:mb-6">
