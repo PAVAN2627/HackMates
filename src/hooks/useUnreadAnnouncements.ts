@@ -78,6 +78,7 @@ export function useUnreadAnnouncements() {
         try {
           const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
           readAnnouncementIds = stored ? JSON.parse(stored) : [];
+          console.log('Loading announcements - Read IDs from localStorage:', readAnnouncementIds);
         } catch (error) {
           console.error('Error reading localStorage:', error);
           readAnnouncementIds = [];
@@ -89,6 +90,7 @@ export function useUnreadAnnouncements() {
           announcement => !readAnnouncementIds.includes(announcement.id)
         );
 
+        console.log('Total announcements:', announcementsData.length, 'Unread:', unreadAnnouncementsData.length);
         setUnreadAnnouncements(unreadAnnouncementsData);
         setUnreadCount(unreadAnnouncementsData.length);
       } catch (error) {
@@ -134,11 +136,14 @@ export function useUnreadAnnouncements() {
     if (!user?.uid || !announcementId) return;
 
     try {
+      console.log('Marking announcement as read:', announcementId, 'for user:', user.uid);
+      
       // Get existing read IDs
       let existingReadIds: string[] = [];
       try {
         const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
         existingReadIds = stored ? JSON.parse(stored) : [];
+        console.log('Existing read IDs:', existingReadIds);
       } catch (error) {
         existingReadIds = [];
       }
@@ -146,10 +151,21 @@ export function useUnreadAnnouncements() {
       if (!existingReadIds.includes(announcementId)) {
         const updatedReadIds = [...existingReadIds, announcementId];
         localStorage.setItem(`readAnnouncements_${user.uid}`, JSON.stringify(updatedReadIds));
+        console.log('Updated read IDs:', updatedReadIds);
         
         // Update state immediately
-        setUnreadAnnouncements(prev => prev.filter(a => a.id !== announcementId));
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        setUnreadAnnouncements(prev => {
+          const filtered = prev.filter(a => a.id !== announcementId);
+          console.log('Updated unread announcements count:', filtered.length);
+          return filtered;
+        });
+        setUnreadCount(prev => {
+          const newCount = Math.max(0, prev - 1);
+          console.log('Updated unread count:', newCount);
+          return newCount;
+        });
+      } else {
+        console.log('Announcement already marked as read');
       }
     } catch (error) {
       console.error('Error marking announcement as read:', error);
