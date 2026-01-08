@@ -40,11 +40,18 @@ export function ProfileCard({ profile, onMessage, onViewProfile, showContact = t
           </div>
           <p className="text-sm text-muted-foreground">{profile.college}</p>
         </div>
-        <img 
-          src={getAvatarUrl(profile.avatar, profile.gender as any, profile.name)} 
-          alt={profile.name}
-          className="w-12 h-12 rounded-full object-cover"
-        />
+        <div className="relative">
+          <img 
+            src={getAvatarUrl(profile.avatar, profile.name)} 
+            alt={profile.name}
+            className="w-12 h-12 rounded-full object-cover"
+            onError={(e) => {
+              console.log('Avatar failed to load for', profile.name, 'trying fallback');
+              const target = e.target as HTMLImageElement;
+              target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.name || 'User')}&backgroundColor=3b82f6&color=ffffff`;
+            }}
+          />
+        </div>
       </div>
 
       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{profile.bio}</p>

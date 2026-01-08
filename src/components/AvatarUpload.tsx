@@ -119,10 +119,9 @@ export function AvatarUpload({
     }
   };
 
-  // Get the appropriate avatar URL based on user's avatar and gender
+  // Get the appropriate avatar URL based on user's avatar
   const displayAvatar = previewUrl || getAvatarUrl(
     currentAvatar || (editable && profile?.avatar ? profile.avatar : null), 
-    userGender || (profile?.gender as any) || 'prefer-not-to-say',
     userName
   );
 

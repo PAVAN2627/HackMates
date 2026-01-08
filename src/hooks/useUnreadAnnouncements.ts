@@ -17,13 +17,32 @@ export function useUnreadAnnouncements() {
       return;
     }
 
+    let allAnnouncements: any[] = [];
+    let readAnnouncementIds: string[] = [];
+
+    const updateUnreadAnnouncements = () => {
+      const unreadAnnouncementsData = allAnnouncements.filter(
+        announcement => !readAnnouncementIds.includes(announcement.id)
+      );
+      
+      console.log('Updating unread announcements:', {
+        total: allAnnouncements.length,
+        read: readAnnouncementIds.length,
+        unread: unreadAnnouncementsData.length
+      });
+
+      setUnreadAnnouncements(unreadAnnouncementsData);
+      setUnreadCount(unreadAnnouncementsData.length);
+      setLoading(false);
+    };
+
     // Listen to all announcements
-    const q = query(
+    const announcementsQuery = query(
       collection(db, COLLECTIONS.ANNOUNCEMENTS),
       orderBy('createdAt', 'desc')
     );
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const unsubscribeAnnouncements = onSnapshot(announcementsQuery, async (snapshot) => {
       try {
         const announcementsData: any[] = [];
         
@@ -66,39 +85,34 @@ export function useUnreadAnnouncements() {
           }
         }
 
-        // Check which announcements are read by this user
-        const readAnnouncementIds: string[] = [];
-        try {
-          const readQuery = query(
-            collection(db, 'readAnnouncements'),
-            where('userId', '==', user.uid)
-          );
-          const readSnapshot = await getDocs(readQuery);
-          readSnapshot.forEach(doc => {
-            readAnnouncementIds.push(doc.data().announcementId);
-          });
-        } catch (error) {
-          console.error('Error fetching read announcements:', error);
-        }
-
-        // Filter out read announcements
-        const unreadAnnouncementsData = announcementsData.filter(
-          announcement => !readAnnouncementIds.includes(announcement.id)
-        );
-
-        setUnreadAnnouncements(unreadAnnouncementsData);
-        setUnreadCount(unreadAnnouncementsData.length);
-        setLoading(false);
+        allAnnouncements = announcementsData;
+        updateUnreadAnnouncements();
       } catch (error) {
-        console.error('Error loading unread announcements:', error);
+        console.error('Error loading announcements:', error);
         setUnreadCount(0);
         setUnreadAnnouncements([]);
         setLoading(false);
       }
     });
 
+    // Listen to read announcements for this user
+    const readQuery = query(
+      collection(db, 'readAnnouncements'),
+      where('userId', '==', user.uid)
+    );
+
+    const unsubscribeRead = onSnapshot(readQuery, (snapshot) => {
+      readAnnouncementIds = [];
+      snapshot.forEach(doc => {
+        readAnnouncementIds.push(doc.data().announcementId);
+      });
+      console.log('Read announcements updated:', readAnnouncementIds);
+      updateUnreadAnnouncements();
+    });
+
     return () => {
-      unsubscribe();
+      unsubscribeAnnouncements();
+      unsubscribeRead();
     };
   }, [user?.uid]);
 
@@ -106,6 +120,8 @@ export function useUnreadAnnouncements() {
     if (!user?.uid || !announcementId) return;
 
     try {
+      console.log('Marking announcement as read:', announcementId, 'for user:', user.uid);
+      
       // Create a document in readAnnouncements collection
       const readDocId = `${user.uid}_${announcementId}`;
       await setDoc(doc(db, 'readAnnouncements', readDocId), {
@@ -113,6 +129,8 @@ export function useUnreadAnnouncements() {
         announcementId: announcementId,
         readAt: new Date()
       });
+      
+      console.log('Successfully marked announcement as read');
     } catch (error) {
       console.error('Error marking announcement as read:', error);
     }
