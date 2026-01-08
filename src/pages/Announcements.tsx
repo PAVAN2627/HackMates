@@ -164,13 +164,13 @@ export default function Announcements() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Megaphone className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
+              <Megaphone className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               My Announcements
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               Announcements from hackathons you've joined
             </p>
           </div>
@@ -179,10 +179,11 @@ export default function Announcements() {
               onClick={markAllAsRead}
               variant="outline"
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm"
             >
-              <Check className="h-4 w-4" />
-              Mark All as Read ({unreadAnnouncements.length})
+              <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Mark All as Read ({unreadAnnouncements.length})</span>
+              <span className="sm:hidden">Mark All Read ({unreadAnnouncements.length})</span>
             </Button>
           )}
         </div>
@@ -213,7 +214,7 @@ export default function Announcements() {
             >
               {/* Unread indicator and mark as read button */}
               {isUnread(announcement.id) && (
-                <div className="absolute top-4 right-4 flex items-center gap-2">
+                <div className="absolute top-3 right-3 flex items-center gap-2">
                   <span className="bg-orange-500 text-white text-xs rounded-full px-2 py-1 font-medium">
                     New
                   </span>
@@ -221,10 +222,10 @@ export default function Announcements() {
                     onClick={() => markAsRead(announcement.id)}
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 hover:bg-orange-100 dark:hover:bg-orange-900/20"
+                    className="h-7 w-7 p-0 hover:bg-orange-100 dark:hover:bg-orange-900/20 sm:h-8 sm:w-8"
                     title="Mark as read"
                   >
-                    <Check className="h-4 w-4 text-orange-600" />
+                    <Check className="h-3 w-3 text-orange-600 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               )}

@@ -6,35 +6,19 @@ import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'fire
 export function useUnreadAnnouncements() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadAnnouncements, setUnreadAnnouncements] = useState<any[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Reset everything when user changes (including logout)
+  // Clear state when user changes or logs out
   useEffect(() => {
-    const newUserId = user?.uid || null;
-    
-    if (newUserId !== currentUserId) {
-      // Clear all state immediately
+    if (!user?.uid) {
       setUnreadCount(0);
       setUnreadAnnouncements([]);
-      
-      // If user logged out, clear their localStorage
-      if (!newUserId && currentUserId) {
-        localStorage.removeItem(`readAnnouncements_${currentUserId}`);
-      }
-      
-      // If new user logged in, clear their localStorage to start fresh
-      if (newUserId && newUserId !== currentUserId) {
-        localStorage.removeItem(`readAnnouncements_${newUserId}`);
-      }
-      
-      setCurrentUserId(newUserId);
+      return;
     }
-  }, [user?.uid, currentUserId]);
+  }, [user?.uid]);
 
   useEffect(() => {
     if (!user?.uid) {
-      // Ensure state is cleared when no user
       setUnreadCount(0);
       setUnreadAnnouncements([]);
       return;
@@ -89,7 +73,7 @@ export function useUnreadAnnouncements() {
           }
         }
 
-        // Filter out read announcements - check localStorage fresh each time
+        // Filter out read announcements - always get fresh from localStorage
         let readAnnouncementIds: string[] = [];
         try {
           const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
@@ -97,6 +81,8 @@ export function useUnreadAnnouncements() {
         } catch (error) {
           console.error('Error reading localStorage:', error);
           readAnnouncementIds = [];
+          // Clear corrupted localStorage
+          localStorage.removeItem(`readAnnouncements_${user.uid}`);
         }
         
         const unreadAnnouncementsData = announcementsData.filter(
@@ -122,13 +108,21 @@ export function useUnreadAnnouncements() {
 
     try {
       const allAnnouncementIds = unreadAnnouncements.map(a => a.id);
-      const existingReadIds = JSON.parse(
-        localStorage.getItem(`readAnnouncements_${user.uid}`) || '[]'
-      );
+      if (allAnnouncementIds.length === 0) return;
+      
+      // Get existing read IDs
+      let existingReadIds: string[] = [];
+      try {
+        const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
+        existingReadIds = stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        existingReadIds = [];
+      }
       
       const updatedReadIds = [...new Set([...existingReadIds, ...allAnnouncementIds])];
       localStorage.setItem(`readAnnouncements_${user.uid}`, JSON.stringify(updatedReadIds));
       
+      // Update state immediately
       setUnreadCount(0);
       setUnreadAnnouncements([]);
     } catch (error) {
@@ -137,17 +131,23 @@ export function useUnreadAnnouncements() {
   };
 
   const markAsRead = async (announcementId: string) => {
-    if (!user?.uid) return;
+    if (!user?.uid || !announcementId) return;
 
     try {
-      const existingReadIds = JSON.parse(
-        localStorage.getItem(`readAnnouncements_${user.uid}`) || '[]'
-      );
+      // Get existing read IDs
+      let existingReadIds: string[] = [];
+      try {
+        const stored = localStorage.getItem(`readAnnouncements_${user.uid}`);
+        existingReadIds = stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        existingReadIds = [];
+      }
       
       if (!existingReadIds.includes(announcementId)) {
         const updatedReadIds = [...existingReadIds, announcementId];
         localStorage.setItem(`readAnnouncements_${user.uid}`, JSON.stringify(updatedReadIds));
         
+        // Update state immediately
         setUnreadAnnouncements(prev => prev.filter(a => a.id !== announcementId));
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
@@ -156,20 +156,10 @@ export function useUnreadAnnouncements() {
     }
   };
 
-  // Clear read announcements when user logs out
-  const clearReadAnnouncements = () => {
-    if (user?.uid) {
-      localStorage.removeItem(`readAnnouncements_${user.uid}`);
-      setUnreadCount(0);
-      setUnreadAnnouncements([]);
-    }
-  };
-
   return { 
     unreadCount, 
     unreadAnnouncements, 
     markAllAsRead, 
-    markAsRead,
-    clearReadAnnouncements
+    markAsRead
   };
 }

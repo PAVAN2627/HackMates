@@ -35,34 +35,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         setError(null);
         
-        // If user changed (logout/login), clear previous user's data
-        if (user && firebaseUser?.uid !== user.uid) {
-          // Clear previous user's localStorage data
-          if (user.uid) {
+        // If user logged out (firebaseUser is null)
+        if (!firebaseUser) {
+          // Clear previous user's localStorage data if we had a user before
+          if (user?.uid) {
             localStorage.removeItem(`readAnnouncements_${user.uid}`);
             localStorage.removeItem(`profile_cache_${user.uid}`);
             localStorage.removeItem(`profile_backup_${user.uid}`);
           }
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
         }
         
-        // If new user logged in, clear their localStorage to start fresh
-        if (firebaseUser?.uid && (!user || firebaseUser.uid !== user.uid)) {
-          localStorage.removeItem(`readAnnouncements_${firebaseUser.uid}`);
+        // If user changed (different user logged in)
+        if (user && firebaseUser.uid !== user.uid) {
+          // Clear previous user's localStorage data
+          localStorage.removeItem(`readAnnouncements_${user.uid}`);
+          localStorage.removeItem(`profile_cache_${user.uid}`);
+          localStorage.removeItem(`profile_backup_${user.uid}`);
         }
         
         setUser(firebaseUser);
+        setLoading(false);
         
-        if (firebaseUser) {
-          // Set loading to false immediately for authenticated users
-          // Profile loading can happen in background
-          setLoading(false);
-          
-          // Load profile in background
-          loadUserProfile(firebaseUser.uid);
-        } else {
-          setProfile(null);
-          setLoading(false);
-        }
+        // Load profile in background
+        loadUserProfile(firebaseUser.uid);
       } catch (authError) {
         console.error('Auth state change error:', authError);
         setError('Authentication error occurred');
