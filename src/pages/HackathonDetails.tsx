@@ -337,7 +337,7 @@ export default function HackathonDetails() {
               <div className="mb-4">
                 <p className="text-sm text-muted-foreground mb-2">Required Skills:</p>
                 <div className="flex flex-wrap gap-2">
-                  {hackathon.requiredSkills.map((skill) => (
+                  {hackathon.requiredSkills.map((skill: string) => (
                     <span key={skill} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
                       {skill}
                     </span>
@@ -361,24 +361,30 @@ export default function HackathonDetails() {
 
       {/* Tabs */}
       <Tabs defaultValue="announcements" className="space-y-6">
-        <TabsList className="bg-muted/50 p-1">
-          <TabsTrigger value="announcements" className="data-[state=active]:bg-background">
-            Announcements
-          </TabsTrigger>
-          <TabsTrigger value="chat" className="data-[state=active]:bg-background">
-            General Chat
-          </TabsTrigger>
-          {isHackathonCreator && (
-            <TabsTrigger value="members" className="data-[state=active]:bg-background">
-              Team Members ({hackathon.teamMembers?.length || 0})
+        <div className="w-full overflow-x-auto">
+          <TabsList className="bg-muted/50 p-1 w-full min-w-fit flex-nowrap">
+            <TabsTrigger value="announcements" className="data-[state=active]:bg-background whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+              <span className="hidden sm:inline">Announcements</span>
+              <span className="sm:hidden">News</span>
             </TabsTrigger>
-          )}
-          {isHackathonCreator && (
-            <TabsTrigger value="recommendations" className="data-[state=active]:bg-background">
-              Recommended Profiles
+            <TabsTrigger value="chat" className="data-[state=active]:bg-background whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+              <span className="hidden sm:inline">General Chat</span>
+              <span className="sm:hidden">Chat</span>
             </TabsTrigger>
-          )}
-        </TabsList>
+            {isHackathonCreator && (
+              <TabsTrigger value="members" className="data-[state=active]:bg-background whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                <span className="hidden sm:inline">Team Members ({hackathon.teamMembers?.length || 0})</span>
+                <span className="sm:hidden">Members ({hackathon.teamMembers?.length || 0})</span>
+              </TabsTrigger>
+            )}
+            {isHackathonCreator && (
+              <TabsTrigger value="recommendations" className="data-[state=active]:bg-background whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                <span className="hidden sm:inline">Recommended Profiles</span>
+                <span className="sm:hidden">Profiles</span>
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </div>
 
         <TabsContent value="announcements">
           <AnnouncementSection
