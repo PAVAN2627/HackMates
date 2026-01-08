@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, COLLECTIONS } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, addDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
 
 export interface Announcement {
   id: string;
@@ -13,6 +13,7 @@ export interface Announcement {
   createdAt: Date;
   authorName?: string;
   authorAvatar?: string | null;
+  readBy?: string[];
 }
 
 export function useAnnouncements(hackathonId: string) {
@@ -100,6 +101,7 @@ export function useAnnouncements(hackathonId: string) {
         content: content.trim(),
         authorId: user.uid,
         isPinned: false,
+        readBy: [], // Initialize empty readBy array
         createdAt: Timestamp.now(),
       });
     } catch (error) {
@@ -108,9 +110,39 @@ export function useAnnouncements(hackathonId: string) {
     }
   };
 
+  const updateAnnouncement = async (announcementId: string, title: string, content: string) => {
+    if (!user || !title.trim() || !content.trim()) return;
+
+    try {
+      const announcementRef = doc(db, COLLECTIONS.ANNOUNCEMENTS, announcementId);
+      await updateDoc(announcementRef, {
+        title: title.trim(),
+        content: content.trim(),
+        updatedAt: Timestamp.now(),
+      });
+    } catch (error) {
+      console.error('Error updating announcement:', error);
+      throw error;
+    }
+  };
+
+  const deleteAnnouncement = async (announcementId: string) => {
+    if (!user) return;
+
+    try {
+      const announcementRef = doc(db, COLLECTIONS.ANNOUNCEMENTS, announcementId);
+      await deleteDoc(announcementRef);
+    } catch (error) {
+      console.error('Error deleting announcement:', error);
+      throw error;
+    }
+  };
+
   return {
     announcements,
     loading,
     createAnnouncement,
+    updateAnnouncement,
+    deleteAnnouncement,
   };
 }

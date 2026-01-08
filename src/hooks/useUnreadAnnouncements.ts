@@ -70,6 +70,7 @@ export function useUnreadAnnouncements() {
         const unreadAnnouncementsData = announcementsData.filter(
           announcement => {
             const readBy = announcement.readBy || [];
+            // If readBy doesn't exist, treat as unread for backwards compatibility
             return !readBy.includes(user.uid);
           }
         );

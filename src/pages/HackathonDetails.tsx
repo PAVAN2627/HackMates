@@ -37,7 +37,7 @@ export default function HackathonDetails() {
   const navigate = useNavigate();
   const { hackathon, loading } = useHackathon(id || '');
   const { updateHackathonStatus, deleteHackathon, joinHackathon, leaveHackathon } = useHackathons();
-  const { announcements, loading: announcementsLoading, createAnnouncement } = useAnnouncements(id || '');
+  const { announcements, loading: announcementsLoading, createAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements(id || '');
   const { messages, loading: chatLoading, sendMessage, editMessage, deleteMessage } = useChat(id || '');
   const { getProfileById } = useProfiles();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
@@ -99,6 +99,24 @@ export default function HackathonDetails() {
       toast.success('Announcement posted!');
     } catch (error) {
       toast.error('Failed to post announcement');
+    }
+  };
+
+  const handleUpdateAnnouncement = async (id: string, title: string, content: string) => {
+    try {
+      await updateAnnouncement(id, title, content);
+      toast.success('Announcement updated!');
+    } catch (error) {
+      toast.error('Failed to update announcement');
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    try {
+      await deleteAnnouncement(id);
+      toast.success('Announcement deleted!');
+    } catch (error) {
+      toast.error('Failed to delete announcement');
     }
   };
 
@@ -317,7 +335,7 @@ export default function HackathonDetails() {
                   <Trophy className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Team Size</p>
+                  <p className="text-xs text-muted-foreground">Suggested Team Size</p>
                   <p className="text-xs md:text-sm font-medium text-primary">{hackathon.teamSize} members</p>
                 </div>
               </div>
@@ -391,6 +409,8 @@ export default function HackathonDetails() {
             announcements={announcements}
             isOrganizer={isHackathonCreator}
             onPostAnnouncement={handlePostAnnouncement}
+            onUpdateAnnouncement={handleUpdateAnnouncement}
+            onDeleteAnnouncement={handleDeleteAnnouncement}
             loading={announcementsLoading}
           />
         </TabsContent>
@@ -417,18 +437,21 @@ export default function HackathonDetails() {
             <div className="glass rounded-xl p-6">
               <div className="flex items-center gap-3 mb-6">
                 <Users className="h-6 w-6 text-primary" />
-                <h3 className="text-xl font-bold">Team Members</h3>
+                <h3 className="text-xl font-bold">Joined Members</h3>
                 <Badge variant="secondary">
-                  {hackathon.teamMembers?.length || 0} / {hackathon.teamSize}
+                  {hackathon.teamMembers?.length || 0} joined
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Suggested team: {hackathon.teamSize}
                 </Badge>
               </div>
 
               {!hackathon.teamMembers || hackathon.teamMembers.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h4 className="text-lg font-semibold mb-2">No team members yet</h4>
+                  <h4 className="text-lg font-semibold mb-2">No members yet</h4>
                   <p className="text-muted-foreground">
-                    Share your hackathon to get people to join your team!
+                    Share your hackathon to get people to join for networking and collaboration!
                   </p>
                 </div>
               ) : (
@@ -514,19 +537,19 @@ export default function HackathonDetails() {
                       <p className="text-2xl font-bold text-primary">
                         {hackathon.teamMembers.length}
                       </p>
-                      <p className="text-xs text-muted-foreground">Total Members</p>
+                      <p className="text-xs text-muted-foreground">Total Joined</p>
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-secondary">
-                        {hackathon.teamSize - hackathon.teamMembers.length}
+                        {hackathon.teamSize}
                       </p>
-                      <p className="text-xs text-muted-foreground">Spots Left</p>
+                      <p className="text-xs text-muted-foreground">Suggested Team</p>
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-accent">
-                        {Math.round((hackathon.teamMembers.length / hackathon.teamSize) * 100)}%
+                        {hackathon.teamMembers.length >= hackathon.teamSize ? '100%' : Math.round((hackathon.teamMembers.length / hackathon.teamSize) * 100) + '%'}
                       </p>
-                      <p className="text-xs text-muted-foreground">Team Full</p>
+                      <p className="text-xs text-muted-foreground">Of Suggested</p>
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-warning">
@@ -535,7 +558,7 @@ export default function HackathonDetails() {
                           return profile?.lookingForTeam;
                         }).length}
                       </p>
-                      <p className="text-xs text-muted-foreground">Active Members</p>
+                      <p className="text-xs text-muted-foreground">Looking for Team</p>
                     </div>
                   </div>
                 </div>

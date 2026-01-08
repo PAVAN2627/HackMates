@@ -1,32 +1,50 @@
 import { useState } from 'react';
-import { Pin, Send, Megaphone } from 'lucide-react';
+import { Pin, Send, Megaphone, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { Announcement } from '@/hooks/useAnnouncements';
 import { LinkRenderer } from '@/lib/linkDetector';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { RelativeTime, RelativeTimeTooltip } from '@/components/RelativeTime';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AnnouncementSectionProps {
   announcements: Announcement[];
   isOrganizer: boolean;
   onPostAnnouncement?: (title: string, content: string) => void;
+  onUpdateAnnouncement?: (id: string, title: string, content: string) => void;
+  onDeleteAnnouncement?: (id: string) => void;
   loading?: boolean;
 }
 
-export function AnnouncementSection({ announcements, isOrganizer, onPostAnnouncement, loading }: AnnouncementSectionProps) {
+export function AnnouncementSection({ 
+  announcements, 
+  isOrganizer, 
+  onPostAnnouncement, 
+  onUpdateAnnouncement,
+  onDeleteAnnouncement,
+  loading 
+}: AnnouncementSectionProps) {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const handleSubmit = async () => {
-    if (title.trim() && content.trim() && onPostAnnouncement) {
+    if (title.trim() && content.trim()) {
       setIsSubmitting(true);
       try {
-        await onPostAnnouncement(title, content);
+        if (editingId && onUpdateAnnouncement) {
+          await onUpdateAnnouncement(editingId, title, content);
+          setEditingId(null);
+        } else if (onPostAnnouncement) {
+          await onPostAnnouncement(title, content);
+        }
         setTitle('');
         setContent('');
         setShowForm(false);
@@ -34,6 +52,28 @@ export function AnnouncementSection({ announcements, isOrganizer, onPostAnnounce
         setIsSubmitting(false);
       }
     }
+  };
+
+  const handleEdit = (announcement: Announcement) => {
+    setEditingId(announcement.id);
+    setTitle(announcement.title);
+    setContent(announcement.content);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (announcementId: string) => {
+    if (window.confirm('Are you sure you want to delete this announcement?')) {
+      if (onDeleteAnnouncement) {
+        await onDeleteAnnouncement(announcementId);
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setTitle('');
+    setContent('');
   };
 
   if (loading) {
@@ -86,12 +126,12 @@ export function AnnouncementSection({ announcements, isOrganizer, onPostAnnounce
                 </div>
               )}
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setShowForm(false)} disabled={isSubmitting}>
+                <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
                   Cancel
                 </Button>
                 <Button variant="default" onClick={handleSubmit} disabled={isSubmitting}>
                   <Send className="h-4 w-4 mr-2" />
-                  {isSubmitting ? 'Posting...' : 'Post'}
+                  {isSubmitting ? (editingId ? 'Updating...' : 'Posting...') : (editingId ? 'Update' : 'Post')}
                 </Button>
               </div>
             </div>
@@ -110,7 +150,7 @@ export function AnnouncementSection({ announcements, isOrganizer, onPostAnnounce
             <div
               key={announcement.id}
               className={cn(
-                'glass rounded-xl p-5 animate-slide-up',
+                'glass rounded-xl p-5 animate-slide-up relative',
                 announcement.isPinned && 'border-primary/30'
               )}
             >
@@ -132,8 +172,33 @@ export function AnnouncementSection({ announcements, isOrganizer, onPostAnnounce
                         </div>
                       )}
                     </div>
-                    <div title={RelativeTimeTooltip(announcement.createdAt.toISOString())} className="text-xs text-muted-foreground">
-                      <RelativeTime timestamp={announcement.createdAt.toISOString()} format="full" />
+                    <div className="flex items-center gap-2">
+                      <div title={RelativeTimeTooltip(announcement.createdAt.toISOString())} className="text-xs text-muted-foreground">
+                        <RelativeTime timestamp={announcement.createdAt.toISOString()} format="full" />
+                      </div>
+                      {/* Edit/Delete menu for announcement author */}
+                      {user?.uid === announcement.authorId && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(announcement)}>
+                              <Edit className="h-3 w-3 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDelete(announcement.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">
