@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, COLLECTIONS } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, deleteDoc, getDocs, where } from 'firebase/firestore';
 
 export function useUnreadAnnouncements() {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -66,13 +66,24 @@ export function useUnreadAnnouncements() {
           }
         }
 
-        // Filter out read announcements - check readBy array
+        // Check which announcements are read by this user
+        const readAnnouncementIds: string[] = [];
+        try {
+          const readQuery = query(
+            collection(db, 'readAnnouncements'),
+            where('userId', '==', user.uid)
+          );
+          const readSnapshot = await getDocs(readQuery);
+          readSnapshot.forEach(doc => {
+            readAnnouncementIds.push(doc.data().announcementId);
+          });
+        } catch (error) {
+          console.error('Error fetching read announcements:', error);
+        }
+
+        // Filter out read announcements
         const unreadAnnouncementsData = announcementsData.filter(
-          announcement => {
-            const readBy = announcement.readBy || [];
-            // If readBy doesn't exist, treat as unread for backwards compatibility
-            return !readBy.includes(user.uid);
-          }
+          announcement => !readAnnouncementIds.includes(announcement.id)
         );
 
         setUnreadAnnouncements(unreadAnnouncementsData);
@@ -95,9 +106,12 @@ export function useUnreadAnnouncements() {
     if (!user?.uid || !announcementId) return;
 
     try {
-      const announcementRef = doc(db, COLLECTIONS.ANNOUNCEMENTS, announcementId);
-      await updateDoc(announcementRef, {
-        readBy: arrayUnion(user.uid)
+      // Create a document in readAnnouncements collection
+      const readDocId = `${user.uid}_${announcementId}`;
+      await setDoc(doc(db, 'readAnnouncements', readDocId), {
+        userId: user.uid,
+        announcementId: announcementId,
+        readAt: new Date()
       });
     } catch (error) {
       console.error('Error marking announcement as read:', error);

@@ -29,11 +29,9 @@ export default function Announcements() {
   const [loading, setLoading] = useState(true);
   const { markAllAsRead, markAsRead, unreadAnnouncements } = useUnreadAnnouncements();
 
-  // Check if an announcement is unread (not in readBy array)
+  // Check if an announcement is unread (not in readAnnouncements collection)
   const isUnread = (announcement: Announcement) => {
-    if (!user?.uid) return false;
-    const readBy = (announcement as any).readBy || [];
-    return !readBy.includes(user.uid);
+    return unreadAnnouncements.some(a => a.id === announcement.id);
   };
 
   useEffect(() => {

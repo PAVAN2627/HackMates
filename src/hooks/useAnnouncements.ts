@@ -101,7 +101,6 @@ export function useAnnouncements(hackathonId: string) {
         content: content.trim(),
         authorId: user.uid,
         isPinned: false,
-        readBy: [], // Initialize empty readBy array
         createdAt: Timestamp.now(),
       });
     } catch (error) {
