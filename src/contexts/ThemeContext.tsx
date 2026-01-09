@@ -32,7 +32,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       
       setActualTheme(newTheme);
       
+      // Remove all theme classes first
       root.classList.remove('light', 'dark');
+      // Add the new theme class
       root.classList.add(newTheme);
     };
 

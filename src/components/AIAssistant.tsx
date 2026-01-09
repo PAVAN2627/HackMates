@@ -123,7 +123,7 @@ What would you like to know?`
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-16 md:bottom-4 right-4 z-50">
       <Card className={cn(
         "bg-background border shadow-xl transition-all duration-300 flex flex-col",
         // Mobile: Full width with margins, Desktop: Fixed width
@@ -284,7 +284,7 @@ export function AIAssistantButton({ onClick, hasNewMessage = false }: AIAssistan
   return (
     <Button
       onClick={onClick}
-      className="fixed bottom-4 right-4 h-12 w-12 md:h-14 md:w-14 rounded-full shadow-lg bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 z-40"
+      className="fixed bottom-16 md:bottom-4 right-4 h-12 w-12 md:h-14 md:w-14 rounded-full shadow-lg bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 z-40"
       size="sm"
     >
       <div className="relative">

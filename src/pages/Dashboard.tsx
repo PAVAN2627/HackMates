@@ -74,17 +74,17 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
           {stats.map((stat) => (
-            <Card key={stat.title} className="p-6">
+            <Card key={stat.title} className="p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">{stat.title}</p>
+                  <p className="text-xl md:text-2xl font-bold">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1 hidden md:block">{stat.description}</p>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <stat.icon className="h-6 w-6 text-primary" />
+                <div className="h-8 w-8 md:h-12 md:w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 ml-2">
+                  <stat.icon className="h-4 w-4 md:h-6 md:w-6 text-primary" />
                 </div>
               </div>
             </Card>
@@ -95,7 +95,7 @@ export default function Dashboard() {
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">My Hackathons</h2>
           {hackathonsLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-64 bg-muted rounded-lg animate-pulse" />
               ))}
@@ -109,7 +109,7 @@ export default function Dashboard() {
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {myHackathons.map((hackathon) => (
                 <HackathonCard
                   key={hackathon.id}
@@ -126,7 +126,7 @@ export default function Dashboard() {
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Joined Hackathons</h2>
           {hackathonsLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-64 bg-muted rounded-lg animate-pulse" />
               ))}
@@ -140,7 +140,7 @@ export default function Dashboard() {
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {joinedHackathons.map((hackathon) => (
                 <HackathonCard
                   key={hackathon.id}
