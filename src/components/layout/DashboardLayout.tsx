@@ -2,13 +2,10 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Loading } from '@/components/Loading';
-import { AIAssistant, AIAssistantButton } from '@/components/AIAssistant';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAIAssistant } from '@/hooks/useAIAssistant';
 
 export function DashboardLayout() {
   const { user, loading } = useAuth();
-  const { isOpen, hasNewMessage, toggleAI, closeAI } = useAIAssistant();
 
   if (loading) {
     return <Loading />;
@@ -27,12 +24,6 @@ export function DashboardLayout() {
           <Outlet />
         </main>
       </div>
-      
-      {/* AI Assistant */}
-      <AIAssistant isOpen={isOpen} onToggle={toggleAI} onClose={closeAI} />
-      {!isOpen && (
-        <AIAssistantButton onClick={toggleAI} hasNewMessage={hasNewMessage} />
-      )}
     </div>
   );
 }
