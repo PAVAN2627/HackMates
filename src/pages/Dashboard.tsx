@@ -6,15 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useHackathons } from '@/hooks/useHackathons';
 import { useProfiles } from '@/hooks/useProfiles';
 import { HackathonCard } from '@/components/HackathonCardNew';
-import { AIAssistant, AIAssistantButton } from '@/components/AIAssistant';
-import { useAIAssistant } from '@/hooks/useAIAssistant';
 
 export default function Dashboard() {
   const { user, profile, loading: authLoading } = useAuth();
   const { hackathons, loading: hackathonsLoading } = useHackathons();
   const { profiles } = useProfiles();
   const navigate = useNavigate();
-  const { isOpen, hasNewMessage, toggleAI, closeAI } = useAIAssistant();
 
   if (authLoading) {
     return (
@@ -177,12 +174,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-      
-      {/* AI Assistant - Only on Dashboard */}
-      <AIAssistant isOpen={isOpen} onToggle={toggleAI} onClose={closeAI} />
-      {!isOpen && (
-        <AIAssistantButton onClick={toggleAI} hasNewMessage={hasNewMessage} />
-      )}
     </div>
   );
 }
