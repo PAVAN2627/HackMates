@@ -30,19 +30,19 @@ export function HackathonCard({
   };
 
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold">{hackathon.title}</h3>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor[hackathon.status]}`}>
+    <Card className="p-4 md:p-6 hover:shadow-lg transition-shadow">
+      <div className="flex items-start justify-between mb-3 md:mb-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1 md:gap-2 mb-2">
+            <h3 className="text-sm md:text-lg font-semibold truncate">{hackathon.title}</h3>
+            <span className={`text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded-full font-medium ${statusColor[hackathon.status]} flex-shrink-0`}>
               {hackathon.status === 'open' ? 'Open' : 'Closed'}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground">{hackathon.creatorName}</p>
+          <p className="text-xs md:text-sm text-muted-foreground truncate">{hackathon.creatorName}</p>
         </div>
         {hackathon.image && (
-          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+          <div className="w-12 h-12 md:w-20 md:h-20 rounded-lg overflow-hidden flex-shrink-0 ml-2">
             <img 
               src={hackathon.image} 
               alt={hackathon.title}
@@ -52,16 +52,16 @@ export function HackathonCard({
         )}
       </div>
 
-      <div className="text-sm text-muted-foreground mb-4 line-clamp-2 whitespace-pre-wrap">{formatTextForDisplay(hackathon.description)}</div>
+      <div className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4 line-clamp-2 whitespace-pre-wrap">{formatTextForDisplay(hackathon.description)}</div>
 
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center gap-2 text-sm">
-          <MapPin className="w-4 h-4 text-muted-foreground" />
-          <span>{hackathon.venue}, {hackathon.location}</span>
+      <div className="space-y-1.5 md:space-y-2 mb-3 md:mb-4">
+        <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+          <MapPin className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground flex-shrink-0" />
+          <span className="truncate">{hackathon.venue}, {hackathon.location}</span>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <Calendar className="w-4 h-4 text-muted-foreground" />
+        <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+          <Calendar className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground flex-shrink-0" />
           <span>
             {new Date(`${hackathon.date}T${hackathon.time}`).toLocaleDateString('en-IN', {
               weekday: 'short',
@@ -71,8 +71,8 @@ export function HackathonCard({
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <Clock className="w-4 h-4 text-muted-foreground" />
+        <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+          <Clock className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground flex-shrink-0" />
           <span>
             {new Date(`${hackathon.date}T${hackathon.time}`).toLocaleTimeString('en-IN', {
               hour: '2-digit',
@@ -82,8 +82,8 @@ export function HackathonCard({
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-xs px-2 py-1 rounded-full font-medium bg-blue-100 text-blue-800">
+        <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm">
+          <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-blue-100 text-blue-800">
             {hackathon.mode === 'in-person' ? 'In-Person' : hackathon.mode.charAt(0).toUpperCase() + hackathon.mode.slice(1)}
           </span>
           {hackathon.teamMembers && (
@@ -96,32 +96,37 @@ export function HackathonCard({
 
       {/* Skills Tags */}
       {hackathon.requiredSkills && hackathon.requiredSkills.length > 0 && (
-        <div className="mb-4">
+        <div className="mb-3 md:mb-4">
           <div className="flex flex-wrap gap-1">
-            {hackathon.requiredSkills.map(skill => (
+            {hackathon.requiredSkills.slice(0, 3).map(skill => (
               <Badge key={skill} variant="secondary" className="text-xs">
                 {skill}
               </Badge>
             ))}
+            {hackathon.requiredSkills.length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{hackathon.requiredSkills.length - 3}
+              </Badge>
+            )}
           </div>
         </div>
       )}
 
       {/* Chat Messages Count */}
       {hackathon.generalChat && hackathon.generalChat.length > 0 && (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-4">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3 md:mb-4">
           <MessageCircle className="w-3 h-3" />
           <span>{hackathon.generalChat.length} messages</span>
         </div>
       )}
 
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex gap-1.5 md:gap-2">
         <Button
           onClick={() => onViewDetails?.(hackathon.id)}
           variant="default"
           size="sm"
-          className="flex-1"
+          className="flex-1 text-xs md:text-sm h-8 md:h-9"
         >
           View Details
         </Button>
@@ -131,7 +136,7 @@ export function HackathonCard({
             onClick={() => onJoin?.(hackathon.id)}
             variant={joined ? "secondary" : "outline"}
             size="sm"
-            className="flex-1"
+            className="flex-1 text-xs md:text-sm h-8 md:h-9"
           >
             {joined ? 'Leave' : 'Join'}
           </Button>
@@ -141,7 +146,7 @@ export function HackathonCard({
           <Button
             variant="outline"
             size="sm"
-            className="flex-1"
+            className="flex-1 text-xs md:text-sm h-8 md:h-9"
             disabled
           >
             Closed
@@ -154,17 +159,17 @@ export function HackathonCard({
               onClick={() => onClose?.(hackathon.id)}
               variant="outline"
               size="sm"
-              className="text-orange-500 hover:bg-orange-50"
+              className="text-orange-500 hover:bg-orange-50 h-8 md:h-9 w-8 md:w-9 p-0"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3 md:w-4 md:h-4" />
             </Button>
             <Button
               onClick={() => onDelete?.(hackathon.id)}
               variant="outline"
               size="sm"
-              className="text-red-500 hover:bg-red-50"
+              className="text-red-500 hover:bg-red-50 h-8 md:h-9 w-8 md:w-9 p-0"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
             </Button>
           </>
         )}
