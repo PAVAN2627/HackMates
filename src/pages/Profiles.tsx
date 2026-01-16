@@ -62,6 +62,7 @@ export default function Profiles() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [customLocation, setCustomLocation] = useState<string>(''); // For "Other" option
   const [selectedAvailability, setSelectedAvailability] = useState<'online' | 'in-person' | 'both' | ''>('');
   const [selectedExperience, setSelectedExperience] = useState<'Beginner' | 'Intermediate' | 'Advanced' | ''>('');
   const [showFilters, setShowFilters] = useState(false);
@@ -94,7 +95,12 @@ export default function Profiles() {
   }
 
   if (selectedLocation) {
-    filtered = filtered.filter(p => p.location === selectedLocation);
+    const locationToMatch = selectedLocation === 'Other' ? customLocation : selectedLocation;
+    if (locationToMatch) {
+      filtered = filtered.filter(p => 
+        p.location?.toLowerCase().includes(locationToMatch.toLowerCase())
+      );
+    }
   }
 
   if (selectedAvailability) {
@@ -255,7 +261,12 @@ export default function Profiles() {
                 </label>
                 <select
                   value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedLocation(e.target.value);
+                    if (e.target.value !== 'Other') {
+                      setCustomLocation('');
+                    }
+                  }}
                   className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm"
                 >
                   <option value="">All Locations</option>
@@ -263,6 +274,17 @@ export default function Profiles() {
                     <option key={loc} value={loc}>{loc}</option>
                   ))}
                 </select>
+                
+                {/* Custom location input when "Other" is selected */}
+                {selectedLocation === 'Other' && (
+                  <Input
+                    type="text"
+                    placeholder="Enter location to search"
+                    value={customLocation}
+                    onChange={(e) => setCustomLocation(e.target.value)}
+                    className="mt-2"
+                  />
+                )}
               </div>
 
               {/* Experience Filter */}
@@ -358,7 +380,7 @@ export default function Profiles() {
               </div>
 
               {/* Clear Filters */}
-              {(selectedSkills.length > 0 || selectedInterests.length > 0 || selectedLocation || selectedAvailability || selectedExperience) && (
+              {(selectedSkills.length > 0 || selectedInterests.length > 0 || selectedLocation || customLocation || selectedAvailability || selectedExperience) && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -366,6 +388,7 @@ export default function Profiles() {
                     setSelectedSkills([]);
                     setSelectedInterests([]);
                     setSelectedLocation('');
+                    setCustomLocation('');
                     setSelectedAvailability('');
                     setSelectedExperience('');
                   }}
@@ -403,6 +426,7 @@ export default function Profiles() {
                   setSelectedSkills([]);
                   setSelectedInterests([]);
                   setSelectedLocation('');
+                  setCustomLocation('');
                   setSelectedAvailability('');
                   setSelectedExperience('');
                 }}>

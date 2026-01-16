@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { sendWelcomeEmail } from '@/lib/emailService';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { WorkStyleSelector } from '@/components/WorkStyleSelector';
@@ -84,6 +85,7 @@ export default function Register() {
     confirmPassword: '',
     college: '',
     location: '',
+    customLocation: '', // For "Other" option
     skills: [] as string[],
     bio: '',
     availableFor: 'both' as 'online' | 'in-person' | 'both',
@@ -198,7 +200,7 @@ export default function Register() {
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         college: formData.college,
-        location: formData.location,
+        location: formData.location === 'Other' ? formData.customLocation : formData.location,
         skills: formData.skills,
         bio: formData.bio,
         availableFor: formData.availableFor,
@@ -214,6 +216,12 @@ export default function Register() {
       });
 
       toast.success('Account created successfully!');
+      
+      // Send welcome email with credentials (non-blocking)
+      sendWelcomeEmail(formData.email, formData.name, formData.password)
+        .then(() => console.log('Welcome email sent'))
+        .catch(err => console.error('Failed to send welcome email:', err));
+      
       navigate('/hackathons');
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -378,7 +386,7 @@ export default function Register() {
                     <select
                       id="location"
                       value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value, customLocation: '' })}
                       className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm"
                     >
                       <option value="">Select location</option>
@@ -387,6 +395,19 @@ export default function Register() {
                       ))}
                     </select>
                     {errors.location && <p className="text-sm text-red-500 mt-1">{errors.location}</p>}
+                    
+                    {/* Custom location input when "Other" is selected */}
+                    {formData.location === 'Other' && (
+                      <div className="mt-2">
+                        <Input
+                          type="text"
+                          placeholder="Enter your location"
+                          value={formData.customLocation}
+                          onChange={(e) => setFormData({ ...formData, customLocation: e.target.value })}
+                          className="w-full"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

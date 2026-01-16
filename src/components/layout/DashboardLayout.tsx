@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Loading } from '@/components/Loading';
 import { AIAssistant, AIAssistantButton } from '@/components/AIAssistant';
+import { NotificationPermissionBanner } from '@/components/NotificationPermissionBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAIAssistant } from '@/hooks/useAIAssistant';
 
@@ -32,6 +33,9 @@ export function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+      
+      {/* Notification Permission Banner */}
+      <NotificationPermissionBanner />
       
       {/* AI Assistant - Hidden on Messages and Create Hackathon pages */}
       {!shouldHideChatbot && (
