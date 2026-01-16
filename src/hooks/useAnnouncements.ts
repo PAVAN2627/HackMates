@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, Timestamp, doc, getDoc, writeBatch } from 'firebase/firestore';
+import { sendAnnouncementEmail } from '@/lib/emailService';
 
 export interface Announcement {
   id: string;
@@ -138,6 +139,33 @@ export function useAnnouncements(hackathonId: string) {
       });
 
       await batch.commit();
+
+      // Send email notifications to all team members (non-blocking)
+      teamMembers.forEach(async (memberId: string) => {
+        if (memberId !== user.uid) {
+          try {
+            const memberDoc = await getDoc(doc(db, COLLECTIONS.USERS, memberId));
+            if (memberDoc.exists()) {
+              const memberData = memberDoc.data();
+              const memberEmail = memberData.email;
+              const memberName = memberData.name;
+              
+              if (memberEmail && memberName) {
+                sendAnnouncementEmail(
+                  memberEmail,
+                  memberName,
+                  hackathonTitle,
+                  title,
+                  content,
+                  hackathonId
+                ).catch(err => console.error('Failed to send announcement email:', err));
+              }
+            }
+          } catch (emailError) {
+            console.error('Error sending announcement email to member:', emailError);
+          }
+        }
+      });
     } catch (error) {
       console.error('Error creating announcement:', error);
       throw error;
