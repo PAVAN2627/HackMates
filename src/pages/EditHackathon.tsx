@@ -12,6 +12,18 @@ import { z } from 'zod';
 
 const skillsOptions = ['React', 'Vue.js', 'Angular', 'Node.js', 'Express.js', 'Next.js', 'Python', 'Django', 'Flask', 'Java', 'TypeScript', 'DevOps', 'Cloud', 'ML', 'Web3', 'Mobile', 'UI/UX', 'Data Science'];
 
+const technologyOptions = [
+  'Web Development', 'Mobile Apps', 'AI/ML', 'Data Science',
+  'Blockchain', 'Game Development', 'IoT', 'Cybersecurity',
+  'Cloud Computing', 'DevOps', 'UI/UX Design', 'AR/VR',
+  'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Social Impact',
+  'Robotics', 'Computer Vision', 'Natural Language Processing',
+  'Big Data', 'Quantum Computing', 'Backend Development',
+  'Frontend Development', 'Full Stack', 'API Development',
+  'Database Design', 'System Architecture', 'Microservices',
+  'Agritech', 'Cleantech', 'Smart Cities', 'Logistics Tech'
+];
+
 const genderPreferenceOptions = [
   { value: 'any', label: 'Any Gender' },
   { value: 'male', label: 'Male Only' },
@@ -30,6 +42,7 @@ const hackathonSchema = z.object({
   teamSize: z.number().min(1, 'Team size must be at least 1').max(20, 'Team size cannot exceed 20'),
   preferredGender: z.enum(['any', 'male', 'female', 'mixed']).optional(),
   requiredSkills: z.array(z.string()).optional(),
+  technologies: z.array(z.string()).optional(),
   image: z.string().min(1, 'Hackathon poster is required'),
 });
 
@@ -51,6 +64,7 @@ export default function EditHackathon() {
     teamSize: 4,
     preferredGender: 'any' as 'any' | 'male' | 'female' | 'mixed',
     requiredSkills: [] as string[],
+    technologies: [] as string[],
     image: '' as string,
   });
 
@@ -73,6 +87,7 @@ export default function EditHackathon() {
         teamSize: hackathon.teamSize || 4,
         preferredGender: hackathon.preferredGender || 'any',
         requiredSkills: hackathon.requiredSkills || [],
+        technologies: hackathon.technologies || [],
         image: hackathon.image || '',
       });
       
@@ -132,6 +147,15 @@ export default function EditHackathon() {
     }));
   };
 
+  const handleTechnologyToggle = (tech: string) => {
+    setFormData(prev => ({
+      ...prev,
+      technologies: prev.technologies.includes(tech)
+        ? prev.technologies.filter(t => t !== tech)
+        : [...prev.technologies, tech]
+    }));
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -186,6 +210,7 @@ export default function EditHackathon() {
         teamSize: formData.teamSize,
         preferredGender: formData.preferredGender,
         requiredSkills: formData.requiredSkills.length > 0 ? formData.requiredSkills : undefined,
+        technologies: formData.technologies.length > 0 ? formData.technologies : undefined,
         image: formData.image,
       };
 
@@ -451,9 +476,9 @@ export default function EditHackathon() {
                   <Tag className="w-5 h-5" />
                   Required Skills (Optional)
                 </h2>
-                <p className="text-sm text-muted-foreground">Tags to help people find your hackathon</p>
+                <p className="text-sm text-muted-foreground">Select technical skills needed for this hackathon</p>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-2 border border-border rounded-lg">
                   {skillsOptions.map(skill => (
                     <button
                       key={skill}
@@ -466,6 +491,32 @@ export default function EditHackathon() {
                       }`}
                     >
                       {skill}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Technologies/Domains */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Tag className="w-5 h-5" />
+                  Technology Domains (Optional)
+                </h2>
+                <p className="text-sm text-muted-foreground">Select relevant technology areas and domains</p>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-2 border border-border rounded-lg">
+                  {technologyOptions.map(tech => (
+                    <button
+                      key={tech}
+                      type="button"
+                      onClick={() => handleTechnologyToggle(tech)}
+                      className={`px-3 py-2 rounded-lg border-2 transition-all text-sm ${
+                        formData.technologies.includes(tech)
+                          ? 'bg-secondary border-secondary text-secondary-foreground'
+                          : 'bg-background border-border hover:border-secondary/50'
+                      }`}
+                    >
+                      {tech}
                     </button>
                   ))}
                 </div>

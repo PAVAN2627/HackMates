@@ -72,7 +72,8 @@ export interface Hackathon {
   date: string; // ISO format date
   time: string; // HH:mm format
   mode: 'online' | 'in-person' | 'both';
-  requiredSkills?: string[]; // filter tags
+  requiredSkills?: string[]; // filter tags for technical skills
+  technologies?: string[]; // technology domains and areas of interest
   teamSize: number; // Number of members required
   preferredGender?: 'male' | 'female' | 'mixed' | 'any'; // Gender preference
   creatorId: string;

@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 interface EnhancedProfile extends UserProfile {
   matchScore: number;
   matchingSkills?: string[];
+  matchingTechnologies?: string[];
   synergyScore?: number;
 }
 
@@ -35,15 +36,18 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sendingMessageTo, setSendingMessageTo] = useState<string | null>(null);
 
-  // Calculate recommended profiles based on hackathon skills
+  // Calculate recommended profiles based on hackathon skills, technologies, and interests
   const recommendedProfiles = useMemo((): EnhancedProfile[] => {
     const filteredProfiles = profiles.filter(profile => 
       profile.uid !== user?.uid && // Exclude current user
       !hackathon.teamMembers?.includes(profile.uid) // Exclude already joined members
     );
 
-    if (!hackathon.requiredSkills || hackathon.requiredSkills.length === 0) {
-      // If no required skills, show all available profiles with 0% match
+    const hasRequiredSkills = hackathon.requiredSkills && hackathon.requiredSkills.length > 0;
+    const hasTechnologies = hackathon.technologies && hackathon.technologies.length > 0;
+
+    if (!hasRequiredSkills && !hasTechnologies) {
+      // If no required skills or technologies, show all available profiles with 0% match
       return filteredProfiles.map(profile => ({ 
         ...profile, 
         matchScore: 0,
@@ -53,13 +57,55 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
 
     // Calculate match scores for all profiles
     const scoredProfiles: EnhancedProfile[] = filteredProfiles.map(profile => {
-      // Calculate match score based on skills overlap
-      const matchingSkills = profile.skills.filter(skill => 
-        hackathon.requiredSkills?.includes(skill)
-      );
-      const matchScore = hackathon.requiredSkills.length > 0 
-        ? (matchingSkills.length / hackathon.requiredSkills.length) * 100 
+      let totalScore = 0;
+      let components = 0;
+      
+      // 1. Skills Match (40% weight)
+      const matchingSkills = hasRequiredSkills 
+        ? profile.skills.filter(skill => hackathon.requiredSkills?.includes(skill))
+        : [];
+      const skillsScore = hasRequiredSkills && hackathon.requiredSkills!.length > 0
+        ? (matchingSkills.length / hackathon.requiredSkills!.length) * 100
         : 0;
+      
+      if (hasRequiredSkills) {
+        totalScore += skillsScore * 0.4;
+        components++;
+      }
+      
+      // 2. Technology/Domain Match (40% weight)
+      const matchingTechnologies = hasTechnologies && profile.interests
+        ? profile.interests.filter(interest => hackathon.technologies?.includes(interest))
+        : [];
+      const techScore = hasTechnologies && hackathon.technologies!.length > 0 && profile.interests
+        ? (matchingTechnologies.length / hackathon.technologies!.length) * 100
+        : 0;
+      
+      if (hasTechnologies) {
+        totalScore += techScore * 0.4;
+        components++;
+      }
+      
+      // 3. Location Match (10% weight)
+      const locationMatch = hackathon.location && profile.location
+        ? hackathon.location.toLowerCase().includes(profile.location.toLowerCase()) ||
+          profile.location.toLowerCase().includes(hackathon.location.toLowerCase())
+        : false;
+      const locationScore = locationMatch ? 100 : 0;
+      totalScore += locationScore * 0.1;
+      components++;
+      
+      // 4. Availability Match (10% weight)
+      const availabilityMatch = 
+        hackathon.mode === 'both' || 
+        profile.availableFor === 'both' ||
+        hackathon.mode === profile.availableFor;
+      const availabilityScore = availabilityMatch ? 100 : 50;
+      totalScore += availabilityScore * 0.1;
+      components++;
+      
+      // Calculate final match score
+      const matchScore = components > 0 ? Math.round(totalScore) : 0;
       
       // Calculate synergy score if both users have work style
       const synergyScore = profile.workStyle && currentProfile?.workStyle
@@ -68,8 +114,9 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
       
       return {
         ...profile,
-        matchScore: Math.round(matchScore),
+        matchScore,
         matchingSkills,
+        matchingTechnologies,
         synergyScore
       };
     });
@@ -105,7 +152,7 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
       // Default: sort by creation date
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [profiles, hackathon.requiredSkills, hackathon.teamMembers, user?.uid, currentProfile, sortBy]);
+  }, [profiles, hackathon.requiredSkills, hackathon.technologies, hackathon.location, hackathon.mode, hackathon.teamMembers, user?.uid, currentProfile, sortBy]);
 
   // Apply filters
   const filteredProfiles = useMemo(() => {
@@ -225,8 +272,8 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
           <div>
             <h3 className="text-xl font-bold">Recommended Profiles</h3>
             <p className="text-sm text-muted-foreground">
-              {hackathon.requiredSkills && hackathon.requiredSkills.length > 0
-                ? "Profiles matching your hackathon's required skills (sorted by relevance)"
+              {(hackathon.requiredSkills && hackathon.requiredSkills.length > 0) || (hackathon.technologies && hackathon.technologies.length > 0)
+                ? "Profiles matching your hackathon's skills, technologies, and interests"
                 : "All available profiles for your hackathon"
               }
             </p>
@@ -497,6 +544,27 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
                       {profile.matchingSkills.length > 3 && (
                         <Badge variant="outline" className="text-xs">
                           +{profile.matchingSkills.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Matching Technologies/Interests */}
+                {profile.matchingTechnologies && profile.matchingTechnologies.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
+                      Matching Interests:
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {profile.matchingTechnologies.slice(0, 3).map((tech) => (
+                        <Badge key={tech} variant="default" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                          {tech}
+                        </Badge>
+                      ))}
+                      {profile.matchingTechnologies.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{profile.matchingTechnologies.length - 3} more
                         </Badge>
                       )}
                     </div>
