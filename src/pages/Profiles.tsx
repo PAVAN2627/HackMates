@@ -119,7 +119,7 @@ export default function Profiles() {
   }
 
   const handleMessage = async (recipientId: string) => {
-    if (!user || !profile) {
+    if (!user || !currentProfile) {
       toast.error('Please log in to send messages');
       return;
     }
@@ -161,7 +161,7 @@ export default function Profiles() {
       message += `I believe we could create something amazing together!\n\n`;
       message += `Looking forward to hearing from you! 🚀`;
 
-      await sendMessage(recipientId, message, profile.name, profile.avatar);
+      await sendMessage(recipientId, message, currentProfile.name, currentProfile.avatar);
       toast.success(`Message sent to ${recipientProfile.name}!`);
       navigate(`/messages?with=${recipientId}`);
     } catch (error: any) {

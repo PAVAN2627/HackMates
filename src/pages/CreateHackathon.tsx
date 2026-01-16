@@ -12,6 +12,18 @@ import { z } from 'zod';
 
 const skillsOptions = ['React', 'Vue.js', 'Angular', 'Node.js', 'Express.js', 'Next.js', 'Python', 'Django', 'Flask', 'Java', 'TypeScript', 'DevOps', 'Cloud', 'ML', 'Web3', 'Mobile', 'UI/UX', 'Data Science'];
 
+const technologyOptions = [
+  'Web Development', 'Mobile Apps', 'AI/ML', 'Data Science',
+  'Blockchain', 'Game Development', 'IoT', 'Cybersecurity',
+  'Cloud Computing', 'DevOps', 'UI/UX Design', 'AR/VR',
+  'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Social Impact',
+  'Robotics', 'Computer Vision', 'Natural Language Processing',
+  'Big Data', 'Quantum Computing', 'Backend Development',
+  'Frontend Development', 'Full Stack', 'API Development',
+  'Database Design', 'System Architecture', 'Microservices',
+  'Agritech', 'Cleantech', 'Smart Cities', 'Logistics Tech'
+];
+
 const genderPreferenceOptions = [
   { value: 'any', label: 'Any Gender' },
   { value: 'male', label: 'Male Only' },
@@ -30,6 +42,7 @@ const hackathonSchema = z.object({
   teamSize: z.number().min(1, 'Team size must be at least 1').max(20, 'Team size cannot exceed 20'),
   preferredGender: z.enum(['any', 'male', 'female', 'mixed']).optional(),
   requiredSkills: z.array(z.string()).optional(),
+  technologies: z.array(z.string()).optional(),
   image: z.string().min(1, 'Hackathon poster is required'),
 });
 
@@ -49,6 +62,7 @@ export default function CreateHackathon() {
     teamSize: 4,
     preferredGender: 'any' as 'any' | 'male' | 'female' | 'mixed',
     requiredSkills: [] as string[],
+    technologies: [] as string[],
     image: '' as string,
   });
 
@@ -77,6 +91,15 @@ export default function CreateHackathon() {
       requiredSkills: prev.requiredSkills.includes(skill)
         ? prev.requiredSkills.filter(s => s !== skill)
         : [...prev.requiredSkills, skill]
+    }));
+  };
+
+  const handleTechnologyToggle = (tech: string) => {
+    setFormData(prev => ({
+      ...prev,
+      technologies: prev.technologies.includes(tech)
+        ? prev.technologies.filter(t => t !== tech)
+        : [...prev.technologies, tech]
     }));
   };
 
@@ -134,6 +157,7 @@ export default function CreateHackathon() {
         teamSize: formData.teamSize,
         preferredGender: formData.preferredGender,
         requiredSkills: formData.requiredSkills.length > 0 ? formData.requiredSkills : undefined,
+        technologies: formData.technologies.length > 0 ? formData.technologies : undefined,
         image: formData.image,
         status: 'open',
       } as any);
@@ -192,13 +216,14 @@ export default function CreateHackathon() {
                   <Label htmlFor="description" className="text-sm">Description *</Label>
                   <textarea
                     id="description"
-                    placeholder="Describe the hackathon, mention what type of members you need (developers, designers, etc.)"
+                    placeholder="Describe the hackathon, mention what type of members you need (developers, designers, etc.)&#10;&#10;Use line breaks to organize your description better."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={4}
-                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm resize-none"
+                    rows={6}
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
+                  <p className="text-xs text-muted-foreground mt-1">Tip: Press Enter to add line breaks for better formatting</p>
                 </div>
 
                 {/* Image Upload */}
@@ -369,9 +394,9 @@ export default function CreateHackathon() {
                   <Tag className="w-4 h-4 md:w-5 md:h-5" />
                   Required Skills (Optional)
                 </h2>
-                <p className="text-xs md:text-sm text-muted-foreground">Tags to help people find your hackathon</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Select technical skills needed for this hackathon</p>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 max-h-48 md:max-h-60 overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 max-h-48 md:max-h-60 overflow-y-auto p-2 border border-border rounded-lg">
                   {skillsOptions.map(skill => (
                     <button
                       key={skill}
@@ -384,6 +409,32 @@ export default function CreateHackathon() {
                       }`}
                     >
                       {skill}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Technologies/Domains */}
+              <div className="space-y-3 md:space-y-4">
+                <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+                  <Tag className="w-4 h-4 md:w-5 md:h-5" />
+                  Technology Domains (Optional)
+                </h2>
+                <p className="text-xs md:text-sm text-muted-foreground">Select relevant technology areas and domains</p>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 max-h-48 md:max-h-60 overflow-y-auto p-2 border border-border rounded-lg">
+                  {technologyOptions.map(tech => (
+                    <button
+                      key={tech}
+                      type="button"
+                      onClick={() => handleTechnologyToggle(tech)}
+                      className={`px-2 py-2 md:px-3 rounded-lg border-2 transition-all text-xs ${
+                        formData.technologies.includes(tech)
+                          ? 'bg-secondary border-secondary text-secondary-foreground'
+                          : 'bg-background border-border hover:border-secondary/50'
+                      }`}
+                    >
+                      {tech}
                     </button>
                   ))}
                 </div>
