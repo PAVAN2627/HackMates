@@ -45,7 +45,9 @@ export function DateTimePicker({
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Select date';
     try {
-      const date = new Date(dateString);
+      // Parse date string directly to avoid timezone issues
+      const [year, month, day] = dateString.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
       if (isNaN(date.getTime())) return 'Select date';
       return date.toLocaleDateString('en-IN', {
         weekday: 'short',
@@ -100,22 +102,32 @@ export function DateTimePicker({
 
   const isSelectedDate = (day: number) => {
     if (!date) return false;
-    const selectedDate = new Date(date);
-    return (
-      day === selectedDate.getDate() &&
-      currentMonth.getMonth() === selectedDate.getMonth() &&
-      currentMonth.getFullYear() === selectedDate.getFullYear()
-    );
+    try {
+      // Parse date string directly to avoid timezone issues
+      const [year, month, dayStr] = date.split('-').map(Number);
+      return (
+        day === dayStr &&
+        currentMonth.getMonth() === month - 1 &&
+        currentMonth.getFullYear() === year
+      );
+    } catch {
+      return false;
+    }
   };
 
   const handleDateSelect = (day: number) => {
-    const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    const dateString = selectedDate.toISOString().split('T')[0];
+    // Create date in local timezone to avoid timezone offset issues
+    const year = currentMonth.getFullYear();
+    const month = (currentMonth.getMonth() + 1).toString().padStart(2, '0');
+    const dayStr = day.toString().padStart(2, '0');
+    const dateString = `${year}-${month}-${dayStr}`;
+    
     onDateChange(dateString);
     setShowDatePicker(false);
 
     // If selected date is today, ensure time is not in the past
     const today = new Date();
+    const selectedDate = new Date(year, currentMonth.getMonth(), day);
     if (selectedDate.toDateString() === today.toDateString() && time) {
       const currentTime = today.toTimeString().slice(0, 5);
       if (time < currentTime) {
@@ -147,7 +159,13 @@ export function DateTimePicker({
 
   const handleTimeChange = (newTime: string) => {
     const today = new Date();
-    const selectedDate = date ? new Date(date) : null;
+    let selectedDate = null;
+    
+    if (date) {
+      // Parse date string directly to avoid timezone issues
+      const [year, month, day] = date.split('-').map(Number);
+      selectedDate = new Date(year, month - 1, day);
+    }
     
     // If selected date is today, ensure time is not in the past
     if (selectedDate && selectedDate.toDateString() === today.toDateString()) {
@@ -322,7 +340,7 @@ export function DateTimePicker({
                     <div className="grid grid-cols-3 gap-1">
                       {commonTimes.map((timeValue) => {
                         const today = new Date();
-                        const selectedDate = date ? new Date(date) : null;
+                        const selectedDate = date ? new Date(date + 'T00:00:00') : null;
                         const isDisabled = selectedDate && 
                           selectedDate.toDateString() === today.toDateString() && 
                           timeValue < today.toTimeString().slice(0, 5);
@@ -340,24 +358,27 @@ export function DateTimePicker({
                         })();
                         
                         return (
-                          <Button
+                          <button
                             key={timeValue}
                             type="button"
-                            variant="ghost"
-                            size="sm"
                             className={cn(
-                              "justify-center text-xs h-8 p-1",
-                              isDisabled && "opacity-50 cursor-not-allowed"
+                              "px-2 py-1.5 text-xs rounded-md transition-colors",
+                              "hover:bg-accent hover:text-accent-foreground",
+                              "focus:outline-none focus:ring-2 focus:ring-ring",
+                              time === timeValue && "bg-primary text-primary-foreground",
+                              isDisabled && "opacity-50 cursor-not-allowed hover:bg-transparent"
                             )}
                             disabled={isDisabled}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               if (!isDisabled) {
                                 handleTimeChange(timeValue);
                               }
                             }}
                           >
                             {displayTime}
-                          </Button>
+                          </button>
                         );
                       })}
                     </div>
