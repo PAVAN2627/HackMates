@@ -16,6 +16,7 @@ import { useTeams } from '@/hooks/useTeams';
 import { useTeamFeedback } from '@/hooks/useTeamFeedback';
 import { useTeamChat } from '@/hooks/useTeamChat';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface TeamManagementProps {
   hackathonId: string;
@@ -107,12 +108,13 @@ export function TeamManagement({
             <p className="text-sm text-muted-foreground">
               {isCreator 
                 ? `Form teams of ${suggestedTeamSize} members - Add members from the Members tab`
-                : `Form teams of ${suggestedTeamSize} members for better collaboration`
+                : `Teams of ${suggestedTeamSize} members for better collaboration`
               }
             </p>
           </div>
         </div>
         
+        {/* Only hackathon creator can create teams */}
         {isCreator && (
           <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -261,93 +263,102 @@ export function TeamManagement({
         </div>
       )}
 
-      {/* All Teams */}
-      {teams.length === 0 ? (
+      {/* All Teams - Only visible to hackathon creator */}
+      {isCreator && (
+        teams.length === 0 ? (
+          <div className="text-center py-12">
+            <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h4 className="text-lg font-semibold mb-2">No teams yet</h4>
+            <p className="text-muted-foreground mb-4">
+              Create teams and assign members from the Members tab
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <h4 className="font-semibold text-sm text-muted-foreground">
+              All Teams ({teams.length})
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {teams.map(team => {
+                const isUserInTeam = team.memberIds.includes(user?.uid || '');
+                const isFull = team.memberIds.length >= suggestedTeamSize;
+                
+                return (
+                  <div
+                    key={team.id}
+                    className={cn(
+                      "p-4 rounded-lg border transition-all",
+                      isUserInTeam 
+                        ? "bg-primary/5 border-primary/30" 
+                        : "bg-background border-border"
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="font-semibold">{team.name}</h5>
+                      <Badge variant={isFull ? "default" : "outline"} className="text-xs">
+                        {team.memberIds.length}/{suggestedTeamSize}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {team.memberIds.map(memberId => {
+                        const profile = getProfileById(memberId);
+                        const isLeader = memberId === team.leaderId;
+                        
+                        return (
+                          <div
+                            key={memberId}
+                            className="group relative flex items-center gap-1 px-2 py-1 rounded bg-muted/50 hover:bg-muted transition-colors"
+                          >
+                            <div
+                              className="flex items-center gap-1 cursor-pointer"
+                              onClick={() => onProfileClick(memberId, profile?.name || 'Unknown')}
+                            >
+                              <AvatarUpload
+                                currentAvatar={profile?.avatar || null}
+                                userName={profile?.name || 'Unknown'}
+                                userGender={profile?.gender as any}
+                                size="xs"
+                                editable={false}
+                              />
+                              <span className="text-xs font-medium">
+                                {profile?.name || 'Unknown'}
+                              </span>
+                              {isLeader && <Crown className="h-3 w-3 text-yellow-500" />}
+                            </div>
+                            
+                            {isCreator && !isLeader && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveMember(team.id, memberId);
+                                }}
+                                className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                disabled={loading}
+                              >
+                                <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )
+      )}
+      
+      {/* Message for non-creator users without a team */}
+      {!isCreator && !userTeam && teams.length > 0 && (
         <div className="text-center py-12">
           <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h4 className="text-lg font-semibold mb-2">No teams yet</h4>
-          <p className="text-muted-foreground mb-4">
-            Be the first to create a team and start collaborating!
+          <h4 className="text-lg font-semibold mb-2">You're not in a team yet</h4>
+          <p className="text-muted-foreground">
+            Wait for the hackathon organizer to add you to a team
           </p>
-          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Create First Team
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <h4 className="font-semibold text-sm text-muted-foreground">
-            All Teams ({teams.length})
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {teams.map(team => {
-              const isUserInTeam = team.memberIds.includes(user?.uid || '');
-              const isFull = team.memberIds.length >= suggestedTeamSize;
-              
-              return (
-                <div
-                  key={team.id}
-                  className={cn(
-                    "p-4 rounded-lg border transition-all",
-                    isUserInTeam 
-                      ? "bg-primary/5 border-primary/30" 
-                      : "bg-background border-border"
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h5 className="font-semibold">{team.name}</h5>
-                    <Badge variant={isFull ? "default" : "outline"} className="text-xs">
-                      {team.memberIds.length}/{suggestedTeamSize}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {team.memberIds.map(memberId => {
-                      const profile = getProfileById(memberId);
-                      const isLeader = memberId === team.leaderId;
-                      
-                      return (
-                        <div
-                          key={memberId}
-                          className="group relative flex items-center gap-1 px-2 py-1 rounded bg-muted/50 hover:bg-muted transition-colors"
-                        >
-                          <div
-                            className="flex items-center gap-1 cursor-pointer"
-                            onClick={() => onProfileClick(memberId, profile?.name || 'Unknown')}
-                          >
-                            <AvatarUpload
-                              currentAvatar={profile?.avatar || null}
-                              userName={profile?.name || 'Unknown'}
-                              userGender={profile?.gender as any}
-                              size="xs"
-                              editable={false}
-                            />
-                            <span className="text-xs font-medium">
-                              {profile?.name || 'Unknown'}
-                            </span>
-                            {isLeader && <Crown className="h-3 w-3 text-yellow-500" />}
-                          </div>
-                          
-                          {isCreator && !isLeader && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveMember(team.id, memberId);
-                              }}
-                              className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                              disabled={loading}
-                            >
-                              <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 
