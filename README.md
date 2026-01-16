@@ -97,6 +97,14 @@ To become the go-to platform where India's next breakthrough innovations are bor
 - **Notification Bell**: Centralized notification center with counts
 - **Mark as Read**: Track which announcements you've seen
 
+### 📧 **Email Notifications**
+- **Welcome Emails**: Beautiful HTML emails with account credentials on registration
+- **Team Invitations**: Automated emails when added to hackathon teams
+- **Announcement Alerts**: Email notifications for all hackathon announcements
+- **Professional Templates**: Responsive HTML designs with branding
+- **Google Apps Script**: Unlimited free email sending via Google infrastructure
+- **No Rate Limits**: Send as many emails as needed without restrictions
+
 ### 🎨 **Modern User Experience**
 - **Responsive Design**: Optimized for all devices and screen sizes
 - **Theme Support**: Light, dark, and system theme modes
@@ -169,9 +177,13 @@ VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_sender_id
 VITE_FIREBASE_APP_ID=your_firebase_app_id
+VITE_FIREBASE_VAPID_KEY=your_firebase_vapid_key
 
 # Google Gemini AI (Optional - for AI Assistant feature)
 VITE_GEMINI_API_KEY=your_gemini_api_key
+
+# Google Apps Script Email Service
+VITE_GOOGLE_SCRIPT_URL=your_google_apps_script_deployment_url
 ```
 
 ### 4. Start Development Server
@@ -220,13 +232,37 @@ Visit `http://localhost:5173` to see the application running! 🎉
    - `users` - User profiles and information
    - `hackathons` - Hackathon events and details
    - `hackathonChat` - Real-time chat messages
+   - `teamChats` - Team-specific conversations
    - `directMessages` - Private conversations
    - `announcements` - Event announcements
+   - `teamFeedback` - Post-hackathon ratings and reviews
 
-4. **Storage Buckets**
+4. **Firestore Indexes**
+   Create these composite indexes in Firebase Console → Firestore → Indexes:
+   
+   **teamChats Index:**
+   - Collection: `teamChats`
+   - Fields: `hackathonId` (Ascending), `teamId` (Ascending), `createdAt` (Ascending)
+   
+   **announcements Index:**
+   - Collection: `announcements`
+   - Fields: `hackathonId` (Ascending), `createdAt` (Descending)
+   
+   **directMessages Index:**
+   - Collection: `directMessages`
+   - Fields: `participants` (Array), `createdAt` (Descending)
+
+5. **Storage Buckets**
    Configure Firebase Storage rules for:
    - `hackathon-images` - Event posters and media
    - `user-avatars` - Profile pictures
+
+6. **Email Service Setup (Optional)**
+   To enable email notifications:
+   - Create a Google Apps Script project
+   - Deploy as Web App with "Anyone" access
+   - Add deployment URL to `VITE_GOOGLE_SCRIPT_URL` in `.env`
+   - See `docs/EMAIL_SETUP.md` for detailed instructions
 
 ---
 
@@ -302,7 +338,9 @@ service firebase.storage {
    VITE_FIREBASE_STORAGE_BUCKET
    VITE_FIREBASE_MESSAGING_SENDER_ID
    VITE_FIREBASE_APP_ID
+   VITE_FIREBASE_VAPID_KEY
    VITE_GEMINI_API_KEY (optional - for AI Assistant)
+   VITE_GOOGLE_SCRIPT_URL (optional - for Email Notifications)
    ```
 
 3. **Deploy**
@@ -406,6 +444,7 @@ copies or substantial portions of the Software.
 ## 🚀 What's Next?
 
 ### Recently Added Features ✨
+- **📧 Email Notifications** - Automated HTML emails for welcome, team invites, and announcements
 - **🤖 AI Assistant** - Gemini-powered hackathon mentor with personalized guidance
 - **🛡️ Reliability Badges** - 4-tier trust system (Newbie → Reliable → Finisher → Legend)
 - **⚡ Synergy Matching** - Smart compatibility scoring based on work style and goals

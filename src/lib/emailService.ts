@@ -6,7 +6,9 @@
 import { getWelcomeEmailHTML, getTeamAdditionEmailHTML, getAnnouncementEmailHTML } from './emailTemplates';
 
 // Google Apps Script Web App URL from environment variables
-const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+// Fallback to hardcoded URL if env var is not set (for production)
+const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || 
+  "https://script.google.com/macros/s/AKfycbwAONpHPDDjudicL6M2tRpqErl9xG9-VHLKBBLJ9w6jXvRNh3N_if6-GTcos2as1k1Q/exec";
 
 /**
  * Send welcome email to new users with HTML template

@@ -1,0 +1,513 @@
+================================================================================
+                    HACKMATES - SYSTEM OVERVIEW
+================================================================================
+
+Project Name: HackMates
+Version: 1.0.0
+Platform: Web Application (React + TypeScript)
+Live URL: https://hackmates-mu.vercel.app
+Repository: https://github.com/PAVAN2627/HackMates
+Developer: NoobcodersIND (PAVAN MALI)
+Last Updated: January 16, 2025
+
+================================================================================
+                        PROJECT DESCRIPTION
+================================================================================
+
+HackMates is India's premier hackathon discovery and team formation platform
+that connects developers, designers, and innovators across the country. The
+platform provides comprehensive tools for hackathon discovery, intelligent
+team matching, real-time communication, and community trust building.
+
+Mission: Democratize innovation by connecting passionate developers, designers,
+and creators across India's vibrant tech ecosystem.
+
+Vision: Become the go-to platform where India's next breakthrough innovations
+are born through meaningful collaborations and hackathon experiences.
+
+================================================================================
+                        TECHNOLOGY STACK
+================================================================================
+
+FRONTEND FRAMEWORK:
+- React 18.3.1 (Modern UI library with hooks and concurrent features)
+- TypeScript 5.6.2 (Type-safe development)
+- Vite 5.4.2 (Lightning-fast build tool and dev server)
+
+UI & STYLING:
+- Tailwind CSS 3.4.1 (Utility-first CSS framework)
+- Radix UI (Accessible, unstyled UI primitives)
+- shadcn/ui (Beautiful, customizable component library)
+- Lucide React 0.469.0 (Icon library)
+- Sonner (Toast notifications)
+
+BACKEND & DATABASE:
+- Firebase Firestore (NoSQL real-time database)
+- Firebase Authentication (User authentication system)
+- Firebase Storage (Cloud storage for images/files)
+- Firebase Cloud Messaging (Push notifications)
+
+STATE MANAGEMENT:
+- React Context API (Auth, Theme management)
+- Custom Hooks (Data fetching and business logic)
+- Firebase Real-time Listeners (Live data sync)
+
+AI & INTEGRATIONS:
+- Google Gemini AI (AI-powered assistant)
+- Google Apps Script (Email service)
+- GitHub API (Profile verification)
+
+ROUTING:
+- React Router DOM 6.28.0 (Client-side routing)
+
+DEPLOYMENT:
+- Vercel (Production hosting)
+- Firebase Hosting (Alternative option)
+
+================================================================================
+                        CORE FEATURES
+================================================================================
+
+1. AI-POWERED ASSISTANT
+   - Gemini AI integration for personalized hackathon guidance
+   - Smart project recommendations based on user skills
+   - Real-time coding help and problem-solving
+   - Pitch coaching and presentation tips
+   - Context-aware responses understanding user profile
+   - Chat history persistence and management
+
+2. RELIABILITY & TRUST SYSTEM
+   - 4-tier badge system: Newbie → Reliable → Finisher → Legend
+   - Trust score calculation (0-100) based on completion rate
+   - Post-hackathon team feedback and ratings
+   - Ghost detection to identify unreliable members
+   - Transparent participation history
+   - Achievement badges for consistent performers
+
+3. SYNERGY MATCHING ALGORITHM
+   - Work style compatibility scoring (0-100%)
+   - Goal alignment (Win-focused vs Learn-focused)
+   - Schedule compatibility matching
+   - Commitment level alignment (Full-time/Part-time/Casual)
+   - Skill complementarity analysis
+   - Detailed breakdown of compatibility factors
+
+4. HACKATHON MANAGEMENT
+   - User-created hackathon events
+   - Smart discovery with filters (skills, location, mode)
+   - Team formation with join/leave functionality
+   - Status management (Open/Closed states)
+   - Required skills specification
+   - AI-powered profile recommendations
+   - Team size limits and validation
+
+5. PROFILE & TEAM DISCOVERY
+   - Comprehensive user profiles with skills showcase
+   - Advanced filtering (experience, reliability, availability)
+   - Work style preferences display
+   - Social integration (LinkedIn, GitHub, Portfolio)
+   - "Looking for Team" availability flag
+   - Custom avatar upload with gender-based defaults
+
+6. REAL-TIME COMMUNICATION
+   - Direct messaging between users
+   - Team-specific chat rooms
+   - Hackathon-wide group discussions
+   - Live message delivery with Firebase listeners
+   - Auto-message templates for quick invites
+   - Message editing and deletion
+   - Context menu for message actions
+
+7. ANNOUNCEMENTS & NOTIFICATIONS
+   - Hackathon organizer announcements
+   - Unread tracking with visual indicators
+   - Real-time delivery to all team members
+   - Browser push notifications
+   - Notification bell with unread counts
+   - Mark as read functionality
+
+8. EMAIL NOTIFICATIONS
+   - Welcome emails with account credentials
+   - Team invitation notifications
+   - Announcement email alerts to all members
+   - Professional HTML email templates
+   - Google Apps Script integration (unlimited free sending)
+   - Responsive email designs with branding
+
+9. USER EXPERIENCE
+   - Responsive design for all devices
+   - Theme support (Light/Dark/System)
+   - Mobile-optimized navigation
+   - Performance optimization with caching
+   - Smart text formatting
+   - Loading states and error handling
+
+================================================================================
+                        PROJECT STRUCTURE
+================================================================================
+
+hackmates/
+├── public/                          # Static assets
+│   ├── assets/                      # Images and logos
+│   ├── firebase-messaging-sw.js     # Service worker for push notifications
+│   └── robots.txt                   # SEO configuration
+│
+├── src/
+│   ├── components/                  # React components
+│   │   ├── hackathon/              # Hackathon-specific components
+│   │   ├── layout/                 # Layout components
+│   │   └── ui/                     # Reusable UI components (shadcn)
+│   │
+│   ├── contexts/                    # React Context providers
+│   │   ├── AuthContext.tsx         # Authentication state
+│   │   └── ThemeContext.tsx        # Theme management
+│   │
+│   ├── hooks/                       # Custom React hooks
+│   │   ├── useAIAssistant.ts       # AI assistant logic
+│   │   ├── useAnnouncements.ts     # Announcements management
+│   │   ├── useHackathons.ts        # Hackathon CRUD operations
+│   │   ├── useTeams.ts             # Team management
+│   │   ├── useTeamChat.ts          # Team chat functionality
+│   │   ├── useMessages.ts          # Direct messaging
+│   │   └── useGitHubVerification.ts # GitHub integration
+│   │
+│   ├── lib/                         # Utility libraries
+│   │   ├── firebase.ts             # Firebase configuration
+│   │   ├── geminiAI.ts             # Gemini AI integration
+│   │   ├── emailService.ts         # Email sending service
+│   │   ├── emailTemplates.ts       # HTML email templates
+│   │   ├── avatars.ts              # Avatar management
+│   │   └── textFormatter.ts        # Text formatting utilities
+│   │
+│   ├── pages/                       # Page components
+│   │   ├── Dashboard.tsx           # User dashboard
+│   │   ├── PublicHackathons.tsx    # Hackathon discovery
+│   │   ├── CreateHackathon.tsx     # Create new hackathon
+│   │   ├── HackathonDetails.tsx    # Hackathon detail view
+│   │   ├── Profile.tsx             # User profile
+│   │   ├── Register.tsx            # User registration
+│   │   ├── Login.tsx               # User login
+│   │   ├── Messages.tsx            # Direct messaging
+│   │   └── Announcements.tsx       # Announcements page
+│   │
+│   ├── types/                       # TypeScript type definitions
+│   │   └── index.ts                # Shared types
+│   │
+│   ├── App.tsx                      # Main app component
+│   ├── main.tsx                     # Application entry point
+│   └── index.css                    # Global styles
+│
+├── .env                             # Environment variables (not in git)
+├── .env.example                     # Environment template
+├── .gitignore                       # Git ignore rules
+├── package.json                     # Dependencies and scripts
+├── tsconfig.json                    # TypeScript configuration
+├── tailwind.config.ts               # Tailwind CSS configuration
+├── vite.config.ts                   # Vite build configuration
+├── vercel.json                      # Vercel deployment config
+├── README.md                        # Project documentation
+└── LICENSE                          # MIT License
+
+================================================================================
+                        DATABASE SCHEMA
+================================================================================
+
+FIRESTORE COLLECTIONS:
+
+1. users/
+   - uid: string (document ID)
+   - email: string
+   - name: string
+   - avatar: string | null
+   - bio: string
+   - skills: string[]
+   - experience: string
+   - location: string
+   - linkedIn: string
+   - github: string
+   - portfolio: string
+   - lookingForTeam: boolean
+   - workStyle: {
+       goal: 'win' | 'learn' | 'both'
+       timePreference: 'morning' | 'afternoon' | 'evening' | 'night' | 'flexible'
+       commitment: 'full-time' | 'part-time' | 'casual'
+     }
+   - reliability: {
+       badge: 'newbie' | 'reliable' | 'finisher' | 'legend'
+       trustScore: number (0-100)
+       hackathonsCompleted: number
+       hackathonsJoined: number
+       averageRating: number
+     }
+   - createdAt: Timestamp
+
+2. hackathons/
+   - id: string (document ID)
+   - title: string
+   - description: string
+   - imageUrl: string
+   - startDate: Timestamp
+   - endDate: Timestamp
+   - location: string
+   - mode: 'online' | 'offline' | 'hybrid'
+   - requiredSkills: string[]
+   - teamMembers: string[] (user IDs)
+   - maxTeamSize: number
+   - creatorId: string
+   - status: 'open' | 'closed'
+   - createdAt: Timestamp
+
+3. teamChats/
+   - id: string (document ID)
+   - hackathonId: string
+   - teamId: string
+   - content: string
+   - authorId: string
+   - createdAt: Timestamp
+   - edited: boolean
+   - editedAt: Timestamp (optional)
+
+4. directMessages/
+   - id: string (document ID)
+   - senderId: string
+   - recipientId: string
+   - content: string
+   - read: boolean
+   - createdAt: Timestamp
+   - participants: string[] (array of both user IDs)
+
+5. announcements/
+   - id: string (document ID)
+   - hackathonId: string
+   - title: string
+   - content: string
+   - authorId: string
+   - authorName: string
+   - createdAt: Timestamp
+   - readBy: string[] (user IDs who read it)
+
+6. teamFeedback/
+   - id: string (document ID)
+   - hackathonId: string
+   - reviewerId: string
+   - reviewedUserId: string
+   - rating: number (1-5)
+   - comment: string
+   - createdAt: Timestamp
+
+FIRESTORE INDEXES REQUIRED:
+
+1. teamChats:
+   - hackathonId (Ascending) + teamId (Ascending) + createdAt (Ascending)
+
+2. announcements:
+   - hackathonId (Ascending) + createdAt (Descending)
+
+3. directMessages:
+   - participants (Array) + createdAt (Descending)
+
+================================================================================
+                        ENVIRONMENT VARIABLES
+================================================================================
+
+FIREBASE CONFIGURATION:
+- VITE_FIREBASE_API_KEY              # Firebase API key
+- VITE_FIREBASE_AUTH_DOMAIN          # Firebase auth domain
+- VITE_FIREBASE_PROJECT_ID           # Firebase project ID
+- VITE_FIREBASE_STORAGE_BUCKET       # Firebase storage bucket
+- VITE_FIREBASE_MESSAGING_SENDER_ID  # FCM sender ID
+- VITE_FIREBASE_APP_ID               # Firebase app ID
+- VITE_FIREBASE_MEASUREMENT_ID       # Google Analytics ID
+- VITE_FIREBASE_VAPID_KEY            # Web push notification key
+
+AI & INTEGRATIONS:
+- VITE_GEMINI_API_KEY                # Google Gemini AI API key
+- VITE_GOOGLE_SCRIPT_URL             # Google Apps Script email service URL
+
+================================================================================
+                        KEY ALGORITHMS
+================================================================================
+
+1. SYNERGY SCORE CALCULATION:
+   - Goal Alignment: 40 points (same goal = 40, different = 20, both = 30)
+   - Time Preference: 30 points (same = 30, flexible = 20, different = 10)
+   - Commitment Level: 30 points (same = 30, adjacent = 20, different = 10)
+   - Total: 0-100% compatibility score
+
+2. TRUST SCORE CALCULATION:
+   - Base Score: (hackathonsCompleted / hackathonsJoined) * 50
+   - Rating Bonus: (averageRating / 5) * 50
+   - Total: 0-100 trust score
+
+3. RELIABILITY BADGE ASSIGNMENT:
+   - Newbie: trustScore < 30 OR hackathonsCompleted < 2
+   - Reliable: trustScore >= 30 AND hackathonsCompleted >= 2
+   - Finisher: trustScore >= 60 AND hackathonsCompleted >= 5
+   - Legend: trustScore >= 80 AND hackathonsCompleted >= 10
+
+4. AI RECOMMENDATION ALGORITHM:
+   - Analyzes user skills, experience, and work style
+   - Matches with hackathon requirements
+   - Considers team composition and skill gaps
+   - Provides compatibility scores and reasoning
+
+================================================================================
+                        SECURITY & PERMISSIONS
+================================================================================
+
+FIREBASE SECURITY RULES:
+
+Firestore:
+- Users: Read all, write own profile only
+- Hackathons: Read all, create if authenticated, update if creator/member
+- Messages: Read/write only if sender or recipient
+- Announcements: Read all, write if hackathon creator
+- Team Feedback: Write if authenticated, read own feedback
+
+Storage:
+- User Avatars: Read all, write own avatar only
+- Hackathon Images: Read all, write if authenticated
+
+Authentication:
+- Email/Password authentication
+- Password reset functionality
+- Session persistence
+
+================================================================================
+                        DEPLOYMENT CONFIGURATION
+================================================================================
+
+VERCEL DEPLOYMENT:
+- Framework: Vite
+- Build Command: npm run build
+- Output Directory: dist
+- Node Version: 18.x
+- Environment Variables: All VITE_* variables configured
+
+FIREBASE HOSTING (Alternative):
+- Public Directory: dist
+- Single Page App: Yes
+- Rewrites: All routes to index.html
+
+================================================================================
+                        PERFORMANCE OPTIMIZATIONS
+================================================================================
+
+1. Code Splitting: React.lazy() for route-based splitting
+2. Image Optimization: Lazy loading and responsive images
+3. Firebase Caching: Offline persistence enabled
+4. Debouncing: Search and filter operations
+5. Memoization: React.memo for expensive components
+6. Virtual Scrolling: For long lists (messages, hackathons)
+7. Bundle Size: Tree-shaking and minification via Vite
+
+================================================================================
+                        TESTING & QUALITY
+================================================================================
+
+CODE QUALITY:
+- TypeScript strict mode enabled
+- ESLint for code linting
+- Consistent code formatting
+- Type safety throughout application
+
+ERROR HANDLING:
+- Try-catch blocks for async operations
+- Error boundaries for React components
+- User-friendly error messages
+- Console logging for debugging
+
+BROWSER COMPATIBILITY:
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Mobile responsive design
+- Progressive Web App capabilities
+
+================================================================================
+                        FUTURE ENHANCEMENTS
+================================================================================
+
+PLANNED FEATURES:
+1. Video Integration - Built-in video calls for team meetings
+2. Project Showcase - Portfolio section for completed projects
+3. Leaderboards - Gamification with points and achievements
+4. Mobile App - Native iOS and Android applications
+5. API Access - Public API for third-party integrations
+6. Mentor Matching - Connect with experienced mentors
+7. Skill Verification - Badge system for verified skills
+8. Advanced Analytics - Team performance and success metrics
+9. Payment Integration - Paid hackathons and premium features
+10. Multi-language Support - Internationalization
+
+SCALABILITY CONSIDERATIONS:
+- Database indexing for query optimization
+- CDN for static asset delivery
+- Serverless functions for heavy computations
+- Caching strategies for frequently accessed data
+- Load balancing for high traffic
+
+================================================================================
+                        SUPPORT & MAINTENANCE
+================================================================================
+
+MONITORING:
+- Firebase Analytics for user behavior
+- Error tracking and logging
+- Performance monitoring
+- Usage statistics
+
+BACKUP & RECOVERY:
+- Firebase automatic backups
+- Version control with Git
+- Environment variable backups
+
+UPDATES:
+- Regular dependency updates
+- Security patches
+- Feature releases
+- Bug fixes
+
+================================================================================
+                        CONTACT & RESOURCES
+================================================================================
+
+Developer: PAVAN MALI (NoobcodersIND)
+Email: ppavanmalith3@gmail.com
+GitHub: https://github.com/PAVAN2627
+Live Demo: https://hackmates-mu.vercel.app
+Repository: https://github.com/PAVAN2627/HackMates
+
+Documentation:
+- README.md - Project overview and setup
+- CONTRIBUTING.md - Contribution guidelines
+- LICENSE - MIT License
+
+Support:
+- GitHub Issues for bug reports
+- GitHub Discussions for questions
+- Email for direct support
+
+================================================================================
+                        LICENSE
+================================================================================
+
+MIT License
+
+Copyright (c) 2025 NoobcodersIND
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+================================================================================
+                        END OF SYSTEM OVERVIEW
+================================================================================
