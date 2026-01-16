@@ -1,0 +1,82 @@
+RELIABILITY BADGE SYSTEM - How It Works
+========================================
+
+IMPORTANT: Your badge is based on feedback YOU RECEIVE, not feedback you give!
+
+HOW IT WORKS:
+-------------
+
+1. YOU COMPLETE A HACKATHON
+   - You join a hackathon
+   - Creator adds you to a team
+   - Hackathon is marked as "Completed"
+
+2. TEAMMATES RATE YOU
+   - Your teammates click "Rate Teammates"
+   - They rate YOUR contribution (1-5 stars)
+   - They mark if you contributed or ghosted
+   - This feedback goes to YOUR profile
+
+3. YOUR BADGE UPDATES
+   - System counts unique hackathons where you received feedback
+   - Calculates your completion rate and average rating
+   - Updates your badge level
+
+BADGE LEVELS:
+-------------
+🌱 Newbie (0 hackathons completed)
+   - No feedback received yet
+   - Default for new users
+
+✓ Reliable (1+ hackathons, 60+ score)
+   - Completed at least 1 hackathon
+   - Teammates confirmed you contributed
+   - Good ratings from team
+
+⭐ Finisher (3+ hackathons, 80+ score)
+   - Completed 3+ hackathons
+   - High contribution rate
+   - Excellent ratings
+
+👑 Legend (10+ hackathons, 95+ score)
+   - Completed 10+ hackathons
+   - Nearly perfect record
+   - Outstanding ratings
+
+EXAMPLE SCENARIO:
+-----------------
+
+Hackathon: "AI Challenge 2024"
+Team: You, Alice, Bob, Charlie
+
+After hackathon completes:
+- Alice rates YOU → Feedback goes to YOUR profile
+- Bob rates YOU → Feedback goes to YOUR profile  
+- Charlie rates YOU → Feedback goes to YOUR profile
+- YOU rate Alice → Feedback goes to ALICE's profile
+- YOU rate Bob → Feedback goes to BOB's profile
+- YOU rate Charlie → Feedback goes to CHARLIE's profile
+
+Result:
+- YOUR profile shows 3 feedbacks received (from Alice, Bob, Charlie)
+- YOUR badge updates based on those 3 feedbacks
+- The feedback YOU gave appears on THEIR profiles, not yours
+
+WHY THIS DESIGN?
+----------------
+✓ Your badge reflects what OTHERS think of you
+✓ Prevents self-rating manipulation
+✓ Shows your reputation to potential teammates
+✓ Builds trust in the community
+
+CURRENT STATUS:
+---------------
+If you see "🌱 Newbie - 0 projects completed":
+→ You haven't received any feedback yet
+→ Ask your teammates to rate you!
+→ Once they do, your badge will update automatically
+
+If you gave feedback to someone:
+→ That feedback is on THEIR profile
+→ It doesn't affect YOUR badge
+→ You need to RECEIVE feedback to upgrade your badge

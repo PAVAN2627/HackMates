@@ -58,34 +58,52 @@ export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) 
       gradient: 'from-purple-500 to-pink-500'
     },
     {
-      icon: Plus,
-      title: 'Host Your Own Event',
-      description: 'Organize hackathons effortlessly. Set requirements, manage participants, and create memorable experiences for the developer community.',
+      icon: Zap,
+      title: 'AI-Powered Assistant',
+      description: 'Get personalized hackathon guidance from our Gemini AI assistant. Receive project ideas, technical help, pitch coaching, and time management tips tailored to your skills.',
+      gradient: 'from-indigo-500 to-purple-500'
+    },
+    {
+      icon: Shield,
+      title: 'Reliability & Trust System',
+      description: 'Build trust with our 4-tier badge system (Newbie → Reliable → Finisher → Legend). Rate teammates after hackathons and view trust scores before joining teams.',
       gradient: 'from-blue-500 to-cyan-500'
     },
     {
-      icon: Users,
-      title: 'Find Perfect Teammates',
-      description: 'Connect with talented developers, designers, and innovators. Search by skills, experience level, and availability to build your dream team.',
+      icon: Target,
+      title: 'Smart Synergy Matching',
+      description: 'Find perfectly compatible teammates with our synergy algorithm. Match based on work style, goals (win vs learn), schedule preferences, and commitment levels.',
       gradient: 'from-green-500 to-emerald-500'
     },
     {
+      icon: Users,
+      title: 'Intelligent Team Discovery',
+      description: 'AI-powered profile recommendations with skill matching. Filter by experience, reliability, and availability. Get auto-generated personalized invitations.',
+      gradient: 'from-yellow-500 to-orange-500'
+    },
+    {
+      icon: Plus,
+      title: 'Host Your Own Event',
+      description: 'Organize hackathons effortlessly. Set requirements, manage participants, send announcements, and create memorable experiences for the developer community.',
+      gradient: 'from-pink-500 to-rose-500'
+    },
+    {
       icon: MessageCircle,
-      title: 'Seamless Communication',
-      description: 'Chat directly with team members and participants. Stay connected before, during, and after hackathons with our built-in messaging system.',
+      title: 'Real-time Communication',
+      description: 'Chat directly with team members and participants. Direct messaging, hackathon group chats, and instant notifications keep everyone connected.',
       gradient: 'from-orange-500 to-red-500'
     },
     {
       icon: Megaphone,
-      title: 'Real-time Updates',
-      description: 'Never miss important announcements. Get instant notifications about hackathon updates, deadlines, and important information.',
-      gradient: 'from-indigo-500 to-purple-500'
+      title: 'Smart Announcements',
+      description: 'Never miss important updates. Organizers can post announcements with unread tracking, pin important messages, and notify all team members instantly.',
+      gradient: 'from-violet-500 to-purple-500'
     },
     {
       icon: Award,
-      title: 'Showcase Your Skills',
-      description: 'Build a comprehensive profile showcasing your skills, projects, and achievements. Let others discover your expertise and collaborate.',
-      gradient: 'from-pink-500 to-rose-500'
+      title: 'Comprehensive Profiles',
+      description: 'Showcase your skills, work style preferences, and achievements. Display reliability badges, synergy scores, and build your developer reputation.',
+      gradient: 'from-cyan-500 to-blue-500'
     },
   ];
 
@@ -234,8 +252,8 @@ export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) 
             </h1>
             
             <p className="text-base md:text-xl lg:text-2xl text-slate-600 dark:text-slate-300 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
-              Connect with talented developers, designers, and innovators across India. 
-              Discover hackathons, form dream teams, and build solutions that matter.
+              AI-powered platform with smart team matching, reliability badges, and synergy scoring. 
+              Connect with talented developers, discover hackathons, and build winning teams with confidence.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center mb-12 md:mb-16 px-4">
@@ -343,21 +361,37 @@ export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) 
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Verified developer profiles with skill matching</span>
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">AI-powered hackathon mentor & guidance</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Real-time communication and collaboration tools</span>
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">4-tier reliability & trust badge system</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Comprehensive hackathon discovery and filtering</span>
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Smart synergy matching algorithm</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Real-time communication & announcements</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Team feedback & rating system</span>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Seamless event management for organizers</span>
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Intelligent profile recommendations</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Work style & commitment matching</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Comprehensive hackathon discovery</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />

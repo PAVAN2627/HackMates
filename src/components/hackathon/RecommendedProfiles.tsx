@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
-import { MessageCircle, Users, Star, Filter, RefreshCw } from 'lucide-react';
+import { MessageCircle, Users, Star, Filter, RefreshCw, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useAuth } from '@/contexts/AuthContext';
+import { calculateSynergyScore } from '@/lib/synergyAlgorithm';
 import { Hackathon, UserProfile } from '@/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -13,6 +14,7 @@ import { toast } from 'sonner';
 interface EnhancedProfile extends UserProfile {
   matchScore: number;
   matchingSkills?: string[];
+  synergyScore?: number;
 }
 
 interface RecommendedProfilesProps {
@@ -24,9 +26,12 @@ interface RecommendedProfilesProps {
 export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }: RecommendedProfilesProps) {
   const { profiles, loading, refreshProfiles } = useProfiles();
   const { sendMessage } = useDirectMessages();
-  const { user, profile } = useAuth();
+  const { user, profile: currentProfile } = useAuth();
   const [selectedExperience, setSelectedExperience] = useState<'all' | 'Beginner' | 'Intermediate' | 'Advanced'>('all');
   const [selectedAvailability, setSelectedAvailability] = useState<'all' | 'online' | 'in-person' | 'both'>('all');
+  const [selectedReliability, setSelectedReliability] = useState<'all' | 'reliable+'>('all');
+  const [showLookingForTeamOnly, setShowLookingForTeamOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<'synergy' | 'skills' | 'recent'>('synergy');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sendingMessageTo, setSendingMessageTo] = useState<string | null>(null);
 
@@ -56,22 +61,51 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
         ? (matchingSkills.length / hackathon.requiredSkills.length) * 100 
         : 0;
       
+      // Calculate synergy score if both users have work style
+      const synergyScore = profile.workStyle && currentProfile?.workStyle
+        ? calculateSynergyScore(currentProfile, profile).overall
+        : undefined;
+      
       return {
         ...profile,
         matchScore: Math.round(matchScore),
-        matchingSkills
+        matchingSkills,
+        synergyScore
       };
     });
 
-    // Sort by match score (highest first), then by creation date (newest first)
+    // Sort by synergy score first (if available), then match score, then creation date
     return scoredProfiles.sort((a, b) => {
-      if (b.matchScore !== a.matchScore) {
-        return b.matchScore - a.matchScore;
+      if (sortBy === 'synergy') {
+        // Prioritize synergy score if both have it
+        if (a.synergyScore !== undefined && b.synergyScore !== undefined) {
+          if (b.synergyScore !== a.synergyScore) {
+            return b.synergyScore - a.synergyScore;
+          }
+        }
+        // Then by skill match score
+        if (b.matchScore !== a.matchScore) {
+          return b.matchScore - a.matchScore;
+        }
+      } else if (sortBy === 'skills') {
+        // Sort by skill match score first
+        if (b.matchScore !== a.matchScore) {
+          return b.matchScore - a.matchScore;
+        }
+        // Then by synergy if available
+        if (a.synergyScore !== undefined && b.synergyScore !== undefined) {
+          if (b.synergyScore !== a.synergyScore) {
+            return b.synergyScore - a.synergyScore;
+          }
+        }
+      } else if (sortBy === 'recent') {
+        // Sort by creation date (newest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
-      // If same match score, sort by creation date (newest first)
+      // Default: sort by creation date
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [profiles, hackathon.requiredSkills, hackathon.teamMembers, user?.uid]);
+  }, [profiles, hackathon.requiredSkills, hackathon.teamMembers, user?.uid, currentProfile, sortBy]);
 
   // Apply filters
   const filteredProfiles = useMemo(() => {
@@ -87,8 +121,19 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
       );
     }
 
+    if (selectedReliability === 'reliable+') {
+      // Show only Reliable, Finisher, or Legend (exclude Newbie)
+      filtered = filtered.filter(profile => 
+        profile.reliabilityLevel && profile.reliabilityLevel !== 'newbie'
+      );
+    }
+
+    if (showLookingForTeamOnly) {
+      filtered = filtered.filter(profile => profile.lookingForTeam);
+    }
+
     return filtered;
-  }, [recommendedProfiles, selectedExperience, selectedAvailability]);
+  }, [recommendedProfiles, selectedExperience, selectedAvailability, selectedReliability, showLookingForTeamOnly]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -103,7 +148,7 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
   };
 
   const handleSendAutoMessage = async (recipientProfile: EnhancedProfile) => {
-    if (!user || !profile) {
+    if (!user || !currentProfile) {
       toast.error('Please log in to send messages');
       return;
     }
@@ -138,7 +183,7 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
       
       message += `\n\nLet me know if you're interested! 🚀`;
 
-      await sendMessage(recipientProfile.uid, message, profile.name, profile.avatar);
+      await sendMessage(recipientProfile.uid, message, currentProfile.name, currentProfile.avatar);
       toast.success(`Message sent to ${recipientProfile.name}!`);
       onSendMessage(recipientProfile.uid);
     } catch (error: any) {
@@ -199,17 +244,76 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
       </div>
 
       {/* Filters */}
-      <div className="mb-6 p-4 bg-muted/50 rounded-lg">
-        <div className="flex items-center gap-2 mb-3">
-          <Filter className="h-4 w-4" />
-          <span className="text-sm font-medium">Filters</span>
+      <div className="mb-6 p-4 bg-muted/50 rounded-lg space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            <span className="text-sm font-medium">Filters & Sorting</span>
+          </div>
+          {(selectedExperience !== 'all' || selectedAvailability !== 'all' || selectedReliability !== 'all' || showLookingForTeamOnly) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedExperience('all');
+                setSelectedAvailability('all');
+                setSelectedReliability('all');
+                setShowLookingForTeamOnly(false);
+              }}
+              className="text-xs h-7"
+            >
+              Clear All
+            </Button>
+          )}
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Sort By */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">Sort By</label>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setSortBy('synergy')}
+              className={cn(
+                "px-3 py-2 rounded text-xs font-medium transition-colors",
+                sortBy === 'synergy'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-background border border-input hover:border-primary'
+              )}
+            >
+              <Zap className="w-3 h-3 inline mr-1" />
+              Synergy
+            </button>
+            <button
+              onClick={() => setSortBy('skills')}
+              className={cn(
+                "px-3 py-2 rounded text-xs font-medium transition-colors",
+                sortBy === 'skills'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-background border border-input hover:border-primary'
+              )}
+            >
+              <Star className="w-3 h-3 inline mr-1" />
+              Skills
+            </button>
+            <button
+              onClick={() => setSortBy('recent')}
+              className={cn(
+                "px-3 py-2 rounded text-xs font-medium transition-colors",
+                sortBy === 'recent'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-background border border-input hover:border-primary'
+              )}
+            >
+              Recent
+            </button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Experience Filter */}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">Experience Level</label>
-            <div className="grid grid-cols-4 gap-1">
+            <div className="grid grid-cols-2 gap-1">
               {(['all', 'Beginner', 'Intermediate', 'Advanced'] as const).map(level => (
                 <button
                   key={level}
@@ -230,7 +334,7 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
           {/* Availability Filter */}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-2 block">Availability</label>
-            <div className="grid grid-cols-4 gap-1">
+            <div className="grid grid-cols-2 gap-1">
               {(['all', 'online', 'in-person', 'both'] as const).map(availability => (
                 <button
                   key={availability}
@@ -249,22 +353,50 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
               ))}
             </div>
           </div>
+
+          {/* Reliability Filter */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Reliability</label>
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                onClick={() => setSelectedReliability('all')}
+                className={cn(
+                  "px-2 py-1 rounded text-xs font-medium transition-colors",
+                  selectedReliability === 'all'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-background border border-input hover:border-primary'
+                )}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setSelectedReliability('reliable+')}
+                className={cn(
+                  "px-2 py-1 rounded text-xs font-medium transition-colors",
+                  selectedReliability === 'reliable+'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-background border border-input hover:border-primary'
+                )}
+                title="Show only Reliable, Finisher, and Legend users (exclude Newbies)"
+              >
+                ✓ Reliable+
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Clear Filters */}
-        {(selectedExperience !== 'all' || selectedAvailability !== 'all') && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSelectedExperience('all');
-              setSelectedAvailability('all');
-            }}
-            className="mt-3 text-xs"
-          >
-            Clear Filters
-          </Button>
-        )}
+        {/* Looking for Team Filter */}
+        <div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showLookingForTeamOnly}
+              onChange={(e) => setShowLookingForTeamOnly(e.target.checked)}
+              className="rounded border-input"
+            />
+            <span className="text-xs font-medium">Show only users looking for team</span>
+          </label>
+        </div>
       </div>
 
       {/* Results */}
@@ -294,17 +426,8 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
             {recommendedProfiles.length !== filteredProfiles.length && 
               ` (${recommendedProfiles.length} total)`
             }
-            {hackathon.requiredSkills && hackathon.requiredSkills.length > 0 && (
-              <span className="ml-2 text-primary">
-                • Sorted by skill match relevance
-              </span>
-            )}
-            <br />
-            <span className="text-xs">
-              Debug: Total DB profiles: {profiles.length} | 
-              Current user: {user?.uid} | 
-              Team members: {hackathon.teamMembers?.length || 0} |
-              Required skills: {hackathon.requiredSkills?.length || 0}
+            <span className="ml-2 text-primary">
+              • Sorted by {sortBy === 'synergy' ? 'compatibility' : sortBy === 'skills' ? 'skill match' : 'most recent'}
             </span>
           </div>
 
@@ -332,11 +455,24 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
                       </p>
                     </div>
                   </div>
-                  {profile.matchScore > 0 && (
-                    <Badge className={cn('text-xs font-bold', getMatchScoreColor(profile.matchScore))}>
-                      {profile.matchScore}% match
-                    </Badge>
-                  )}
+                  <div className="flex flex-col gap-1">
+                    {profile.synergyScore !== undefined && profile.synergyScore >= 50 && (
+                      <Badge className={cn(
+                        'text-xs font-bold',
+                        profile.synergyScore >= 75 ? 'bg-green-500 hover:bg-green-600' :
+                        profile.synergyScore >= 50 ? 'bg-yellow-500 hover:bg-yellow-600' :
+                        'bg-red-500 hover:bg-red-600'
+                      )}>
+                        <Zap className="w-3 h-3 mr-1" />
+                        {profile.synergyScore}% synergy
+                      </Badge>
+                    )}
+                    {profile.matchScore > 0 && (
+                      <Badge className={cn('text-xs font-bold', getMatchScoreColor(profile.matchScore))}>
+                        {profile.matchScore}% skills
+                      </Badge>
+                    )}
+                  </div>
                 </div>
 
                 {/* Bio */}

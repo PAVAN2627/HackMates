@@ -1,0 +1,107 @@
+TEAM FEEDBACK WORKFLOW - How It Works
+======================================
+
+PROBLEM SOLVED:
+- In large hackathons (100-120+ participants), having everyone rate everyone is impractical
+- Solution: Team-based feedback system with 3-stage lifecycle
+
+HACKATHON LIFECYCLE (3 STAGES):
+--------------------------------
+
+1. **OPEN** - Registration Phase
+   - Students can join the hackathon
+   - Creator forms teams and adds members
+   - General chat is active
+   - Join/Leave buttons work
+
+2. **IN PROGRESS** - Working Phase
+   - No new joins allowed (button disabled)
+   - Teams work on their projects
+   - General chat is still active
+   - Creator can still manage teams
+
+3. **COMPLETED** - Feedback Phase
+   - Chat is closed (read-only)
+   - No team changes allowed
+   - "Rate Teammates" button appears
+   - Team members can rate each other
+
+WORKFLOW:
+---------
+
+STAGE 1: OPEN (Registration)
+-----------------------------
+1. Creator creates hackathon (status: "open")
+2. Students join the hackathon (100-120+ people)
+3. All joined members appear in "Members" tab
+4. Creator goes to "Teams" tab and creates teams
+5. Creator adds members to teams from "Members" tab:
+   - Click "View Profile" to see full details
+   - Click "Add to Team" to assign to a team
+6. Members in teams show green "In Team" badge
+7. Creator clicks "Remove Non-Team Members" to clean up
+8. Only selected team members remain
+
+STAGE 2: IN PROGRESS (Working)
+-------------------------------
+1. Creator clicks "Start" button (status changes to "in-progress")
+2. Join/Leave buttons become disabled
+3. Teams work on their projects
+4. General chat remains active for collaboration
+5. Creator can still manage teams if needed
+
+STAGE 3: COMPLETED (Feedback)
+------------------------------
+1. Creator clicks "Complete" button (status changes to "completed")
+2. General chat becomes read-only with message:
+   "This hackathon has been completed. Chat is now closed."
+3. "Rate Teammates" button appears for all team members
+4. Each team member rates only their teammates (3-4 people)
+5. Feedback updates reliability badges automatically
+
+STATUS BUTTON CHANGES:
+----------------------
+- When "Open": Shows "Start" button (blue)
+- When "In Progress": Shows "Complete" button (blue)
+- When "Completed": Shows "Reopen" button (gray) - to restart if needed
+
+UI IMPROVEMENTS:
+----------------
+✓ Three-stage status system with color coding:
+  - Open: Green badge
+  - In Progress: Blue badge
+  - Completed: Gray badge
+✓ Status-aware chat (disabled when completed)
+✓ Status-aware join buttons (disabled when not open)
+✓ Clear visual feedback for each stage
+✓ Members tab shows profile cards with action buttons
+✓ "View Profile" and "Add to Team" buttons
+✓ Team members show green "In Team" badge
+✓ Hover over team member to see remove button (X)
+✓ Statistics: Total Joined, In Teams, Not in Teams, Total Teams
+
+BENEFITS:
+---------
+✓ Scalable: Works for hackathons of any size
+✓ Manageable: Only rate 3-4 teammates, not 100+ people
+✓ Fair: Only committed team members participate
+✓ Clean: Non-selected members are removed automatically
+✓ Organized: Clear team structure for collaboration
+✓ Flexible: Creator can add/remove members as needed
+✓ Controlled: Three-stage lifecycle prevents chaos
+✓ Professional: Proper workflow from start to finish
+
+TECHNICAL IMPLEMENTATION:
+-------------------------
+- Updated Hackathon status type: 'open' | 'in-progress' | 'completed'
+- Updated useHackathons hook to support new status
+- Updated HackathonDetails with three-stage button logic
+- Updated ChatSection to disable chat when completed
+- Updated join/leave buttons to only work when open
+- Updated TeamFeedbackModal to only show when completed
+- Added status color coding and labels
+- Added HackathonTeam interface with team structure
+- Added useTeams hook for team management
+- Added TeamManagement component for team UI
+- Added removeMemberFromTeam function
+- Updated Members tab with "View Profile" and "Add to Team" buttons

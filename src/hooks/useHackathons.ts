@@ -135,7 +135,7 @@ export function useHackathons() {
     }
   }, [user]);
 
-  const updateHackathonStatus = useCallback(async (hackathonId: string, status: 'open' | 'closed') => {
+  const updateHackathonStatus = useCallback(async (hackathonId: string, status: 'open' | 'in-progress' | 'completed') => {
     if (!user) throw new Error('Must be logged in');
 
     try {
@@ -155,7 +155,7 @@ export function useHackathons() {
   }, [user]);
 
   const closeHackathon = useCallback(async (hackathonId: string) => {
-    return updateHackathonStatus(hackathonId, 'closed');
+    return updateHackathonStatus(hackathonId, 'completed');
   }, [updateHackathonStatus]);
 
   const addChatMessage = useCallback(async (hackathonId: string, message: Omit<HackathonChatMessage, 'id' | 'createdAt'>) => {

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { WorkStyleSelector } from '@/components/WorkStyleSelector';
 
 const skillsOptions = [
   'React', 'Vue.js', 'Angular', 'Node.js', 'Express.js', 'Next.js',
@@ -85,6 +86,12 @@ export default function Register() {
     portfolio: '',
     gender: 'prefer-not-to-say' as 'male' | 'female' | 'non-binary' | 'prefer-not-to-say',
     avatar: '' as string,
+    workStyle: {
+      goal: 'learn' as 'win' | 'learn',
+      timePreference: 'flexible' as 'night-owl' | 'early-bird' | 'flexible',
+      commitment: 'part-time' as 'full-time' | 'part-time' | 'casual',
+      hoursAvailable: 20
+    }
   });
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -194,6 +201,7 @@ export default function Register() {
         portfolio: formData.portfolio,
         gender: formData.gender,
         avatar: formData.avatar,
+        workStyle: formData.workStyle,
         lookingForTeam: true,
       });
 
@@ -475,6 +483,14 @@ export default function Register() {
                     ))}
                   </div>
                 </div>
+              </div>
+
+              {/* Work Style Preferences */}
+              <div className="space-y-4">
+                <WorkStyleSelector 
+                  workStyle={formData.workStyle} 
+                  onChange={(workStyle) => setFormData({ ...formData, workStyle })} 
+                />
               </div>
 
               {/* Social Links */}

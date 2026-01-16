@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Filter, MapPin, Tag, Zap, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ProfileCard } from '@/components/ProfileCard';
+import { EnhancedProfileCard } from '@/components/EnhancedProfileCard';
 import { UserProfileModal } from '@/components/UserProfileModal';
 import { Loading } from '@/components/Loading';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
+import { calculateSynergyScore } from '@/lib/synergyAlgorithm';
+import { useTeamFeedback } from '@/hooks/useTeamFeedback';
 import { toast } from 'sonner';
 
 const skillsOptions = [
@@ -37,7 +39,7 @@ const experienceOptions = ['Beginner', 'Intermediate', 'Advanced'];
 
 export default function Profiles() {
   const { profiles, loading, refreshProfiles } = useProfiles();
-  const { user, profile } = useAuth();
+  const { user, profile: currentProfile } = useAuth();
   const navigate = useNavigate();
   const { sendMessage } = useDirectMessages();
 
@@ -356,16 +358,25 @@ export default function Profiles() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filtered.map(profile => (
-                  <ProfileCard
-                    key={profile.id}
-                    profile={profile}
-                    onMessage={handleMessage}
-                    onViewProfile={handleViewProfile}
-                    showContact={true}
-                    isMessageLoading={sendingMessageTo === profile.uid}
-                  />
-                ))}
+                {filtered.map(profile => {
+                  // Calculate synergy score if current user has work style
+                  const synergyScore = currentProfile?.workStyle && profile.workStyle
+                    ? calculateSynergyScore(currentProfile, profile)
+                    : undefined;
+                  
+                  return (
+                    <EnhancedProfileCard
+                      key={profile.id}
+                      profile={profile}
+                      synergyScore={synergyScore}
+                      reliabilityBadge={undefined}
+                      onMessage={handleMessage}
+                      onViewProfile={handleViewProfile}
+                      showContact={true}
+                      isMessageLoading={sendingMessageTo === profile.uid}
+                    />
+                  );
+                })}
               </div>
             )}
           </>

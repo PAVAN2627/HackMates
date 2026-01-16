@@ -22,7 +22,7 @@ interface ChatSectionProps {
     id: string;
     teamMembers?: string[];
     creatorId: string;
-    status?: 'open' | 'closed';
+    status?: 'open' | 'in-progress' | 'completed';
   };
 }
 
@@ -52,8 +52,8 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
     hackathon.creatorId === user.uid
   );
 
-  // Check if hackathon is closed
-  const isHackathonClosed = hackathon?.status === 'closed';
+  // Check if hackathon is open (only allow chat when status is 'open')
+  const isChatDisabled = hackathon?.status !== 'open';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -297,13 +297,14 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
       <div className="p-4 border-t border-border">
         {user ? (
           isHackathonMember ? (
-            isHackathonClosed ? (
+            isChatDisabled ? (
               <div className="text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  This hackathon has been closed by the creator.
+                  General chat is closed.
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  No new messages can be sent.
+                  {hackathon?.status === 'in-progress' && 'Hackathon is in progress. Only announcements from the creator are allowed.'}
+                  {hackathon?.status === 'completed' && 'Hackathon has been completed. Team members can rate each other.'}
                 </p>
               </div>
             ) : (

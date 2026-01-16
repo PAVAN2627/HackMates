@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Bell, X, MessageCircle, Megaphone } from 'lucide-react';
+import { Bell, X, MessageCircle, Megaphone, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useUnreadAnnouncements } from '@/hooks/useUnreadAnnouncements';
+import { useNotifications } from '@/hooks/useNotifications';
 import { useProfiles } from '@/hooks/useProfiles';
+import { cn } from '@/lib/utils';
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +15,7 @@ export function NotificationBell() {
   const { user } = useAuth();
   const { messages, markConversationAsRead } = useDirectMessages();
   const { unreadCount: unreadAnnouncementsCount, unreadAnnouncements, markAsRead } = useUnreadAnnouncements();
+  const { notifications, markAsRead: markNotificationAsRead } = useNotifications(user?.uid);
   const { getProfileById } = useProfiles();
 
   // Get unread messages
@@ -30,7 +33,7 @@ export function NotificationBell() {
     return acc;
   }, {} as Record<string, typeof unreadMessages>);
 
-  const totalUnreadCount = unreadMessages.length + unreadAnnouncementsCount;
+  const totalUnreadCount = unreadMessages.length + unreadAnnouncementsCount + notifications.length;
 
   const handleMessageClick = async (senderId: string) => {
     // Mark messages as read before navigating
@@ -43,6 +46,20 @@ export function NotificationBell() {
     // Mark announcement as read
     await markAsRead(announcementId);
     navigate('/announcements');
+    setIsOpen(false);
+  };
+
+  const handleNotificationClick = async (notificationId: string, type: string, hackathonId?: string) => {
+    // Mark notification as read
+    await markNotificationAsRead(notificationId);
+    if (hackathonId) {
+      // Navigate to hackathon with appropriate tab
+      if (type === 'announcement') {
+        navigate(`/hackathons/${hackathonId}?tab=announcements`);
+      } else {
+        navigate(`/hackathons/${hackathonId}`);
+      }
+    }
     setIsOpen(false);
   };
 
@@ -84,6 +101,86 @@ export function NotificationBell() {
               </div>
             ) : (
               <div className="divide-y divide-border">
+                {/* Team Notifications */}
+                {notifications.map((notification) => {
+                  const isAnnouncement = notification.type === 'announcement';
+                  const iconColor = isAnnouncement ? 'orange' : 'blue';
+                  const Icon = isAnnouncement ? Megaphone : Users;
+                  
+                  return (
+                    <div
+                      key={`notification-${notification.id}`}
+                      onClick={() => handleNotificationClick(notification.id, notification.type, notification.hackathonId)}
+                      className={cn(
+                        "p-4 hover:bg-muted transition-colors cursor-pointer border-l-4",
+                        isAnnouncement 
+                          ? "border-l-orange-500/20 hover:border-l-orange-500"
+                          : "border-l-blue-500/20 hover:border-l-blue-500"
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          <div className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center border-2",
+                            isAnnouncement 
+                              ? "bg-orange-500/10 border-orange-500/20"
+                              : "bg-blue-500/10 border-blue-500/20"
+                          )}>
+                            <Icon className={cn(
+                              "h-5 w-5",
+                              isAnnouncement ? "text-orange-500" : "text-blue-500"
+                            )} />
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-foreground">
+                                {notification.title}
+                              </p>
+                              <span className={cn(
+                                "text-white text-xs rounded-full px-2 py-0.5 font-medium",
+                                isAnnouncement ? "bg-orange-500" : "bg-blue-500"
+                              )}>
+                                New
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Icon className={cn(
+                                "h-3 w-3",
+                                isAnnouncement ? "text-orange-500" : "text-blue-500"
+                              )} />
+                              <div className={cn(
+                                "h-2 w-2 rounded-full animate-pulse",
+                                isAnnouncement ? "bg-orange-500" : "bg-blue-500"
+                              )} />
+                            </div>
+                          </div>
+                          
+                          <p className="text-sm text-foreground mb-1">
+                            {notification.message}
+                          </p>
+                          
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-muted-foreground">
+                              {notification.hackathonTitle}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(notification.createdAt).toLocaleString('en-IN', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
                 {/* Unread Announcements */}
                 {unreadAnnouncements.map((announcement) => (
                   <div

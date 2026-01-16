@@ -19,11 +19,38 @@ export interface UserProfile {
   interests?: string[];
   timezone?: string;
   gender?: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
+  // Work Style (for Synergy Matching)
+  workStyle?: {
+    goal: 'win' | 'learn';
+    timePreference: 'night-owl' | 'early-bird' | 'flexible';
+    commitment: 'full-time' | 'part-time' | 'casual';
+    hoursAvailable: number;
+  };
+  // Reliability Badge
+  reliabilityScore?: number;
+  reliabilityLevel?: 'newbie' | 'reliable' | 'finisher' | 'legend';
+  projectsCompleted?: number;
+  // Code Verification
+  githubVerified?: boolean;
+  githubUsername?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
 
 export interface User extends UserProfile {}
+
+export interface HackathonTeam {
+  id: string;
+  name: string;
+  memberIds: string[]; // User IDs in this team
+  leaderId: string; // Team leader who can manage the team
+  createdAt: Date;
+  // Project Details
+  projectTitle?: string;
+  projectDescription?: string;
+  techStack?: string[]; // Technologies being used
+  projectStatus?: 'planning' | 'in-progress' | 'completed';
+}
 
 export interface Hackathon {
   id: string;
@@ -43,8 +70,9 @@ export interface Hackathon {
   image?: string;
   image_url?: string; // For backward compatibility
   prizes?: string[]; // Prize information
-  status: 'open' | 'closed'; // open for registrations, closed for completed
-  teamMembers?: string[]; // array of user IDs who joined
+  status: 'open' | 'in-progress' | 'completed'; // open for registrations, in-progress for working, completed for feedback
+  teamMembers?: string[]; // array of user IDs who joined (all participants)
+  teams?: HackathonTeam[]; // Small teams within the hackathon for feedback
   generalChat: HackathonChatMessage[];
   createdAt: Date;
   updatedAt?: Date;

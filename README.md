@@ -43,35 +43,67 @@ To become the go-to platform where India's next breakthrough innovations are bor
 
 ## ✨ Key Features
 
+### 🤖 **AI-Powered Assistant**
+- **Personalized Guidance**: Gemini AI-powered assistant for hackathon success
+- **Smart Recommendations**: Project ideas based on your skills and experience
+- **Technical Support**: Real-time coding help and problem-solving
+- **Pitch Coaching**: Tips for presentations and team pitches
+- **Context-Aware**: Understands your profile and provides tailored advice
+
+### 🛡️ **Reliability & Trust System**
+- **Reliability Badges**: 4-tier system (Newbie → Reliable → Finisher → Legend)
+- **Team Feedback**: Rate teammates after hackathons to build trust
+- **Trust Scores**: 0-100 scoring based on completion rate and ratings
+- **Ghost Detection**: Identify unreliable team members before joining
+- **Achievement Badges**: Special recognition for consistent performers
+- **Transparent History**: View past hackathon participation and ratings
+
+### ⚡ **Synergy Matching Algorithm**
+- **Work Style Compatibility**: Match based on goals (win vs learn)
+- **Schedule Alignment**: Find teammates with compatible time preferences
+- **Commitment Matching**: Align full-time, part-time, or casual availability
+- **Skill Complementarity**: Smart pairing of complementary skill sets
+- **Overall Synergy Score**: 0-100% compatibility rating
+- **Detailed Breakdown**: See exactly why you match (or don't)
+
 ### 🏆 **Hackathon Management**
 - **Post Hackathons**: Any user can create and organize hackathons
 - **Smart Discovery**: Find hackathons by skills, location, and mode
 - **Team Formation**: Easy join/leave functionality with real-time updates
 - **Status Management**: Open/closed hackathon states with proper restrictions
+- **Required Skills**: Specify skills needed for better team matching
+- **Recommended Profiles**: AI-powered suggestions for team members
 
 ### 👥 **Profile & Team Discovery**
-- **Comprehensive Profiles**: Showcase skills, experience, and projects
-- **Smart Matching**: Find teammates by complementary skills
-- **Advanced Filtering**: Search by location, availability, and expertise
+- **Comprehensive Profiles**: Showcase skills, experience, and work style
+- **Smart Matching**: Find teammates by complementary skills and synergy
+- **Advanced Filtering**: Search by experience, reliability, and availability
+- **Work Style Preferences**: Display goals, time preferences, and commitment
 - **Social Integration**: LinkedIn, GitHub, and portfolio links
+- **Looking for Team**: Flag yourself as available for opportunities
 
 ### 💬 **Real-time Communication**
 - **Direct Messaging**: One-on-one conversations with team members
 - **Hackathon Chat**: Event-specific group discussions
 - **Live Updates**: Real-time message delivery and notifications
+- **Auto-Message Templates**: Quick invites with personalized content
 - **Rich Content**: Support for links and media sharing
+
+### 📢 **Announcements & Notifications**
+- **Hackathon Announcements**: Organizers can post important updates
+- **Unread Tracking**: Visual indicators for new announcements
+- **Real-time Delivery**: Instant notifications to all team members
+- **Pin Important Updates**: Keep critical info at the top
+- **Notification Bell**: Centralized notification center with counts
+- **Mark as Read**: Track which announcements you've seen
 
 ### 🎨 **Modern User Experience**
 - **Responsive Design**: Optimized for all devices and screen sizes
 - **Theme Support**: Light, dark, and system theme modes
 - **Mobile Navigation**: Touch-friendly interface with bottom navigation
 - **Performance Optimized**: Fast loading with efficient caching
-
-### 🔔 **Smart Notifications**
-- **Real-time Alerts**: Instant notifications for messages and announcements
-- **Unread Tracking**: Visual indicators for new content
-- **Hackathon Updates**: Stay informed about event changes
-- **Announcement System**: Important updates from organizers
+- **Text Formatting**: Smart formatting for better readability
+- **Avatar System**: Gender-based default avatars with custom upload
 
 ---
 
@@ -137,6 +169,9 @@ VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_sender_id
 VITE_FIREBASE_APP_ID=your_firebase_app_id
+
+# Google Gemini AI (Optional - for AI Assistant feature)
+VITE_GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### 4. Start Development Server
@@ -267,6 +302,7 @@ service firebase.storage {
    VITE_FIREBASE_STORAGE_BUCKET
    VITE_FIREBASE_MESSAGING_SENDER_ID
    VITE_FIREBASE_APP_ID
+   VITE_GEMINI_API_KEY (optional - for AI Assistant)
    ```
 
 3. **Deploy**
@@ -369,13 +405,24 @@ copies or substantial portions of the Software.
 
 ## 🚀 What's Next?
 
+### Recently Added Features ✨
+- **🤖 AI Assistant** - Gemini-powered hackathon mentor with personalized guidance
+- **🛡️ Reliability Badges** - 4-tier trust system (Newbie → Reliable → Finisher → Legend)
+- **⚡ Synergy Matching** - Smart compatibility scoring based on work style and goals
+- **📢 Announcements** - Real-time hackathon updates with unread tracking
+- **🎯 Smart Recommendations** - AI-powered profile matching with skill analysis
+- **📊 Team Feedback** - Post-hackathon rating system to build community trust
+- **🎨 Work Style Matching** - Find teammates with compatible schedules and commitment
+
 ### Upcoming Features
-- **AI-Powered Matching** - Smart team recommendations based on skills and project history
+- **Advanced AI Features** - Team composition analysis and project success prediction
 - **Video Integration** - Built-in video calls for team meetings
 - **Project Showcase** - Portfolio section for completed hackathon projects
 - **Leaderboards** - Gamification with points and achievements
 - **Mobile App** - Native iOS and Android applications
 - **API Access** - Public API for third-party integrations
+- **Mentor Matching** - Connect with experienced mentors
+- **Skill Verification** - Badge system for verified skills
 
 ### Community Goals
 - **10,000+ Registered Developers** by end of 2025

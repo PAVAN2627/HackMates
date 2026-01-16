@@ -8,6 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { AvatarUpload } from '@/components/AvatarUpload';
+import { WorkStyleSelector } from '@/components/WorkStyleSelector';
+import { SynergyBadge } from '@/components/SynergyBadge';
+import { ReliabilityBadge } from '@/components/ReliabilityBadge';
+import { calculateSynergyScore } from '@/lib/synergyAlgorithm';
+import { useTeamFeedback } from '@/hooks/useTeamFeedback';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { UserProfile } from '@/types';
@@ -34,8 +39,23 @@ export default function Profile() {
     availableFor: 'both' as 'online' | 'in-person' | 'both',
     gender: 'prefer-not-to-say' as 'male' | 'female' | 'non-binary' | 'prefer-not-to-say',
     avatar: '' as string,
+    workStyle: {
+      goal: 'learn' as 'win' | 'learn',
+      timePreference: 'flexible' as 'night-owl' | 'early-bird' | 'flexible',
+      commitment: 'part-time' as 'full-time' | 'part-time' | 'casual',
+      hoursAvailable: 20
+    }
   });
   const [avatarPreview, setAvatarPreview] = useState<string>('');
+  
+  // Determine if viewing own profile
+  const isOwnProfile = !userId || userId === currentUser?.uid;
+  
+  // Load reliability badge and synergy score
+  const { reliabilityBadge, feedbacks, loading: feedbackLoading } = useTeamFeedback(profile?.uid);
+  const synergyScore = currentProfile && profile && !isOwnProfile && currentProfile.workStyle && profile.workStyle
+    ? calculateSynergyScore(currentProfile, profile)
+    : null;
 
   useEffect(() => {
     if (!authLoading) {
@@ -93,6 +113,12 @@ export default function Profile() {
           availableFor: currentProfile.availableFor || 'both',
           gender: currentProfile.gender || 'prefer-not-to-say',
           avatar: currentProfile.avatar || '',
+          workStyle: currentProfile.workStyle || {
+            goal: 'learn',
+            timePreference: 'flexible',
+            commitment: 'part-time',
+            hoursAvailable: 20
+          }
         });
         setAvatarPreview(currentProfile.avatar || '');
         setLoading(false);
@@ -130,6 +156,12 @@ export default function Profile() {
           availableFor: fullProfile.availableFor || 'both',
           gender: fullProfile.gender || 'prefer-not-to-say',
           avatar: fullProfile.avatar || '',
+          workStyle: fullProfile.workStyle || {
+            goal: 'learn',
+            timePreference: 'flexible',
+            commitment: 'part-time',
+            hoursAvailable: 20
+          }
         });
         setAvatarPreview(fullProfile.avatar || '');
       }
@@ -219,6 +251,7 @@ export default function Profile() {
         availableFor: formData.availableFor || 'both',
         gender: formData.gender || 'prefer-not-to-say',
         avatar: formData.avatar || '',
+        workStyle: formData.workStyle,
         updatedAt: new Date(),
       };
       
@@ -284,8 +317,6 @@ export default function Profile() {
     if (!profile) return;
     navigate(`/messages?with=${profile.uid}`);
   };
-
-  const isOwnProfile = !userId || userId === currentUser?.uid;
 
   if (authLoading || loading) {
     return (
@@ -544,9 +575,29 @@ export default function Profile() {
                     </div>
                   </div>
                 </div>
+
+                {/* Work Style Preferences */}
+                <div className="space-y-4">
+                  <WorkStyleSelector 
+                    workStyle={formData.workStyle} 
+                    onChange={(workStyle) => setFormData({ ...formData, workStyle })} 
+                  />
+                </div>
               </div>
             ) : (
               <div>
+                {/* Synergy & Reliability Badges */}
+                {(synergyScore || reliabilityBadge) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {synergyScore && (
+                      <SynergyBadge score={synergyScore} />
+                    )}
+                    {reliabilityBadge && (
+                      <ReliabilityBadge badge={reliabilityBadge} showDetails />
+                    )}
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h1 className="text-3xl font-bold">{profile.name}</h1>
@@ -650,6 +701,75 @@ export default function Profile() {
                     </a>
                   )}
                 </div>
+
+                {/* Team Feedback Reviews */}
+                {feedbacks && feedbacks.length > 0 && (
+                  <div className="mt-6 pt-6 border-t">
+                    <h3 className="text-lg font-semibold mb-4">
+                      Team Feedback ({feedbacks.length})
+                    </h3>
+                    <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                      {feedbacks.map((feedback) => (
+                        <div key={feedback.id} className="glass rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <p className="font-medium">{feedback.hackathonTitle}</p>
+                              <p className="text-sm text-muted-foreground">
+                                From: {feedback.fromUserName}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <span
+                                  key={i}
+                                  className={`text-lg ${
+                                    i < feedback.rating
+                                      ? 'text-yellow-500'
+                                      : 'text-gray-300'
+                                  }`}
+                                >
+                                  ★
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {feedback.didContribute ? (
+                            <>
+                              {feedback.skills && feedback.skills.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mb-2">
+                                  {feedback.skills.map((skill) => (
+                                    <Badge key={skill} variant="secondary" className="text-xs">
+                                      {skill}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {feedback.comment && (
+                                <p className="text-sm text-muted-foreground italic">
+                                  "{feedback.comment}"
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-sm text-destructive">
+                              Did not contribute to the project
+                            </p>
+                          )}
+                          
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {new Date(feedback.createdAt).toLocaleDateString('en-IN', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, X, Linkedin, Github, Globe, MapPin, Tag, Star } from 'lucide-react';
+import { MessageCircle, X, Linkedin, Github, Globe, MapPin, Tag, Star, Zap, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
+import { SynergyBadge } from '@/components/SynergyBadge';
+import { ReliabilityBadge } from '@/components/ReliabilityBadge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
+import { useTeamFeedback } from '@/hooks/useTeamFeedback';
+import { calculateSynergyScore } from '@/lib/synergyAlgorithm';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { UserProfile } from '@/types';
@@ -31,6 +35,12 @@ export function UserProfileModal({
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  
+  // Load reliability badge and calculate synergy score
+  const { reliabilityBadge, feedbacks } = useTeamFeedback(userId || undefined);
+  const synergyScore = currentUserProfile && profile && currentUserProfile.workStyle && profile.workStyle
+    ? calculateSynergyScore(currentUserProfile, profile)
+    : null;
 
   useEffect(() => {
     if (userId && isOpen) {
@@ -192,6 +202,63 @@ export function UserProfileModal({
                   </div>
                 )}
 
+                {/* Synergy Score & Reliability Badge */}
+                {(synergyScore || reliabilityBadge) && (
+                  <div className="space-y-3">
+                    {synergyScore && (
+                      <div className="bg-muted/30 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium">Compatibility</span>
+                          </div>
+                          <Badge className={`${
+                            synergyScore.overall >= 75 ? 'bg-green-500' :
+                            synergyScore.overall >= 50 ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          } text-white`}>
+                            {synergyScore.overall}% Match
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {synergyScore.overall >= 75 ? '🎯 High synergy - Great match!' :
+                           synergyScore.overall >= 50 ? '👍 Moderate compatibility' :
+                           '⚠️ Low compatibility'}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {reliabilityBadge && (
+                      <div className="bg-muted/30 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium">Reliability</span>
+                          </div>
+                          <Badge className={`${
+                            reliabilityBadge.level === 'legend' ? 'bg-yellow-500' :
+                            reliabilityBadge.level === 'finisher' ? 'bg-green-500' :
+                            reliabilityBadge.level === 'reliable' ? 'bg-blue-500' :
+                            'bg-gray-500'
+                          } text-white`}>
+                            {reliabilityBadge.level === 'legend' ? '👑' :
+                             reliabilityBadge.level === 'finisher' ? '⭐' :
+                             reliabilityBadge.level === 'reliable' ? '✓' : '🌱'} {reliabilityBadge.level}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{reliabilityBadge.projectsCompleted} hackathon{reliabilityBadge.projectsCompleted !== 1 ? 's' : ''} completed</span>
+                          {reliabilityBadge.completionRate > 0 && (
+                            <span>{reliabilityBadge.completionRate.toFixed(0)}% success rate</span>
+                          )}
+                        </div>
+                        {/* Debug badge data */}
+                        {console.log('Badge data:', reliabilityBadge)}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Experience and Availability */}
                 <div className="flex flex-wrap gap-2 justify-center">
                   {profile.experience && (
@@ -287,6 +354,70 @@ export function UserProfileModal({
                     </div>
                   </div>
                 )}
+
+                {/* Team Feedback Reviews */}
+                {feedbacks && feedbacks.length > 0 && (
+                  <div className="border-t border-border pt-4">
+                    <p className="text-sm font-medium text-muted-foreground mb-3 text-center">
+                      Team Feedback ({feedbacks.length})
+                    </p>
+                    <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                      {feedbacks.map((feedback) => (
+                        <div key={feedback.id} className="bg-muted/30 rounded-lg p-3">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{feedback.hackathonTitle}</p>
+                              <p className="text-xs text-muted-foreground">
+                                From: {feedback.fromUserName}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <span
+                                  key={i}
+                                  className={`text-sm ${
+                                    i < feedback.rating
+                                      ? 'text-yellow-500'
+                                      : 'text-gray-300'
+                                  }`}
+                                >
+                                  ★
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {feedback.didContribute ? (
+                            <>
+                              {feedback.skills && feedback.skills.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mb-2">
+                                  {feedback.skills.map((skill) => (
+                                    <Badge key={skill} variant="secondary" className="text-xs">
+                                      {skill}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {feedback.comment && (
+                                <p className="text-xs text-muted-foreground italic">
+                                  "{feedback.comment}"
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-xs text-destructive">
+                              Did not contribute
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Debug: Show if feedbacks exist but not rendering */}
+                {console.log('UserProfileModal - feedbacks:', feedbacks, 'length:', feedbacks?.length)}
 
                 {/* Actions */}
                 {userId !== user?.uid && (

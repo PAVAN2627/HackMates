@@ -44,5 +44,8 @@ export const COLLECTIONS = {
   HACKATHONS: 'hackathons',
   HACKATHON_CHAT: 'hackathonChat',
   DIRECT_MESSAGES: 'directMessages',
-  ANNOUNCEMENTS: 'announcements'
+  ANNOUNCEMENTS: 'announcements',
+  TEAM_FEEDBACKS: 'teamFeedbacks',
+  NOTIFICATIONS: 'notifications',
+  TEAM_CHAT: 'teamChat'
 } as const;

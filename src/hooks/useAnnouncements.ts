@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, COLLECTIONS } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, Timestamp, doc, getDoc, writeBatch } from 'firebase/firestore';
 
 export interface Announcement {
   id: string;
@@ -95,6 +95,18 @@ export function useAnnouncements(hackathonId: string) {
     if (!user || !title.trim() || !content.trim()) return;
 
     try {
+      // Get hackathon details to fetch team members
+      const hackathonDoc = await getDoc(doc(db, COLLECTIONS.HACKATHONS, hackathonId));
+      if (!hackathonDoc.exists()) {
+        throw new Error('Hackathon not found');
+      }
+
+      const hackathonData = hackathonDoc.data();
+      const hackathonTitle = hackathonData.title || 'Hackathon';
+      const teamMembers = hackathonData.teamMembers || [];
+      const authorName = user.displayName || 'Organizer';
+
+      // Create the announcement
       await addDoc(collection(db, COLLECTIONS.ANNOUNCEMENTS), {
         hackathonId,
         title: title.trim(),
@@ -103,6 +115,29 @@ export function useAnnouncements(hackathonId: string) {
         isPinned: false,
         createdAt: Timestamp.now(),
       });
+
+      // Create notifications for all team members (except the author)
+      const batch = writeBatch(db);
+      const notificationsRef = collection(db, COLLECTIONS.NOTIFICATIONS);
+
+      teamMembers.forEach((memberId: string) => {
+        if (memberId !== user.uid) {
+          const notifRef = doc(notificationsRef);
+          batch.set(notifRef, {
+            userId: memberId,
+            type: 'announcement',
+            title: 'New Announcement',
+            message: `${authorName} posted: "${title}"`,
+            read: false,
+            hackathonId,
+            hackathonTitle,
+            announcementTitle: title,
+            createdAt: new Date()
+          });
+        }
+      });
+
+      await batch.commit();
     } catch (error) {
       console.error('Error creating announcement:', error);
       throw error;
