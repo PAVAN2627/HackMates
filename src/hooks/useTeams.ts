@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { doc, updateDoc, addDoc, collection, getDoc } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { HackathonTeam } from '@/types';
+import { sendTeamAdditionEmail } from '@/lib/emailService';
 import { toast } from 'sonner';
 
 export function useTeams() {
@@ -49,6 +50,34 @@ export function useTeams() {
         invitedBy: invitedByName,
         createdAt: new Date()
       });
+
+      // Send email notification to the added member
+      try {
+        const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, userId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const userEmail = userData.email;
+          const userName = userData.name;
+          
+          if (userEmail && userName) {
+            sendTeamAdditionEmail(
+              userEmail,
+              userName,
+              hackathonTitle,
+              teamName,
+              invitedByName,
+              hackathonId
+            ).then(() => {
+              console.log('Team addition email queued for:', userEmail);
+            }).catch(err => {
+              console.error('Failed to queue team addition email:', err);
+            });
+          }
+        }
+      } catch (emailError) {
+        console.error('Error queuing team addition email:', emailError);
+        // Don't fail the whole operation if email fails
+      }
 
       toast.success('Member added to team!');
       return true;

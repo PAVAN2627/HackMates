@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { sendWelcomeEmail } from '@/lib/emailService';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { WorkStyleSelector } from '@/components/WorkStyleSelector';
@@ -215,6 +216,12 @@ export default function Register() {
       });
 
       toast.success('Account created successfully!');
+      
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail(formData.email, formData.name, formData.password)
+        .then(() => console.log('Welcome email queued'))
+        .catch(err => console.error('Failed to queue welcome email:', err));
+      
       navigate('/hackathons');
     } catch (error: any) {
       console.error('Signup error:', error);

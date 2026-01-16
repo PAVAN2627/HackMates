@@ -18,6 +18,7 @@ import Profiles from "./pages/Profiles";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
 import Announcements from "./pages/Announcements";
+import EmailTest from "./pages/EmailTest";
 
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/register" element={<Register />} />
               <Route path="/explore" element={<PublicHackathons />} />
+              <Route path="/email-test" element={<EmailTest />} />
               <Route element={<DashboardLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/hackathons" element={<Hackathons />} />
