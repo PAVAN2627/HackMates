@@ -39,22 +39,30 @@ export function formatHackathonDescription(text: string): string {
 
 /**
  * Format text for display with proper line breaks
- * This is a more aggressive formatter for better readability
+ * Preserves existing line breaks and adds smart formatting
  */
 export function formatTextForDisplay(text: string): string {
   if (!text) return text;
   
-  let formatted = formatHackathonDescription(text);
+  // First, preserve existing line breaks by replacing them with a placeholder
+  let formatted = text.replace(/\n/g, '<<<LINEBREAK>>>');
   
-  // Additional formatting for better display
-  // Add spacing around prize amounts
-  formatted = formatted.replace(/(₹[\d,]+)/g, ' $1 ');
+  // Only apply auto-formatting if there are NO existing line breaks
+  if (!text.includes('\n')) {
+    formatted = formatHackathonDescription(text);
+  } else {
+    // If there are existing line breaks, just restore them
+    formatted = formatted.replace(/<<<LINEBREAK>>>/g, '\n');
+  }
   
-  // Clean up extra spaces
-  formatted = formatted.replace(/\s{2,}/g, ' ');
+  // Clean up extra spaces but preserve line breaks
+  formatted = formatted.replace(/[ \t]{2,}/g, ' '); // Only collapse spaces/tabs, not newlines
   
-  // Ensure proper spacing after line breaks
-  formatted = formatted.replace(/\n\s+/g, '\n');
+  // Trim leading/trailing whitespace from each line
+  formatted = formatted.split('\n').map(line => line.trim()).join('\n');
   
-  return formatted;
+  // Remove excessive blank lines (more than 2 consecutive)
+  formatted = formatted.replace(/\n{3,}/g, '\n\n');
+  
+  return formatted.trim();
 }
