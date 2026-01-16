@@ -274,13 +274,14 @@ export default function EditHackathon() {
                   <Label htmlFor="description">Description *</Label>
                   <textarea
                     id="description"
-                    placeholder="Describe the hackathon, mention what type of members you need (developers, designers, etc.)"
+                    placeholder="Describe the hackathon, mention what type of members you need (developers, designers, etc.)&#10;&#10;Use line breaks to organize your description better."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={5}
-                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm resize-none"
+                    rows={6}
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
+                  <p className="text-xs text-muted-foreground mt-1">Tip: Press Enter to add line breaks for better formatting</p>
                 </div>
 
                 {/* Image Upload */}
