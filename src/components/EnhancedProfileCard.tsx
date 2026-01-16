@@ -151,15 +151,26 @@ export function EnhancedProfileCard({
         </div>
       )}
 
-      {/* Synergy Details (if high match) */}
-      {synergyScore && synergyScore.overall >= 75 && (
-        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
-          <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
-            🎯 High Synergy Match!
+      {/* Synergy Details */}
+      {synergyScore && synergyScore.overall >= 50 && (
+        <div className={`border rounded-lg p-3 mb-4 ${
+          synergyScore.overall >= 75 
+            ? 'bg-green-500/10 border-green-500/20' 
+            : 'bg-blue-500/10 border-blue-500/20'
+        }`}>
+          <p className={`text-sm font-medium mb-2 ${
+            synergyScore.overall >= 75 
+              ? 'text-green-600 dark:text-green-400' 
+              : 'text-blue-600 dark:text-blue-400'
+          }`}>
+            {synergyScore.overall >= 75 ? '🎯 High Synergy Match!' : '✨ Good Compatibility'}
           </p>
-          <p className="text-xs text-muted-foreground">
-            {synergyScore.breakdown.goal}
-          </p>
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <p>• {synergyScore.breakdown.goal}</p>
+            <p>• {synergyScore.breakdown.time}</p>
+            <p>• {synergyScore.breakdown.commitment}</p>
+            <p>• {synergyScore.breakdown.skills}</p>
+          </div>
         </div>
       )}
 

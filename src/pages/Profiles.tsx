@@ -118,6 +118,15 @@ export default function Profiles() {
     filtered = filtered.filter(p => p.uid !== user.uid);
   }
 
+  // Sort by synergy score if current user has work style
+  if (currentProfile?.workStyle) {
+    filtered = filtered.sort((a, b) => {
+      const synergyA = a.workStyle ? calculateSynergyScore(currentProfile, a).overall : 0;
+      const synergyB = b.workStyle ? calculateSynergyScore(currentProfile, b).overall : 0;
+      return synergyB - synergyA; // Higher synergy first
+    });
+  }
+
   const handleMessage = async (recipientId: string) => {
     if (!user || !currentProfile) {
       toast.error('Please log in to send messages');

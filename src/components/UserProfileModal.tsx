@@ -284,6 +284,34 @@ export function UserProfileModal({
                   )}
                 </div>
 
+                {/* Work Style */}
+                {profile.workStyle && (
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <Zap className="w-4 h-4 text-primary" />
+                      <p className="text-sm font-medium">Work Style</p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Goal</p>
+                        <p className="text-sm font-medium capitalize">{profile.workStyle?.goal || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Time</p>
+                        <p className="text-sm font-medium capitalize">
+                          {profile.workStyle?.timePreference?.replace('-', ' ') || 'N/A'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Commitment</p>
+                        <p className="text-sm font-medium capitalize">
+                          {profile.workStyle?.commitment?.replace('-', ' ') || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Skills */}
                 {profile.skills && profile.skills.length > 0 && (
                   <div>
@@ -423,9 +451,6 @@ export function UserProfileModal({
                     </div>
                   </div>
                 )}
-                
-                {/* Debug: Show if feedbacks exist but not rendering */}
-                {console.log('UserProfileModal - feedbacks:', feedbacks, 'length:', feedbacks?.length)}
 
                 {/* Actions */}
                 {userId !== user?.uid && (
