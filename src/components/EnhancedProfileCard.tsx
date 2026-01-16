@@ -97,6 +97,27 @@ export function EnhancedProfileCard({
         </p>
       )}
 
+      {/* Work Style (if available) */}
+      {profile.workStyle && (
+        <div className="mb-4 p-3 bg-muted/50 rounded-lg border border-border">
+          <p className="text-xs font-semibold text-muted-foreground mb-2">Work Style</p>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div>
+              <span className="text-muted-foreground">Goal:</span>
+              <p className="font-medium capitalize">{profile.workStyle.goal}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Time:</span>
+              <p className="font-medium capitalize">{profile.workStyle.timePreference.replace('-', ' ')}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Commit:</span>
+              <p className="font-medium capitalize">{profile.workStyle.commitment.replace('-', ' ')}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Info Grid */}
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-2 text-sm">
