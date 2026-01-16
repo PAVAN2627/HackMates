@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
  * - Lock mechanism after all members commit
  * - Warning about reliability score impact
  * - Shows who has committed and who hasn't
+ * - Only team members (added by creator) can see and commit
  */
 
 interface TeamMember {

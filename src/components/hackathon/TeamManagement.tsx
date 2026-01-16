@@ -351,13 +351,13 @@ export function TeamManagement({
         )
       )}
       
-      {/* Message for non-creator users without a team */}
+      {/* Message for non-creator users without a team - Should not be visible since they can't access this tab */}
       {!isCreator && !userTeam && teams.length > 0 && (
         <div className="text-center py-12">
           <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
           <h4 className="text-lg font-semibold mb-2">You're not in a team yet</h4>
           <p className="text-muted-foreground">
-            Wait for the hackathon organizer to add you to a team
+            Wait for the hackathon organizer to add you to a team. Once added, you'll be able to see the Teams tab.
           </p>
         </div>
       )}

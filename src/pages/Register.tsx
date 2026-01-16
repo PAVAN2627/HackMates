@@ -39,7 +39,15 @@ const interestOptions = [
   'Web Development', 'Mobile Apps', 'AI/ML', 'Data Science',
   'Blockchain', 'Game Development', 'IoT', 'Cybersecurity',
   'Cloud Computing', 'DevOps', 'UI/UX Design', 'AR/VR',
-  'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Social Impact'
+  'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Social Impact',
+  'Robotics', 'Computer Vision', 'Natural Language Processing',
+  'Big Data', 'Quantum Computing', 'Backend Development',
+  'Frontend Development', 'Full Stack', 'API Development',
+  'Database Design', 'System Architecture', 'Microservices',
+  'Agritech', 'Cleantech', 'Smart Cities', 'Logistics Tech',
+  '3D Modeling', 'Animation', 'Video Editing', 'Graphic Design',
+  'Product Management', 'Business Analytics', 'Marketing Tech',
+  'Hardware', 'Embedded Systems', 'Networking', 'Open Source'
 ];
 
 const locationOptions = [

@@ -37,6 +37,21 @@ const locationOptions = [
 
 const experienceOptions = ['Beginner', 'Intermediate', 'Advanced'];
 
+const interestOptions = [
+  'Web Development', 'Mobile Apps', 'AI/ML', 'Data Science',
+  'Blockchain', 'Game Development', 'IoT', 'Cybersecurity',
+  'Cloud Computing', 'DevOps', 'UI/UX Design', 'AR/VR',
+  'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Social Impact',
+  'Robotics', 'Computer Vision', 'Natural Language Processing',
+  'Big Data', 'Quantum Computing', 'Backend Development',
+  'Frontend Development', 'Full Stack', 'API Development',
+  'Database Design', 'System Architecture', 'Microservices',
+  'Agritech', 'Cleantech', 'Smart Cities', 'Logistics Tech',
+  '3D Modeling', 'Animation', 'Video Editing', 'Graphic Design',
+  'Product Management', 'Business Analytics', 'Marketing Tech',
+  'Hardware', 'Embedded Systems', 'Networking', 'Open Source'
+];
+
 export default function Profiles() {
   const { profiles, loading, refreshProfiles } = useProfiles();
   const { user, profile: currentProfile } = useAuth();
@@ -45,6 +60,7 @@ export default function Profiles() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [selectedAvailability, setSelectedAvailability] = useState<'online' | 'in-person' | 'both' | ''>('');
   const [selectedExperience, setSelectedExperience] = useState<'Beginner' | 'Intermediate' | 'Advanced' | ''>('');
@@ -68,6 +84,12 @@ export default function Profiles() {
   if (selectedSkills.length > 0) {
     filtered = filtered.filter(p =>
       p.skills.some(skill => selectedSkills.includes(skill))
+    );
+  }
+
+  if (selectedInterests.length > 0) {
+    filtered = filtered.filter(p =>
+      p.interests?.some(interest => selectedInterests.includes(interest))
     );
   }
 
@@ -169,6 +191,12 @@ export default function Profiles() {
   const toggleSkill = (skill: string) => {
     setSelectedSkills(prev =>
       prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
+  };
+
+  const toggleInterest = (interest: string) => {
+    setSelectedInterests(prev =>
+      prev.includes(interest) ? prev.filter(i => i !== interest) : [...prev, interest]
     );
   };
 
@@ -289,7 +317,7 @@ export default function Profiles() {
                   <Tag className="w-4 h-4" />
                   Skills
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto border border-input rounded-md p-2">
                   {skillsOptions.map(skill => (
                     <button
                       key={skill}
@@ -306,13 +334,37 @@ export default function Profiles() {
                 </div>
               </div>
 
+              {/* Interests Filter */}
+              <div>
+                <label className="text-sm font-medium flex items-center gap-2 mb-2">
+                  <Tag className="w-4 h-4" />
+                  Areas of Interest
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto border border-input rounded-md p-2">
+                  {interestOptions.map(interest => (
+                    <button
+                      key={interest}
+                      onClick={() => toggleInterest(interest)}
+                      className={`px-3 py-2 rounded-md border text-xs font-medium transition-colors ${
+                        selectedInterests.includes(interest)
+                          ? 'bg-secondary text-secondary-foreground border-secondary'
+                          : 'bg-background border-input hover:border-secondary'
+                      }`}
+                    >
+                      {interest}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Clear Filters */}
-              {(selectedSkills.length > 0 || selectedLocation || selectedAvailability || selectedExperience) && (
+              {(selectedSkills.length > 0 || selectedInterests.length > 0 || selectedLocation || selectedAvailability || selectedExperience) && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
                     setSelectedSkills([]);
+                    setSelectedInterests([]);
                     setSelectedLocation('');
                     setSelectedAvailability('');
                     setSelectedExperience('');
@@ -349,6 +401,7 @@ export default function Profiles() {
                 <Button variant="outline" onClick={() => {
                   setSearchTerm('');
                   setSelectedSkills([]);
+                  setSelectedInterests([]);
                   setSelectedLocation('');
                   setSelectedAvailability('');
                   setSelectedExperience('');

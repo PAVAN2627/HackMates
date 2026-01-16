@@ -597,12 +597,20 @@ export default function Profile() {
                 <div>
                   <Label>Interests</Label>
                   <div className="mt-2">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 border border-input rounded-md p-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 border border-input rounded-md p-3 max-h-60 overflow-y-auto">
                       {[
                         'Web Development', 'Mobile Apps', 'AI/ML', 'Data Science',
                         'Blockchain', 'Game Development', 'IoT', 'Cybersecurity',
                         'Cloud Computing', 'DevOps', 'UI/UX Design', 'AR/VR',
-                        'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Social Impact'
+                        'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Social Impact',
+                        'Robotics', 'Computer Vision', 'Natural Language Processing',
+                        'Big Data', 'Quantum Computing', 'Backend Development',
+                        'Frontend Development', 'Full Stack', 'API Development',
+                        'Database Design', 'System Architecture', 'Microservices',
+                        'Agritech', 'Cleantech', 'Smart Cities', 'Logistics Tech',
+                        '3D Modeling', 'Animation', 'Video Editing', 'Graphic Design',
+                        'Product Management', 'Business Analytics', 'Marketing Tech',
+                        'Hardware', 'Embedded Systems', 'Networking', 'Open Source'
                       ].map(interest => (
                         <button
                           key={interest}

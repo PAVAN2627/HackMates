@@ -70,6 +70,29 @@ export default function HackathonDetails() {
       setActiveTab(tab);
     }
   }, [searchParams]);
+  
+  // Calculate derived values
+  const isHackathonCreator = user?.uid === hackathon?.creatorId;
+  const isUserJoined = hackathon?.teamMembers?.includes(user?.uid || '') || false;
+  const userTeam = getUserTeam(hackathon?.teams, user?.uid || '');
+  const isUserInTeam = isUserInAnyTeam(hackathon?.teams, user?.uid || '');
+  
+  // Debug: Log team information (always call useEffect, but conditionally log)
+  useEffect(() => {
+    if (userTeam) {
+      console.log('User Team:', userTeam);
+      console.log('Team Member IDs:', userTeam.memberIds);
+      console.log('Total members in team:', userTeam.memberIds.length);
+      console.log('Committed members:', hackathon?.committedMembers);
+    }
+  }, [userTeam, hackathon?.committedMembers]);
+  
+  // Determine if user can see teams tab
+  // Only creator and users who are in a team can see it
+  const canSeeTeamsTab = isHackathonCreator || isUserInTeam;
+  
+  // Members tab is ONLY visible to creator (not team members)
+  const canSeeMembersTab = isHackathonCreator;
 
   if (loading) {
     return (
@@ -94,10 +117,6 @@ export default function HackathonDetails() {
       </div>
     );
   }
-
-  const isHackathonCreator = user?.uid === hackathon?.creatorId;
-  const isUserJoined = hackathon?.teamMembers?.includes(user?.uid || '') || false;
-  const userTeam = getUserTeam(hackathon?.teams, user?.uid || '');
 
   const handleJoinLeave = async () => {
     if (!hackathon || !user) return;
@@ -523,11 +542,15 @@ export default function HackathonDetails() {
               <span className="hidden sm:inline">General Chat</span>
               <span className="sm:hidden">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="teams" className="data-[state=active]:bg-background whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
-              <span className="hidden sm:inline">Teams ({hackathon.teams?.length || 0})</span>
-              <span className="sm:hidden">Teams ({hackathon.teams?.length || 0})</span>
-            </TabsTrigger>
-            {isHackathonCreator && (
+            {/* Teams tab - Only visible to creator and users who are in a team */}
+            {canSeeTeamsTab && (
+              <TabsTrigger value="teams" className="data-[state=active]:bg-background whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
+                <span className="hidden sm:inline">Teams ({hackathon.teams?.length || 0})</span>
+                <span className="sm:hidden">Teams ({hackathon.teams?.length || 0})</span>
+              </TabsTrigger>
+            )}
+            {/* Members tab - ONLY visible to creator */}
+            {canSeeMembersTab && (
               <TabsTrigger value="members" className="data-[state=active]:bg-background whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">
                 <span className="hidden sm:inline">Team Members ({hackathon.teamMembers?.length || 0})</span>
                 <span className="sm:hidden">Members ({hackathon.teamMembers?.length || 0})</span>
@@ -571,16 +594,17 @@ export default function HackathonDetails() {
         </TabsContent>
 
         <TabsContent value="teams" className="space-y-6">
-          {/* Team Contract - Anti-Ghosting Lock (Only shown to members who have joined) */}
-          {isUserJoined && hackathon.status === 'open' && !hackathon.isTeamLocked && (
+          {/* Team Contract - Anti-Ghosting Lock (Only shown to users who are in a team) */}
+          {isUserInTeam && hackathon.status === 'open' && !hackathon.isTeamLocked && userTeam && (
             <TeamContract
               hackathonId={hackathon.id}
-              teamMembers={(hackathon.teamMembers || []).map(memberId => {
+              teamMembers={userTeam.memberIds.map(memberId => {
                 // Find member profile from profiles or use basic info
-                const memberProfile = profiles.find(p => p.uid === memberId);
+                const memberProfile = profiles.find(p => p.uid === memberId || p.id === memberId);
+                console.log('Team member:', memberId, 'Profile found:', !!memberProfile, 'Name:', memberProfile?.name);
                 return {
                   userId: memberId,
-                  userName: memberProfile?.name || 'Unknown',
+                  userName: memberProfile?.name || 'Loading...',
                   userAvatar: memberProfile?.avatar
                 };
               })}
@@ -594,14 +618,14 @@ export default function HackathonDetails() {
           )}
 
           {/* Show locked status if team is locked */}
-          {isUserJoined && hackathon.isTeamLocked && (
+          {isUserInTeam && hackathon.isTeamLocked && userTeam && (
             <TeamContract
               hackathonId={hackathon.id}
-              teamMembers={(hackathon.teamMembers || []).map(memberId => {
-                const memberProfile = profiles.find(p => p.uid === memberId);
+              teamMembers={userTeam.memberIds.map(memberId => {
+                const memberProfile = profiles.find(p => p.uid === memberId || p.id === memberId);
                 return {
                   userId: memberId,
-                  userName: memberProfile?.name || 'Unknown',
+                  userName: memberProfile?.name || 'Loading...',
                   userAvatar: memberProfile?.avatar
                 };
               })}
@@ -626,7 +650,7 @@ export default function HackathonDetails() {
           />
 
           {/* Confirmation Message - All Members Committed */}
-          {isUserJoined && hackathon.isTeamLocked && (
+          {isUserInTeam && hackathon.isTeamLocked && (
             <div className="glass rounded-xl p-6 border-2 border-green-500/30 bg-green-500/5 mt-6">
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
@@ -662,7 +686,7 @@ export default function HackathonDetails() {
           )}
         </TabsContent>
 
-        {isHackathonCreator && (
+        {canSeeMembersTab && (
           <TabsContent value="members">
             <div className="glass rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
