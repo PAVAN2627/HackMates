@@ -33,11 +33,20 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (response.ok) {
-      console.log(`Email sent successfully to ${to} (${type})`);
+      console.log(`✅ Email sent successfully to ${to} (${type})`);
       return res.status(200).json({ success: true, id: data.id });
     } else {
-      console.error('Resend API error:', data);
-      return res.status(response.status).json({ error: data.message || 'Failed to send email' });
+      console.error('❌ Resend API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: data,
+        apiKeyPresent: !!process.env.RESEND_API_KEY,
+        apiKeyPrefix: process.env.RESEND_API_KEY?.substring(0, 8)
+      });
+      return res.status(response.status).json({ 
+        error: data.message || 'Failed to send email',
+        details: data
+      });
     }
   } catch (error) {
     console.error('Email sending error:', error);

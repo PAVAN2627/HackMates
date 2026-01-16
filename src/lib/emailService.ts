@@ -38,6 +38,11 @@ async function sendEmail(data: EmailData): Promise<boolean> {
         return true;
       } else {
         console.error('❌ Email sending failed:', result);
+        console.error('❌ Full error details:', {
+          status: response.status,
+          statusText: response.statusText,
+          result: result
+        });
         return false;
       }
     }
