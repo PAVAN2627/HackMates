@@ -233,6 +233,12 @@ export function useHackathons() {
       if (hackathonData.status === 'closed') {
         throw new Error('Cannot leave a closed hackathon');
       }
+
+      // Check if user has committed to the project
+      const committedMembers = hackathonData.committedMembers || [];
+      if (committedMembers.includes(user.uid)) {
+        throw new Error('❌ You cannot leave after committing to the project! This protects your reliability score.');
+      }
       
       const currentMembers = hackathonData.teamMembers || [];
       

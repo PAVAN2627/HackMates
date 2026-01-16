@@ -11,8 +11,11 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { WorkStyleSelector } from '@/components/WorkStyleSelector';
 import { SynergyBadge } from '@/components/SynergyBadge';
 import { ReliabilityBadge } from '@/components/ReliabilityBadge';
+import { GitHubVerificationBadge } from '@/components/GitHubVerificationBadge';
 import { calculateSynergyScore } from '@/lib/synergyAlgorithm';
 import { useTeamFeedback } from '@/hooks/useTeamFeedback';
+import { useGitHubVerification } from '@/hooks/useGitHubVerification';
+import { isValidGitHubUsername } from '@/lib/githubVerification';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { UserProfile } from '@/types';
@@ -56,6 +59,9 @@ export default function Profile() {
   const synergyScore = currentProfile && profile && !isOwnProfile && currentProfile.workStyle && profile.workStyle
     ? calculateSynergyScore(currentProfile, profile)
     : null;
+  
+  // GitHub verification
+  const { verifying, verifyAndUpdateProfile, refreshVerification } = useGitHubVerification();
 
   useEffect(() => {
     if (!authLoading) {
@@ -316,6 +322,83 @@ export default function Profile() {
   const handleSendMessage = () => {
     if (!profile) return;
     navigate(`/messages?with=${profile.uid}`);
+  };
+
+  // Extract GitHub username from URL
+  const extractGitHubUsername = (githubUrl: string): string | null => {
+    if (!githubUrl) return null;
+    
+    // Remove trailing slashes
+    const cleanUrl = githubUrl.trim().replace(/\/$/, '');
+    
+    // Try to extract username from various GitHub URL formats
+    const patterns = [
+      /github\.com\/([a-zA-Z0-9-]+)\/?$/,  // https://github.com/username
+      /^@?([a-zA-Z0-9-]+)$/,                // @username or username
+    ];
+    
+    for (const pattern of patterns) {
+      const match = cleanUrl.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    
+    return null;
+  };
+
+  const handleVerifyGitHub = async () => {
+    if (!currentUser || !profile) {
+      toast.error('Please sign in to verify GitHub');
+      return;
+    }
+
+    const githubUsername = extractGitHubUsername(profile.github || '');
+    
+    if (!githubUsername) {
+      toast.error('Please add your GitHub profile URL first');
+      return;
+    }
+
+    if (!isValidGitHubUsername(githubUsername)) {
+      toast.error('Invalid GitHub username format');
+      return;
+    }
+
+    const result = await verifyAndUpdateProfile(currentUser.uid, githubUsername);
+    
+    if (result.verified && result.activity) {
+      // Update local profile state immediately
+      setProfile(prev => prev ? {
+        ...prev,
+        githubVerified: true,
+        githubUsername: result.activity!.username,
+        githubActivity: result.activity!
+      } : null);
+    }
+  };
+
+  const handleRefreshVerification = async () => {
+    if (!currentUser || !profile) return;
+
+    const githubUsername = extractGitHubUsername(profile.github || '');
+    
+    if (!githubUsername) {
+      toast.error('GitHub profile not found');
+      return;
+    }
+
+    const result = await refreshVerification(currentUser.uid, githubUsername);
+    
+    if (result.verified && result.activity) {
+      // Update local profile state immediately
+      setProfile(prev => prev ? {
+        ...prev,
+        githubVerified: true,
+        githubUsername: result.activity!.username,
+        githubActivity: result.activity!
+      } : null);
+    }
   };
 
   if (authLoading || loading) {
@@ -594,6 +677,51 @@ export default function Profile() {
                     )}
                     {reliabilityBadge && (
                       <ReliabilityBadge badge={reliabilityBadge} showDetails />
+                    )}
+                  </div>
+                )}
+
+                {/* GitHub Verification Section - Only for own profile */}
+                {isOwnProfile && (
+                  <div className="mb-6">
+                    {profile.githubActivity ? (
+                      <GitHubVerificationBadge
+                        activity={profile.githubActivity}
+                        showDetails={true}
+                        onRefresh={handleRefreshVerification}
+                        refreshing={verifying}
+                      />
+                    ) : (
+                      <div className="glass rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold flex items-center gap-2">
+                            <Github className="w-5 h-5 text-primary" />
+                            GitHub Verification
+                          </h3>
+                          <Badge variant="outline" className="text-xs">
+                            Not Verified
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Verify your GitHub activity to showcase your coding skills and boost your profile credibility.
+                        </p>
+                        {profile.github ? (
+                          <Button
+                            onClick={handleVerifyGitHub}
+                            disabled={verifying}
+                            size="sm"
+                            className="w-full"
+                          >
+                            {verifying ? 'Verifying...' : 'Verify GitHub Activity'}
+                          </Button>
+                        ) : (
+                          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+                            <p className="text-xs text-yellow-700 dark:text-yellow-400">
+                              ⚠️ Please add your GitHub profile URL in the edit section first, then verify your activity.
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}

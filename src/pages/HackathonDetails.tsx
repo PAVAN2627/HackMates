@@ -14,7 +14,8 @@ import {
   Users,
   UserPlus,
   UserMinus,
-  Star
+  Star,
+  CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AnnouncementSection } from '@/components/hackathon/AnnouncementSection';
 import { ChatSection } from '@/components/hackathon/ChatSection';
+import { TeamContract } from '@/components/hackathon/TeamContract';
+import { TeamContractDialog } from '@/components/TeamContractDialog';
 import { RecommendedProfiles } from '@/components/hackathon/RecommendedProfiles.tsx';
 import { TeamManagement } from '@/components/hackathon/TeamManagement';
 import { UserProfileModal } from '@/components/UserProfileModal';
@@ -48,7 +51,7 @@ export default function HackathonDetails() {
   const { updateHackathonStatus, deleteHackathon, joinHackathon, leaveHackathon } = useHackathons();
   const { announcements, loading: announcementsLoading, createAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements(id || '');
   const { messages, loading: chatLoading, sendMessage, editMessage, deleteMessage } = useChat(id || '');
-  const { getProfileById } = useProfiles();
+  const { getProfileById, profiles } = useProfiles();
   const { submitFeedback } = useTeamFeedback();
   const { getUserTeam, isUserInAnyTeam, addMemberToTeam, removeNonTeamMembers } = useTeams();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
@@ -57,6 +60,8 @@ export default function HackathonDetails() {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [addToTeamDialogOpen, setAddToTeamDialogOpen] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [contractDialogOpen, setContractDialogOpen] = useState(false);
+  const [joiningHackathon, setJoiningHackathon] = useState(false);
 
   // Update active tab when URL parameter changes
   useEffect(() => {
@@ -105,14 +110,40 @@ export default function HackathonDetails() {
 
     try {
       if (isUserJoined) {
+        // Check if user has committed to the project
+        const hasCommitted = hackathon.committedMembers?.includes(user.uid);
+        
+        if (hasCommitted) {
+          toast.error('❌ You cannot leave after committing to the project! This protects your reliability score.');
+          return;
+        }
+        
+        // Leaving hackathon (only if not committed)
         await leaveHackathon(hackathon.id);
         toast.success('You left the hackathon successfully!');
       } else {
-        await joinHackathon(hackathon.id);
-        toast.success('You joined the hackathon successfully!');
+        // Joining hackathon - show contract dialog
+        setContractDialogOpen(true);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to update hackathon membership');
+    }
+  };
+
+  const handleAcceptContract = async () => {
+    if (!hackathon) return;
+    
+    setJoiningHackathon(true);
+    try {
+      await joinHackathon(hackathon.id);
+      toast.success('You joined the hackathon successfully! Go to Teams tab to start the project.');
+      setContractDialogOpen(false);
+      // Switch to teams tab
+      setActiveTab('teams');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to join hackathon');
+    } finally {
+      setJoiningHackathon(false);
     }
   };
 
@@ -289,13 +320,21 @@ export default function HackathonDetails() {
                     variant={isUserJoined ? 'outline' : 'default'}
                     size="sm"
                     onClick={handleJoinLeave}
-                    disabled={hackathon.status !== 'open'}
+                    disabled={
+                      hackathon.status !== 'open' || 
+                      (isUserJoined && hackathon.committedMembers?.includes(user?.uid || ''))
+                    }
                     className="gap-1 text-xs md:text-sm px-3 py-2 min-w-[70px]"
                   >
                     {isUserJoined ? (
                       <>
                         <UserMinus className="h-3 w-3 md:h-4 md:w-4" />
-                        <span>Leave</span>
+                        <span>
+                          {hackathon.committedMembers?.includes(user?.uid || '') 
+                            ? 'Committed' 
+                            : 'Leave'
+                          }
+                        </span>
                       </>
                     ) : (
                       <>
@@ -514,7 +553,7 @@ export default function HackathonDetails() {
           />
         </TabsContent>
 
-        <TabsContent value="chat">
+        <TabsContent value="chat" className="space-y-6">
           <ChatSection
             messages={messages}
             onSendMessage={handleSendMessage}
@@ -531,7 +570,47 @@ export default function HackathonDetails() {
           />
         </TabsContent>
 
-        <TabsContent value="teams">
+        <TabsContent value="teams" className="space-y-6">
+          {/* Team Contract - Anti-Ghosting Lock (Only shown to members who have joined) */}
+          {isUserJoined && hackathon.status === 'open' && !hackathon.isTeamLocked && (
+            <TeamContract
+              hackathonId={hackathon.id}
+              teamMembers={(hackathon.teamMembers || []).map(memberId => {
+                // Find member profile from profiles or use basic info
+                const memberProfile = profiles.find(p => p.uid === memberId);
+                return {
+                  userId: memberId,
+                  userName: memberProfile?.name || 'Unknown',
+                  userAvatar: memberProfile?.avatar
+                };
+              })}
+              committedMembers={hackathon.committedMembers || []}
+              isLocked={false}
+              onContractUpdate={() => {
+                // Just show a toast, no reload needed
+                toast.success('Contract updated! Real-time sync active.');
+              }}
+            />
+          )}
+
+          {/* Show locked status if team is locked */}
+          {isUserJoined && hackathon.isTeamLocked && (
+            <TeamContract
+              hackathonId={hackathon.id}
+              teamMembers={(hackathon.teamMembers || []).map(memberId => {
+                const memberProfile = profiles.find(p => p.uid === memberId);
+                return {
+                  userId: memberId,
+                  userName: memberProfile?.name || 'Unknown',
+                  userAvatar: memberProfile?.avatar
+                };
+              })}
+              committedMembers={hackathon.committedMembers || []}
+              isLocked={true}
+              onContractUpdate={() => {}}
+            />
+          )}
+
           <TeamManagement
             hackathonId={hackathon.id}
             hackathonTitle={hackathon.title}
@@ -540,9 +619,47 @@ export default function HackathonDetails() {
             suggestedTeamSize={hackathon.teamSize}
             allParticipants={hackathon.teamMembers || []}
             isCreator={isHackathonCreator}
+            committedMembers={hackathon.committedMembers || []}
+            isTeamLocked={hackathon.isTeamLocked || false}
             onProfileClick={handleProfileClick}
             onRefresh={() => {}} // Empty function - real-time listener handles updates
           />
+
+          {/* Confirmation Message - All Members Committed */}
+          {isUserJoined && hackathon.isTeamLocked && (
+            <div className="glass rounded-xl p-6 border-2 border-green-500/30 bg-green-500/5 mt-6">
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-8 w-8 text-green-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-green-700 dark:text-green-400 mb-2">
+                    ✅ You've Signed the Contract!
+                  </h3>
+                  <p className="text-green-600 dark:text-green-500 mb-3">
+                    All team members have committed to this project. The team is now locked and ready to build something amazing!
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className="bg-green-500 text-white">
+                      Team Locked
+                    </Badge>
+                    <Badge variant="outline" className="border-green-500 text-green-600">
+                      {hackathon.committedMembers?.length || 0} Members Committed
+                    </Badge>
+                    <Badge variant="outline" className="border-green-500 text-green-600">
+                      Anti-Ghosting Active
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-green-500/20">
+                <p className="text-sm text-green-600 dark:text-green-500">
+                  <strong>Remember:</strong> Leaving now will significantly impact your reliability score. 
+                  Stay committed and build great things together! 🚀
+                </p>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         {isHackathonCreator && (
@@ -839,6 +956,17 @@ export default function HackathonDetails() {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Team Contract Dialog - Shows before joining */}
+      {hackathon && (
+        <TeamContractDialog
+          isOpen={contractDialogOpen}
+          onClose={() => setContractDialogOpen(false)}
+          onAccept={handleAcceptContract}
+          hackathonTitle={hackathon.title}
+          loading={joiningHackathon}
+        />
       )}
     </div>
   );

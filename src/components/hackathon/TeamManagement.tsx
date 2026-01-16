@@ -25,6 +25,8 @@ interface TeamManagementProps {
   suggestedTeamSize: number;
   allParticipants?: string[]; // All hackathon participants
   isCreator?: boolean; // Is current user the hackathon creator
+  committedMembers?: string[]; // Members who committed to the project
+  isTeamLocked?: boolean; // Is the team contract locked
   onProfileClick: (userId: string, userName: string) => void;
   onRefresh: () => void;
 }
@@ -37,6 +39,8 @@ export function TeamManagement({
   suggestedTeamSize,
   allParticipants = [],
   isCreator = false,
+  committedMembers = [],
+  isTeamLocked = false,
   onProfileClick,
   onRefresh
 }: TeamManagementProps) {
@@ -66,6 +70,13 @@ export function TeamManagement({
 
   const handleLeaveTeam = async (teamId: string) => {
     if (!user) return;
+    
+    // Check if user has committed to the project
+    if (committedMembers.includes(user.uid)) {
+      toast.error('❌ You cannot leave the team after committing to the project! This protects your reliability score.');
+      return;
+    }
+    
     const success = await leaveTeam(hackathonId, teamId, user.uid, teams);
     if (success) onRefresh();
   };
@@ -135,11 +146,11 @@ export function TeamManagement({
                   variant="outline"
                   size="sm"
                   onClick={() => handleLeaveTeam(userTeam.id)}
-                  disabled={loading}
+                  disabled={loading || committedMembers.includes(user?.uid || '')}
                   className="gap-1"
                 >
                   <UserMinus className="h-4 w-4" />
-                  Leave Team
+                  {committedMembers.includes(user?.uid || '') ? 'Committed' : 'Leave Team'}
                 </Button>
               )}
             </div>

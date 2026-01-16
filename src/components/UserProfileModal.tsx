@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { SynergyBadge } from '@/components/SynergyBadge';
 import { ReliabilityBadge } from '@/components/ReliabilityBadge';
+import { GitHubVerificationBadge } from '@/components/GitHubVerificationBadge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useTeamFeedback } from '@/hooks/useTeamFeedback';
@@ -202,8 +203,8 @@ export function UserProfileModal({
                   </div>
                 )}
 
-                {/* Synergy Score & Reliability Badge */}
-                {(synergyScore || reliabilityBadge) && (
+                {/* Synergy Score, Reliability Badge & GitHub Verification */}
+                {(synergyScore || reliabilityBadge || profile.githubActivity) && (
                   <div className="space-y-3">
                     {synergyScore && (
                       <div className="bg-muted/30 rounded-lg p-3">
@@ -252,9 +253,16 @@ export function UserProfileModal({
                             <span>{reliabilityBadge.completionRate.toFixed(0)}% success rate</span>
                           )}
                         </div>
-                        {/* Debug badge data */}
-                        {console.log('Badge data:', reliabilityBadge)}
                       </div>
+                    )}
+
+                    {/* GitHub Verification Badge */}
+                    {profile.githubActivity && (
+                      <GitHubVerificationBadge
+                        activity={profile.githubActivity}
+                        compact={false}
+                        showDetails={false}
+                      />
                     )}
                   </div>
                 )}

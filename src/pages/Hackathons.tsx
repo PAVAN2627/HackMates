@@ -60,9 +60,9 @@ export default function Hackathons() {
     try {
       const hackathon = hackathons.find(h => h.id === hackathonId);
       
-      // Prevent join/leave for closed hackathons
-      if (hackathon?.status === 'closed') {
-        toast.error('Cannot join or leave a closed hackathon');
+      // Prevent join/leave for in-progress or completed hackathons
+      if (hackathon?.status !== 'open') {
+        toast.error('Cannot join or leave a hackathon that is not open');
         return;
       }
       

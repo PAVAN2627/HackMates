@@ -30,9 +30,20 @@ export interface UserProfile {
   reliabilityScore?: number;
   reliabilityLevel?: 'newbie' | 'reliable' | 'finisher' | 'legend';
   projectsCompleted?: number;
-  // Code Verification
+  // GitHub Verification (Proof of Work)
   githubVerified?: boolean;
   githubUsername?: string;
+  githubActivity?: {
+    username: string;
+    totalEvents: number;
+    pushEvents: number;
+    lastActivityDate: Date | null;
+    isActive: boolean;
+    activityLevel: 'inactive' | 'low' | 'moderate' | 'high' | 'very-high';
+    repositories: string[];
+    languages: string[];
+    verifiedAt: Date;
+  };
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -73,6 +84,10 @@ export interface Hackathon {
   status: 'open' | 'in-progress' | 'completed'; // open for registrations, in-progress for working, completed for feedback
   teamMembers?: string[]; // array of user IDs who joined (all participants)
   teams?: HackathonTeam[]; // Small teams within the hackathon for feedback
+  // Team Contract (Anti-Ghosting Lock)
+  committedMembers?: string[]; // User IDs who clicked "Start Project"
+  isTeamLocked?: boolean; // True when all members have committed
+  teamLockedAt?: Date; // Timestamp when team was locked
   generalChat: HackathonChatMessage[];
   createdAt: Date;
   updatedAt?: Date;
