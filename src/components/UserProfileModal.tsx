@@ -166,7 +166,7 @@ export function UserProfileModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="relative">
           <div className="pt-2">
             {loading ? (
@@ -286,25 +286,25 @@ export function UserProfileModal({
 
                 {/* Work Style */}
                 {profile.workStyle && (
-                  <div className="bg-muted/30 rounded-lg p-4">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      <Zap className="w-4 h-4 text-primary" />
-                      <p className="text-sm font-medium">Work Style</p>
+                  <div className="bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20 rounded-xl p-5 mb-6">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <Zap className="w-5 h-5 text-primary" />
+                      <h4 className="font-semibold text-lg">Work Style</h4>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 text-center">
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Goal</p>
-                        <p className="text-sm font-medium capitalize">{profile.workStyle?.goal || 'N/A'}</p>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-background/60 rounded-lg border border-border">
+                        <p className="text-xs text-muted-foreground mb-1 font-medium">Goal</p>
+                        <p className="text-base font-bold capitalize">{profile.workStyle?.goal || 'N/A'}</p>
                       </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Time</p>
-                        <p className="text-sm font-medium capitalize">
+                      <div className="text-center p-3 bg-background/60 rounded-lg border border-border">
+                        <p className="text-xs text-muted-foreground mb-1 font-medium">Time</p>
+                        <p className="text-base font-bold capitalize">
                           {profile.workStyle?.timePreference?.replace('-', ' ') || 'N/A'}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Commitment</p>
-                        <p className="text-sm font-medium capitalize">
+                      <div className="text-center p-3 bg-background/60 rounded-lg border border-border">
+                        <p className="text-xs text-muted-foreground mb-1 font-medium">Commitment</p>
+                        <p className="text-base font-bold capitalize">
                           {profile.workStyle?.commitment?.replace('-', ' ') || 'N/A'}
                         </p>
                       </div>
@@ -315,13 +315,13 @@ export function UserProfileModal({
                 {/* Skills */}
                 {profile.skills && profile.skills.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      <Tag className="w-4 h-4 text-muted-foreground" />
-                      <p className="text-sm font-medium text-muted-foreground">Skills</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Tag className="w-5 h-5 text-primary" />
+                      <p className="font-semibold text-base">Technical Skills</p>
                     </div>
                     <div className="flex flex-wrap gap-2 justify-center">
                       {profile.skills.map(skill => (
-                        <Badge key={skill} variant="secondary" className="text-xs">
+                        <Badge key={skill} variant="secondary" className="text-sm px-3 py-1.5">
                           {skill}
                         </Badge>
                       ))}
@@ -332,13 +332,13 @@ export function UserProfileModal({
                 {/* Interests */}
                 {profile.interests && profile.interests.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      <Star className="w-4 h-4 text-muted-foreground" />
-                      <p className="text-sm font-medium text-muted-foreground">Interests</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Star className="w-5 h-5 text-primary" />
+                      <p className="font-semibold text-base">Areas of Interest</p>
                     </div>
                     <div className="flex flex-wrap gap-2 justify-center">
                       {profile.interests.map(interest => (
-                        <Badge key={interest} variant="outline" className="text-xs">
+                        <Badge key={interest} variant="outline" className="text-sm px-3 py-1.5">
                           {interest}
                         </Badge>
                       ))}
