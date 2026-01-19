@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Trophy, Lock, FileText, Code, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, Users, Trophy, Lock, FileText, Code, MessageSquare, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,25 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { useProfiles } from '@/hooks/useProfiles';
 import { TeamContract } from '@/components/hackathon/TeamContract';
 import { MessageContextMenu } from '@/components/MessageContextMenu';
+
+// Tech stack options for selection
+const TECH_STACK_OPTIONS = [
+  // Frontend
+  'React', 'Vue.js', 'Angular', 'Next.js', 'Svelte', 'HTML/CSS', 'Tailwind CSS', 'Bootstrap',
+  // Backend
+  'Node.js', 'Express.js', 'Python', 'Django', 'Flask', 'FastAPI', 'Java', 'Spring Boot', 
+  'Go', 'Rust', 'Ruby', 'Rails', 'PHP', 'Laravel', '.NET', 'C#',
+  // Mobile
+  'React Native', 'Flutter', 'Swift', 'Kotlin', 'Android', 'iOS',
+  // Database
+  'MongoDB', 'PostgreSQL', 'MySQL', 'Firebase', 'Supabase', 'Redis', 'SQLite',
+  // Cloud & DevOps
+  'AWS', 'Google Cloud', 'Azure', 'Docker', 'Kubernetes', 'Vercel', 'Netlify',
+  // AI/ML
+  'TensorFlow', 'PyTorch', 'OpenAI API', 'LangChain', 'Hugging Face', 'scikit-learn',
+  // Other
+  'GraphQL', 'REST API', 'WebSocket', 'Blockchain', 'Web3', 'Solidity', 'TypeScript', 'JavaScript'
+];
 
 interface TeamDetailsData extends HackathonTeam {
   hackathonId: string;
@@ -43,6 +62,7 @@ export default function TeamDetails() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ messageId: string; x: number; y: number } | null>(null);
+  const [techStackSearch, setTechStackSearch] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const profileCacheRef = useRef<{ [userId: string]: { avatar: string; name: string; timestamp: number } }>({});
   const [editedProject, setEditedProject] = useState({
@@ -391,17 +411,70 @@ export default function TeamDetails() {
               </div>
 
               <div>
-                <label className="text-sm font-medium block mb-2">Tech Stack</label>
+                <label className="text-sm font-semibold block mb-2">Tech Stack</label>
+                <p className="text-sm text-muted-foreground mb-3">Click to select technologies for your project</p>
+                
+                {/* Selected Tech Stack */}
+                <div className="flex flex-wrap gap-2 mb-3 min-h-[40px] p-3 border rounded-md bg-background">
+                  {editedProject.techStack.length > 0 ? (
+                    editedProject.techStack.map(tech => (
+                      <Badge 
+                        key={tech} 
+                        variant="default" 
+                        className="cursor-pointer hover:bg-destructive py-1.5 px-3 text-sm"
+                        onClick={() => setEditedProject({
+                          ...editedProject,
+                          techStack: editedProject.techStack.filter(t => t !== tech)
+                        })}
+                      >
+                        {tech} <X className="h-3 w-3 ml-1" />
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground italic">Click below to add technologies...</span>
+                  )}
+                </div>
+                
+                {/* Search and Select */}
                 <Input
-                  placeholder="e.g., React, Node.js, Firebase (comma separated)"
-                  value={editedProject.techStack.join(', ')}
-                  onChange={(e) =>
-                    setEditedProject({
-                      ...editedProject,
-                      techStack: e.target.value.split(',').map(t => t.trim()).filter(Boolean),
-                    })
-                  }
+                  placeholder="🔍 Search technologies (e.g., React, Python, MongoDB)..."
+                  value={techStackSearch}
+                  onChange={(e) => setTechStackSearch(e.target.value)}
+                  className="mb-3"
                 />
+                
+                {/* Tech Stack Options */}
+                <div className="max-h-48 overflow-y-auto border rounded-md p-3 bg-muted/30">
+                  <div className="flex flex-wrap gap-2">
+                    {TECH_STACK_OPTIONS
+                      .filter(tech => 
+                        tech.toLowerCase().includes(techStackSearch.toLowerCase()) &&
+                        !editedProject.techStack.includes(tech)
+                      )
+                      .map(tech => (
+                        <Badge
+                          key={tech}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors py-1.5 px-3"
+                          onClick={() => setEditedProject({
+                            ...editedProject,
+                            techStack: [...editedProject.techStack, tech]
+                          })}
+                        >
+                          + {tech}
+                        </Badge>
+                      ))
+                    }
+                    {TECH_STACK_OPTIONS.filter(tech => 
+                      tech.toLowerCase().includes(techStackSearch.toLowerCase()) &&
+                      !editedProject.techStack.includes(tech)
+                    ).length === 0 && (
+                      <span className="text-sm text-muted-foreground">
+                        No matching technologies. Try a different search.
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-2">
