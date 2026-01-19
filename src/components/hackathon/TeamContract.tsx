@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useAuth } from '@/contexts/AuthContext';
-import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
  * - Warning about reliability score impact
  * - Shows who has committed and who hasn't
  * - Only team members (added by creator) can see and commit
+ * - NOW: Per-team commitment tracking (each team tracks its own commitment)
  */
 
 interface TeamMember {
@@ -32,17 +33,21 @@ interface TeamMember {
 
 interface TeamContractProps {
   hackathonId: string;
+  teamId: string; // Added: Team ID for per-team commitment
   teamMembers: TeamMember[];
-  committedMembers?: string[]; // User IDs who have clicked "Start Project"
+  committedMembers?: string[]; // User IDs who have clicked "Start Project" for THIS team
   isLocked?: boolean;
+  teams: any[]; // Current teams array from hackathon
   onContractUpdate?: () => void;
 }
 
 export function TeamContract({ 
   hackathonId, 
+  teamId,
   teamMembers, 
   committedMembers = [], 
   isLocked = false,
+  teams,
   onContractUpdate 
 }: TeamContractProps) {
   const { user, profile } = useAuth();
@@ -56,32 +61,40 @@ export function TeamContract({
   const allCommitted = committedInTeam.length === teamMembers.length;
 
   const handleCommit = async () => {
-    if (!user || hasUserCommitted) return;
+    if (!user || hasUserCommitted || !teamId) return;
 
     setCommitting(true);
     try {
       const hackathonRef = doc(db, COLLECTIONS.HACKATHONS, hackathonId);
       
-      // Add user to committed members
+      // Update the specific team's committedMemberIds
+      const updatedTeams = teams.map(team => {
+        if (team.id === teamId) {
+          const currentCommitted = team.committedMemberIds || [];
+          const newCommitted = [...currentCommitted, user.uid];
+          const allMembersCommitted = team.memberIds.every((id: string) => newCommitted.includes(id));
+          
+          return {
+            ...team,
+            committedMemberIds: newCommitted,
+            isTeamLocked: allMembersCommitted,
+            teamLockedAt: allMembersCommitted ? new Date() : team.teamLockedAt
+          };
+        }
+        return team;
+      });
+
+      // Update the hackathon with the modified teams array
       await updateDoc(hackathonRef, {
-        committedMembers: arrayUnion(user.uid),
+        teams: updatedTeams,
         updatedAt: new Date()
       });
 
-      // Check if all members have committed
-      const hackathonDoc = await getDoc(hackathonRef);
-      const data = hackathonDoc.data();
-      const updatedCommitted = data?.committedMembers || [];
+      // Check if all members of THIS team have committed
+      const thisTeam = updatedTeams.find(t => t.id === teamId);
       
-      if (updatedCommitted.length === teamMembers.length) {
-        // Lock the team AND change status to in-progress
-        await updateDoc(hackathonRef, {
-          isTeamLocked: true,
-          teamLockedAt: new Date(),
-          status: 'in-progress' // Automatically start the hackathon
-        });
-        
-        toast.success('🔒 Team is now locked! Hackathon status changed to In Progress.');
+      if (thisTeam?.isTeamLocked) {
+        toast.success('🔒 Your team is now locked! All members have committed.');
       } else {
         toast.success('✅ You have committed to the project!');
       }

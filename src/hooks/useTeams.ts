@@ -314,6 +314,33 @@ export function useTeams() {
     }
   };
 
+  const deleteTeam = async (
+    hackathonId: string,
+    teamId: string,
+    currentTeams: HackathonTeam[]
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      
+      // Remove the team from the teams array
+      const updatedTeams = currentTeams.filter(team => team.id !== teamId);
+
+      const hackathonRef = doc(db, COLLECTIONS.HACKATHONS, hackathonId);
+      await updateDoc(hackathonRef, {
+        teams: updatedTeams
+      });
+
+      toast.success('Team deleted successfully! All team data and commitments have been removed.');
+      return true;
+    } catch (error) {
+      console.error('Error deleting team:', error);
+      toast.error('Failed to delete team');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     createTeam,
@@ -324,6 +351,7 @@ export function useTeams() {
     removeNonTeamMembers,
     getUserTeam,
     isUserInAnyTeam,
-    updateTeam
+    updateTeam,
+    deleteTeam
   };
 }

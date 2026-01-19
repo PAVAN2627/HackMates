@@ -4,6 +4,7 @@ import { Plus, Search, Filter, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { HackathonCard } from '@/components/HackathonCardNew';
+import { TeamContractDialog } from '@/components/TeamContractDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useHackathons } from '@/hooks/useHackathons';
 import { toast } from 'sonner';
@@ -20,6 +21,11 @@ export default function Hackathons() {
   const [selectedMode, setSelectedMode] = useState<'all' | 'online' | 'in-person' | 'both'>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'open' | 'closed'>('all');
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Contract dialog state
+  const [contractDialogOpen, setContractDialogOpen] = useState(false);
+  const [selectedHackathonForJoin, setSelectedHackathonForJoin] = useState<{ id: string; title: string } | null>(null);
+  const [joiningHackathon, setJoiningHackathon] = useState(false);
 
   // Filter hackathons
   let filtered = hackathons;
@@ -69,14 +75,41 @@ export default function Hackathons() {
       const isJoined = hackathon?.teamMembers?.includes(user?.uid || '');
       
       if (isJoined) {
+        // Check if user has committed to any team in this hackathon
+        const hasCommittedToAnyTeam = hackathon?.teams?.some(
+          team => team.memberIds?.includes(user?.uid || '') && team.committedMemberIds?.includes(user?.uid || '')
+        );
+        
+        if (hasCommittedToAnyTeam) {
+          toast.error('❌ You cannot leave after committing to the project! This protects your reliability score.');
+          return;
+        }
+        
         await leaveHackathon(hackathonId);
         toast.success('You left the hackathon successfully!');
       } else {
-        await joinHackathon(hackathonId);
-        toast.success('You joined the hackathon successfully!');
+        // Show contract dialog instead of joining directly
+        setSelectedHackathonForJoin({ id: hackathonId, title: hackathon?.title || 'Hackathon' });
+        setContractDialogOpen(true);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to update hackathon membership');
+    }
+  };
+
+  const handleAcceptContract = async () => {
+    if (!selectedHackathonForJoin) return;
+    
+    setJoiningHackathon(true);
+    try {
+      await joinHackathon(selectedHackathonForJoin.id);
+      toast.success('You joined the hackathon successfully! Go to hackathon details to see your team.');
+      setContractDialogOpen(false);
+      setSelectedHackathonForJoin(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to join hackathon');
+    } finally {
+      setJoiningHackathon(false);
     }
   };
 
@@ -277,6 +310,18 @@ export default function Hackathons() {
           </>
         )}
       </div>
+
+      {/* Team Contract Dialog - shown when clicking Join */}
+      <TeamContractDialog
+        isOpen={contractDialogOpen}
+        onClose={() => {
+          setContractDialogOpen(false);
+          setSelectedHackathonForJoin(null);
+        }}
+        onAccept={handleAcceptContract}
+        hackathonTitle={selectedHackathonForJoin?.title || ''}
+        loading={joiningHackathon}
+      />
     </div>
   );
 }

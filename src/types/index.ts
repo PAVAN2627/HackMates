@@ -65,6 +65,10 @@ export interface HackathonTeam {
   projectDescription?: string;
   techStack?: string[]; // Technologies being used
   projectStatus?: 'planning' | 'in-progress' | 'completed';
+  // Team-specific commitment tracking (per-team commitment)
+  committedMemberIds?: string[]; // User IDs who committed to THIS team
+  isTeamLocked?: boolean; // True when all members of THIS team have committed
+  teamLockedAt?: Date; // Timestamp when THIS team was locked
 }
 
 export interface Hackathon {

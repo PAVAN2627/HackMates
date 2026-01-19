@@ -624,6 +624,7 @@ export default function TeamDetails() {
         {/* Team Contract - Team Locked Status */}
         <TeamContract
           hackathonId={hackathonId || ''}
+          teamId={team.id}
           teamMembers={team.memberIds?.map(memberId => {
             const memberProfile = getProfileById(memberId);
             return {
@@ -632,8 +633,9 @@ export default function TeamDetails() {
               userAvatar: memberProfile?.avatar || undefined,
             };
           }) || []}
-          committedMembers={hackathon?.committedMembers || []}
-          isLocked={hackathon?.isTeamLocked || false}
+          committedMembers={team.committedMemberIds || []}
+          isLocked={team.isTeamLocked || false}
+          teams={hackathon?.teams || []}
           onContractUpdate={() => {
             // Reload hackathon data when contract is updated
             if (hackathonId) {

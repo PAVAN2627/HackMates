@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Plus, UserPlus, UserMinus, Crown, X, Star, Edit } from 'lucide-react';
+import { Users, Plus, UserPlus, UserMinus, Crown, X, Star, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -44,10 +44,12 @@ export function TeamManagement({
 }: TeamManagementProps) {
   const { user } = useAuth();
   const { getProfileById } = useProfiles();
-  const { createTeam, leaveTeam, removeMemberFromTeam, getUserTeam, isUserInAnyTeam, updateTeam, loading } = useTeams();
+  const { createTeam, leaveTeam, removeMemberFromTeam, getUserTeam, isUserInAnyTeam, updateTeam, deleteTeam, loading } = useTeams();
   const { submitFeedback } = useTeamFeedback();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteConfirmDialogOpen, setDeleteConfirmDialogOpen] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState<HackathonTeam | null>(null);
   const [teamName, setTeamName] = useState('');
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [editData, setEditData] = useState({
@@ -60,6 +62,8 @@ export function TeamManagement({
   const userTeam = getUserTeam(teams, user?.uid || '');
   const isCompleted = hackathonStatus === 'completed';
   const isTeamLeader = userTeam?.leaderId === user?.uid;
+  // Check if user has committed to their specific team
+  const hasUserCommittedToTeam = userTeam?.committedMemberIds?.includes(user?.uid || '') || false;
 
   const handleCreateTeam = async () => {
     if (!user || !teamName.trim()) return;
@@ -75,8 +79,12 @@ export function TeamManagement({
   const handleLeaveTeam = async (teamId: string) => {
     if (!user) return;
     
-    // Check if user has committed to the project
-    if (committedMembers.includes(user.uid)) {
+    // Get the specific team to check its commitment
+    const teamToLeave = teams.find(t => t.id === teamId);
+    const hasCommittedToThisTeam = teamToLeave?.committedMemberIds?.includes(user.uid) || false;
+    
+    // Check if user has committed to THIS specific team
+    if (hasCommittedToThisTeam) {
       toast.error('❌ You cannot leave the team after committing to the project! This protects your reliability score.');
       return;
     }
@@ -93,6 +101,22 @@ export function TeamManagement({
     
     await removeMemberFromTeam(hackathonId, teamId, memberId, teams);
     // No need to call onRefresh - real-time listener will update
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!isCreator || !teamToDelete) return;
+    
+    const success = await deleteTeam(hackathonId, teamToDelete.id, teams);
+    if (success) {
+      setDeleteConfirmDialogOpen(false);
+      setTeamToDelete(null);
+      onRefresh();
+    }
+  };
+
+  const openDeleteConfirmDialog = (team: HackathonTeam) => {
+    setTeamToDelete(team);
+    setDeleteConfirmDialogOpen(true);
   };
 
   const handleUpdateTeam = async (updates: Partial<HackathonTeam>) => {
@@ -175,6 +199,17 @@ export function TeamManagement({
                   Edit Team
                 </Button>
               )}
+              {isCreator && !isCompleted && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openDeleteConfirmDialog(userTeam)}
+                  className="gap-1 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete Team
+                </Button>
+              )}
               {isCompleted && userTeam.memberIds.length > 1 && (
                 <Button
                   variant="default"
@@ -191,11 +226,11 @@ export function TeamManagement({
                   variant="outline"
                   size="sm"
                   onClick={() => handleLeaveTeam(userTeam.id)}
-                  disabled={loading || committedMembers.includes(user?.uid || '')}
+                  disabled={loading || hasUserCommittedToTeam}
                   className="gap-1"
                 >
                   <UserMinus className="h-4 w-4" />
-                  {committedMembers.includes(user?.uid || '') ? 'Committed' : 'Leave Team'}
+                  {hasUserCommittedToTeam ? 'Committed' : 'Leave Team'}
                 </Button>
               )}
             </div>
@@ -425,6 +460,60 @@ export function TeamManagement({
           onSubmit={submitFeedback}
         />
       )}
+
+      {/* Delete Team Confirmation Dialog */}
+      <Dialog open={deleteConfirmDialogOpen} onOpenChange={setDeleteConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="h-5 w-5" />
+              Delete Team
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete team "{teamToDelete?.name}"?
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <p className="text-sm text-red-700 dark:text-red-400 font-medium mb-2">
+                ⚠️ This action will permanently delete:
+              </p>
+              <ul className="text-sm text-red-600 dark:text-red-500 space-y-1 ml-4">
+                <li>• All team data and project information</li>
+                <li>• All member commitments for this team</li>
+                <li>• Team lock status and history</li>
+                <li>• {teamToDelete?.memberIds?.length || 0} member(s) will be removed from this team</li>
+              </ul>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              Members will remain in the hackathon but will no longer be part of this team.
+            </p>
+            
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setDeleteConfirmDialogOpen(false);
+                  setTeamToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={handleDeleteTeam}
+                disabled={loading}
+                className="gap-1"
+              >
+                <Trash2 className="h-4 w-4" />
+                {loading ? 'Deleting...' : 'Delete Team'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
