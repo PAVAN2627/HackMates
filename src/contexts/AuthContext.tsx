@@ -77,13 +77,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             
             // Use setTimeout to ensure auth state is set before redirect
             setTimeout(() => {
-              window.location.replace('/register');
+              if (window.location.pathname === '/auth') {
+                window.location.href = '/register';
+              }
             }, 100);
           } else {
             console.log('Existing user logged in via redirect, redirecting to hackathons');
             // Existing user - use setTimeout to ensure auth state is set
             setTimeout(() => {
-              window.location.replace('/hackathons');
+              if (window.location.pathname === '/auth') {
+                window.location.href = '/hackathons';
+              }
             }, 100);
           }
         } else {
@@ -160,6 +164,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Load profile in background
         loadUserProfile(firebaseUser.uid);
+        
+        // Handle redirect after successful authentication
+        if (window.location.pathname === '/auth') {
+          // Small delay to ensure profile loading completes
+          setTimeout(async () => {
+            try {
+              const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, firebaseUser.uid));
+              if (profileDoc.exists()) {
+                // Existing user - redirect to hackathons
+                window.location.href = '/hackathons';
+              } else {
+                // New user - redirect to register
+                window.location.href = '/register';
+              }
+            } catch (error) {
+              console.error('Error checking profile:', error);
+              // Fallback - redirect to hackathons
+              window.location.href = '/hackathons';
+            }
+          }, 1000);
+        }
       } catch (authError) {
         console.error('Auth state change error:', authError);
         setError('Authentication error occurred');

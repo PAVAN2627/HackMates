@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loading } from '@/components/Loading';
-import { MobileDebugInfo } from '@/components/MobileDebugInfo';
 import { GoogleLoginTroubleshooting } from '@/components/GoogleLoginTroubleshooting';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -67,12 +66,7 @@ export default function Auth() {
     try {
       console.log('Starting Google sign-in process...');
       await signInWithGoogle();
-      
-      // Wait a moment for auth state to update, then redirect
-      setTimeout(() => {
-        toast.success('Welcome back to HackMates!');
-        navigate('/hackathons');
-      }, 500);
+      // Don't navigate here - let AuthContext handle it
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       
@@ -114,12 +108,7 @@ export default function Auth() {
       sessionStorage.setItem('signupMethod', 'google');
       sessionStorage.setItem('googleAuthIntent', 'signup'); // Set signup intent
       await signInWithGoogle();
-      
-      // Wait a moment for auth state to update, then redirect
-      setTimeout(() => {
-        toast.success('Welcome back to HackMates!');
-        navigate('/hackathons');
-      }, 500);
+      // Don't navigate here - let AuthContext handle it
     } catch (error: any) {
       console.error('Google sign-up error:', error);
       
@@ -186,9 +175,6 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      {/* Debug component for mobile testing */}
-      <MobileDebugInfo />
-      
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero" />
