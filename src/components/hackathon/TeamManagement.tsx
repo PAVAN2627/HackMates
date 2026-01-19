@@ -459,49 +459,51 @@ export function TeamManagement({
             </div>
 
             <div>
-              <Label>Tech Stack</Label>
+              <Label className="text-base font-semibold mb-2 block">Tech Stack</Label>
+              <p className="text-sm text-muted-foreground mb-3">Click to select technologies for your project</p>
+              
               {/* Selected Tech Stack */}
-              <div className="flex flex-wrap gap-2 mb-2 min-h-[32px]">
-                {editData.techStack.map(tech => (
-                  <Badge 
-                    key={tech} 
-                    variant="default" 
-                    className="cursor-pointer hover:bg-destructive"
-                    onClick={() => setEditData({
-                      ...editData,
-                      techStack: editData.techStack.filter(t => t !== tech)
-                    })}
-                  >
-                    {tech} <X className="h-3 w-3 ml-1" />
-                  </Badge>
-                ))}
-                {editData.techStack.length === 0 && (
-                  <span className="text-sm text-muted-foreground">No technologies selected</span>
+              <div className="flex flex-wrap gap-2 mb-3 min-h-[40px] p-3 border rounded-md bg-background">
+                {editData.techStack.length > 0 ? (
+                  editData.techStack.map(tech => (
+                    <Badge 
+                      key={tech} 
+                      variant="default" 
+                      className="cursor-pointer hover:bg-destructive py-1.5 px-3 text-sm"
+                      onClick={() => setEditData({
+                        ...editData,
+                        techStack: editData.techStack.filter(t => t !== tech)
+                      })}
+                    >
+                      {tech} <X className="h-3 w-3 ml-1" />
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-sm text-muted-foreground italic">Click below to add technologies...</span>
                 )}
               </div>
               
               {/* Search and Select */}
               <Input
-                placeholder="Search technologies..."
+                placeholder="🔍 Search technologies (e.g., React, Python, MongoDB)..."
                 value={techStackSearch}
                 onChange={(e) => setTechStackSearch(e.target.value)}
-                className="mb-2"
+                className="mb-3"
               />
               
               {/* Tech Stack Options */}
-              <div className="max-h-32 overflow-y-auto border rounded-md p-2 bg-muted/30">
-                <div className="flex flex-wrap gap-1">
+              <div className="max-h-48 overflow-y-auto border rounded-md p-3 bg-muted/30">
+                <div className="flex flex-wrap gap-2">
                   {TECH_STACK_OPTIONS
                     .filter(tech => 
                       tech.toLowerCase().includes(techStackSearch.toLowerCase()) &&
                       !editData.techStack.includes(tech)
                     )
-                    .slice(0, 20)
                     .map(tech => (
                       <Badge
                         key={tech}
                         variant="outline"
-                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors py-1.5 px-3"
                         onClick={() => setEditData({
                           ...editData,
                           techStack: [...editData.techStack, tech]
@@ -511,6 +513,14 @@ export function TeamManagement({
                       </Badge>
                     ))
                   }
+                  {TECH_STACK_OPTIONS.filter(tech => 
+                    tech.toLowerCase().includes(techStackSearch.toLowerCase()) &&
+                    !editData.techStack.includes(tech)
+                  ).length === 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      No matching technologies. Try a different search.
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
