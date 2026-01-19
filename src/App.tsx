@@ -18,6 +18,8 @@ import Profiles from "./pages/Profiles";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
 import Announcements from "./pages/Announcements";
+import Teams from "./pages/Teams";
+import TeamDetails from "./pages/TeamDetails";
 import EmailTest from "./pages/EmailTest";
 
 import NotFound from "./pages/NotFound";
@@ -43,6 +45,8 @@ const App = () => (
                 <Route path="/hackathons/:id" element={<HackathonDetails />} />
                 <Route path="/hackathons/:id/edit" element={<EditHackathon />} />
                 <Route path="/create-hackathon" element={<CreateHackathon />} />
+                <Route path="/teams" element={<Teams />} />
+                <Route path="/teams/:hackathonId/:teamId" element={<TeamDetails />} />
                 <Route path="/profiles" element={<Profiles />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:userId" element={<Profile />} />

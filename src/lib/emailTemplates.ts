@@ -97,6 +97,101 @@ export const getWelcomeEmailHTML = (userName: string, userEmail: string, userPas
   `.trim();
 };
 
+/**
+ * Welcome email for Google OAuth users (without password)
+ */
+export const getWelcomeEmailHTMLGoogle = (userName: string, userEmail: string): string => {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #9333ea 0%, #2563eb 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Welcome to HackMates! 🚀</h1>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h2 style="color: #1f2937; margin-top: 0; font-size: 24px;">Hi ${userName}! 👋</h2>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 16px 0;">
+                We're thrilled to have you join <strong>India's premier hackathon community platform</strong>! Your account has been successfully created with Google Sign-in.
+              </p>
+
+              <!-- Account Details -->
+              <table width="100%" cellpadding="15" cellspacing="0" style="background: linear-gradient(135deg, #f3e8ff 0%, #dbeafe 100%); border-left: 4px solid #9333ea; border-radius: 8px; margin: 24px 0;">
+                <tr>
+                  <td>
+                    <h3 style="color: #1f2937; margin: 0 0 12px 0; font-size: 18px;">📧 Account Information</h3>
+                    <p style="margin: 8px 0; color: #374151;">
+                      <strong>Email:</strong> <span style="color: #2563eb;">${userEmail}</span>
+                    </p>
+                    <p style="margin: 12px 0 0 0; font-size: 14px; color: #6b7280;">
+                      ✅ <em>You're signed in with Google - no password needed!</em>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Features -->
+              <h3 style="color: #1f2937; margin: 24px 0 16px 0; font-size: 20px;">✨ What You Can Do:</h3>
+              <ul style="color: #4b5563; line-height: 1.8; padding-left: 20px;">
+                <li><strong>🤖 AI Assistant:</strong> Get personalized hackathon guidance</li>
+                <li><strong>🛡️ Build Trust:</strong> Earn reliability badges</li>
+                <li><strong>⚡ Smart Matching:</strong> Find teammates with perfect synergy</li>
+                <li><strong>💬 Real-time Chat:</strong> Connect instantly with team members</li>
+                <li><strong>📢 Stay Updated:</strong> Receive announcements and notifications</li>
+              </ul>
+
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="https://hackmates-mu.vercel.app/hackathons" style="display: inline-block; text-decoration: none; color: #ffffff; background: linear-gradient(135deg, #9333ea 0%, #2563eb 100%); padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                      🚀 Explore Hackathons Now
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color: #4b5563; line-height: 1.6; margin: 24px 0 0 0;">
+                Happy Hacking! 🎉<br>
+                <strong style="color: #1f2937;">The HackMates Team</strong><br>
+                <span style="font-size: 14px; color: #6b7280;">Built with ❤️ by NoobcodersIND</span>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: #f9fafb; padding: 20px 30px; border-top: 1px solid #e5e7eb; text-align: center;">
+              <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                This email was sent to <strong>${userEmail}</strong> because you registered on HackMates with Google.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+};
+
 export const getTeamAdditionEmailHTML = (
   userName: string,
   userEmail: string,

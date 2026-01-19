@@ -1,52 +1,24 @@
-// Firebase Cloud Messaging Service Worker
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+// Firebase Cloud Messaging Service Worker - Static fallback
+// This file serves as a fallback. The actual service worker is generated dynamically
+// with environment variables to avoid exposing secrets in the repository.
 
-// Initialize Firebase in the service worker
-firebase.initializeApp({
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+// If you see this message in the console, the dynamic service worker registration failed
+console.log('Using static fallback service worker - dynamic registration may have failed');
+
+// Basic service worker functionality without Firebase config
+self.addEventListener('install', (event) => {
+  console.log('Static service worker installed');
 });
 
-const messaging = firebase.messaging();
-
-// Handle background messages
-messaging.onBackgroundMessage((payload) => {
-  console.log('Received background message:', payload);
-
-  const notificationTitle = payload.notification.title || 'HackMates Notification';
-  const notificationOptions = {
-    body: payload.notification.body || 'You have a new notification',
-    icon: '/assets/roundlogohackmates.png',
-    badge: '/assets/roundlogohackmates.png',
-    tag: payload.data?.type || 'general',
-    data: payload.data,
-    requireInteraction: true,
-    actions: [
-      {
-        action: 'open',
-        title: 'View'
-      },
-      {
-        action: 'close',
-        title: 'Dismiss'
-      }
-    ]
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
+self.addEventListener('activate', (event) => {
+  console.log('Static service worker activated');
 });
 
-// Handle notification clicks
+// Handle notification clicks (basic functionality)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
+  
   if (event.action === 'open' || !event.action) {
-    // Open the app
     event.waitUntil(
       clients.openWindow('/')
     );

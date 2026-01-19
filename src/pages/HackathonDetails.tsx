@@ -53,7 +53,7 @@ export default function HackathonDetails() {
   const { messages, loading: chatLoading, sendMessage, editMessage, deleteMessage } = useChat(id || '');
   const { getProfileById, profiles } = useProfiles();
   const { submitFeedback } = useTeamFeedback();
-  const { getUserTeam, isUserInAnyTeam, addMemberToTeam, removeNonTeamMembers } = useTeams();
+  const { getUserTeam, isUserInAnyTeam, addMemberToTeam, removeNonTeamMembers, leaveTeam } = useTeams();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [profileModalUser, setProfileModalUser] = useState<{ id: string; name: string } | null>(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -594,96 +594,155 @@ export default function HackathonDetails() {
         </TabsContent>
 
         <TabsContent value="teams" className="space-y-6">
-          {/* Team Contract - Anti-Ghosting Lock (Only shown to users who are in a team) */}
-          {isUserInTeam && hackathon.status === 'open' && !hackathon.isTeamLocked && userTeam && (
-            <TeamContract
-              hackathonId={hackathon.id}
-              teamMembers={userTeam.memberIds.map(memberId => {
-                // Find member profile from profiles or use basic info
-                const memberProfile = profiles.find(p => p.uid === memberId || p.id === memberId);
-                console.log('Team member:', memberId, 'Profile found:', !!memberProfile, 'Name:', memberProfile?.name);
-                return {
-                  userId: memberId,
-                  userName: memberProfile?.name || 'Loading...',
-                  userAvatar: memberProfile?.avatar
-                };
-              })}
-              committedMembers={hackathon.committedMembers || []}
-              isLocked={false}
-              onContractUpdate={() => {
-                // Just show a toast, no reload needed
-                toast.success('Contract updated! Real-time sync active.');
-              }}
-            />
-          )}
-
-          {/* Show locked status if team is locked */}
-          {isUserInTeam && hackathon.isTeamLocked && userTeam && (
-            <TeamContract
-              hackathonId={hackathon.id}
-              teamMembers={userTeam.memberIds.map(memberId => {
-                const memberProfile = profiles.find(p => p.uid === memberId || p.id === memberId);
-                return {
-                  userId: memberId,
-                  userName: memberProfile?.name || 'Loading...',
-                  userAvatar: memberProfile?.avatar
-                };
-              })}
-              committedMembers={hackathon.committedMembers || []}
-              isLocked={true}
-              onContractUpdate={() => {}}
-            />
-          )}
-
-          <TeamManagement
-            hackathonId={hackathon.id}
-            hackathonTitle={hackathon.title}
-            hackathonStatus={hackathon.status}
-            teams={hackathon.teams || []}
-            suggestedTeamSize={hackathon.teamSize}
-            allParticipants={hackathon.teamMembers || []}
-            isCreator={isHackathonCreator}
-            committedMembers={hackathon.committedMembers || []}
-            isTeamLocked={hackathon.isTeamLocked || false}
-            onProfileClick={handleProfileClick}
-            onRefresh={() => {}} // Empty function - real-time listener handles updates
-          />
-
-          {/* Confirmation Message - All Members Committed */}
-          {isUserInTeam && hackathon.isTeamLocked && (
-            <div className="glass rounded-xl p-6 border-2 border-green-500/30 bg-green-500/5 mt-6">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="h-8 w-8 text-green-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-green-700 dark:text-green-400 mb-2">
-                    ✅ You've Signed the Contract!
-                  </h3>
-                  <p className="text-green-600 dark:text-green-500 mb-3">
-                    All team members have committed to this project. The team is now locked and ready to build something amazing!
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-green-500 text-white">
-                      Team Locked
-                    </Badge>
-                    <Badge variant="outline" className="border-green-500 text-green-600">
-                      {hackathon.committedMembers?.length || 0} Members Committed
-                    </Badge>
-                    <Badge variant="outline" className="border-green-500 text-green-600">
-                      Anti-Ghosting Active
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-green-500/20">
-                <p className="text-sm text-green-600 dark:text-green-500">
-                  <strong>Remember:</strong> Leaving now will significantly impact your reliability score. 
-                  Stay committed and build great things together! 🚀
+          {/* Simplified Teams Section - Only Team Creation and Member Management */}
+          <div className="glass rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <Users className="h-6 w-6 text-primary" />
+                  Teams
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {isHackathonCreator ? 'Create and manage teams for your hackathon' : 'View your team information'}
                 </p>
               </div>
+              <Badge variant="secondary">
+                {hackathon.teams?.length || 0} teams
+              </Badge>
             </div>
-          )}
+
+            {/* Creator Only - Create Team Section */}
+            {isHackathonCreator && hackathon.status === 'open' && (
+              <div className="mb-8 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <h4 className="font-semibold mb-4 flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-primary" />
+                  Create New Team
+                </h4>
+                <TeamManagement
+                  hackathonId={hackathon.id}
+                  hackathonTitle={hackathon.title}
+                  hackathonStatus={hackathon.status}
+                  teams={hackathon.teams || []}
+                  suggestedTeamSize={hackathon.teamSize}
+                  allParticipants={hackathon.teamMembers || []}
+                  isCreator={isHackathonCreator}
+                  committedMembers={hackathon.committedMembers || []}
+                  isTeamLocked={hackathon.isTeamLocked || false}
+                  onProfileClick={handleProfileClick}
+                  onRefresh={() => {}}
+                />
+              </div>
+            )}
+
+            {/* Teams List */}
+            {hackathon.teams && hackathon.teams.length > 0 ? (
+              <div className="space-y-4">
+                {hackathon.teams.map((team) => {
+                  const isUserTeamCreator = team.creatorId === user?.uid;
+                  const isMemberOfThisTeam = team.memberIds?.includes(user?.uid || '');
+                  
+                  return (
+                    <div
+                      key={team.id}
+                      className={cn(
+                        'p-4 rounded-lg border transition-all space-y-4',
+                        isMemberOfThisTeam
+                          ? 'bg-green-500/5 border-green-500/30'
+                          : 'bg-muted/50 border-border'
+                      )}
+                    >
+                      {/* Team Header */}
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-semibold text-lg">{team.name}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            Created by {team.creatorId === hackathon.creatorId ? 'Hackathon Creator' : 'Team Member'}
+                          </p>
+                        </div>
+                        {isMemberOfThisTeam && (
+                          <Badge className="bg-green-500 text-white">
+                            Your Team
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Team Members Count */}
+                      <div className="text-sm text-muted-foreground">
+                        <p>{team.memberIds?.length || 0} members</p>
+                      </div>
+
+                      {/* Contract and Actions - Only show if user is member of this team */}
+                      {isMemberOfThisTeam && (
+                        <div className="space-y-4 pt-4 border-t border-border">
+                          {/* Team Contract Section */}
+                          <div>
+                            <TeamContract
+                              hackathonId={hackathon.id}
+                              teamMembers={team.memberIds?.map(memberId => {
+                                const memberProfile = getProfileById(memberId);
+                                return {
+                                  userId: memberId,
+                                  userName: memberProfile?.name || memberId,
+                                  userAvatar: memberProfile?.avatar || undefined,
+                                };
+                              }) || []}
+                              committedMembers={hackathon?.committedMembers || []}
+                              isLocked={hackathon?.isTeamLocked || false}
+                              onContractUpdate={() => {
+                                // Refresh hackathon data after contract update
+                                window.location.reload();
+                              }}
+                            />
+                          </div>
+
+                          {/* Leave Team Button - Show if user hasn't committed yet */}
+                          {!(hackathon?.committedMembers || []).includes(user?.uid || '') && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="w-full gap-2"
+                              onClick={async () => {
+                                if (confirm('Are you sure you want to leave this team?')) {
+                                  const success = await leaveTeam(
+                                    hackathon.id,
+                                    team.id,
+                                    user?.uid || '',
+                                    hackathon.teams || []
+                                  );
+                                  if (success) {
+                                    navigate(`/hackathons/${hackathon.id}`);
+                                  }
+                                }
+                              }}
+                            >
+                              <UserMinus className="h-4 w-4" />
+                              Leave Team
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h4 className="text-lg font-semibold mb-2">No teams yet</h4>
+                <p className="text-muted-foreground mb-4">
+                  {isHackathonCreator
+                    ? 'Create a team to get started'
+                    : 'Wait for the creator to add you to a team'}
+                </p>
+                {isHackathonCreator && hackathon.status === 'open' && (
+                  <Button onClick={() => setActiveTab('teams')} className="gap-2">
+                    <Trophy className="h-4 w-4" />
+                    Create First Team
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         {canSeeMembersTab && (

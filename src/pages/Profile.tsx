@@ -271,6 +271,9 @@ export default function Profile() {
       setIsEditing(false);
       toast.success('Profile updated successfully!');
       
+      // IMPORTANT: Update the cache immediately so avatar initials are recalculated with new name
+      localStorage.setItem(`profile_cache_${currentUser.uid}`, JSON.stringify(updatedProfile));
+      
       // Update AuthContext (non-blocking)
       updateProfile(updateData).catch(console.error);
       
@@ -321,6 +324,7 @@ export default function Profile() {
 
   const handleSendMessage = () => {
     if (!profile) return;
+    // Navigate to Messages page with this user (WhatsApp-like experience)
     navigate(`/messages?with=${profile.uid}`);
   };
 

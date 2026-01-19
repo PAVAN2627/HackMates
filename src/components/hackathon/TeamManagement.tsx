@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Plus, UserPlus, UserMinus, Crown, X, Star, Shield } from 'lucide-react';
+import { Users, Plus, UserPlus, UserMinus, Crown, X, Star, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -7,14 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { TeamFeedbackModal } from '@/components/TeamFeedbackModal';
-import { TeamChatSection } from '@/components/hackathon/TeamChatSection';
-import { TeamProjectDetails } from '@/components/hackathon/TeamProjectDetails';
 import { HackathonTeam } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useTeams } from '@/hooks/useTeams';
 import { useTeamFeedback } from '@/hooks/useTeamFeedback';
-import { useTeamChat } from '@/hooks/useTeamChat';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -50,13 +47,19 @@ export function TeamManagement({
   const { createTeam, leaveTeam, removeMemberFromTeam, getUserTeam, isUserInAnyTeam, updateTeam, loading } = useTeams();
   const { submitFeedback } = useTeamFeedback();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [teamName, setTeamName] = useState('');
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    name: '',
+    projectTitle: '',
+    projectDescription: '',
+    techStack: [] as string[],
+  });
 
   const userTeam = getUserTeam(teams, user?.uid || '');
   const isCompleted = hackathonStatus === 'completed';
   const isTeamLeader = userTeam?.leaderId === user?.uid;
-  const { messages: teamMessages, loading: chatLoading, sendMessage, editMessage, deleteMessage } = useTeamChat(hackathonId, userTeam?.id || '');
 
   const handleCreateTeam = async () => {
     if (!user || !teamName.trim()) return;
@@ -98,6 +101,35 @@ export function TeamManagement({
     // No need to call onRefresh - real-time listener will update
   };
 
+  const handleOpenEditDialog = () => {
+    if (!userTeam) return;
+    setEditData({
+      name: userTeam.name || '',
+      projectTitle: userTeam.projectTitle || '',
+      projectDescription: userTeam.projectDescription || '',
+      techStack: userTeam.techStack || [],
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveTeamChanges = async () => {
+    if (!userTeam) return;
+
+    try {
+      await updateTeam(hackathonId, userTeam.id, {
+        name: editData.name,
+        projectTitle: editData.projectTitle,
+        projectDescription: editData.projectDescription,
+        techStack: editData.techStack,
+      }, teams);
+      setEditDialogOpen(false);
+      toast.success('Team details updated!');
+    } catch (error) {
+      console.error('Error updating team:', error);
+      toast.error('Failed to update team details');
+    }
+  };
+
   return (
     <div className="glass rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
@@ -132,6 +164,17 @@ export function TeamManagement({
               <h4 className="font-semibold">{userTeam.name}</h4>
             </div>
             <div className="flex gap-2">
+              {isCreator && !isCompleted && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenEditDialog}
+                  className="gap-1"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Team
+                </Button>
+              )}
               {isCompleted && userTeam.memberIds.length > 1 && (
                 <Button
                   variant="default"
@@ -195,8 +238,7 @@ export function TeamManagement({
                           </Badge>
                         )}
                         {!isLeader && !isCurrentUser && (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <Shield className="h-3 w-3" />
+                          <Badge variant="outline" className="text-xs">
                             Member
                           </Badge>
                         )}
@@ -240,117 +282,9 @@ export function TeamManagement({
             )}
           </div>
           
-          {/* Team Project Details */}
-          <TeamProjectDetails
-            team={userTeam}
-            isLeader={isTeamLeader}
-            onUpdate={handleUpdateTeam}
-          />
-
-          {/* Team Chat Section */}
-          <div className="mt-4">
-            <TeamChatSection
-              messages={teamMessages}
-              onSendMessage={sendMessage}
-              onEditMessage={editMessage}
-              onDeleteMessage={deleteMessage}
-              onProfileClick={onProfileClick}
-              loading={chatLoading}
-              teamLeaderId={userTeam.leaderId}
-              teamMemberIds={userTeam.memberIds}
-            />
-          </div>
         </div>
       )}
 
-      {/* All Teams - Only visible to hackathon creator */}
-      {isCreator && (
-        teams.length === 0 ? (
-          <div className="text-center py-12">
-            <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h4 className="text-lg font-semibold mb-2">No teams yet</h4>
-            <p className="text-muted-foreground mb-4">
-              Create teams and assign members from the Members tab
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <h4 className="font-semibold text-sm text-muted-foreground">
-              All Teams ({teams.length})
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {teams.map(team => {
-                const isUserInTeam = team.memberIds.includes(user?.uid || '');
-                const isFull = team.memberIds.length >= suggestedTeamSize;
-                
-                return (
-                  <div
-                    key={team.id}
-                    className={cn(
-                      "p-4 rounded-lg border transition-all",
-                      isUserInTeam 
-                        ? "bg-primary/5 border-primary/30" 
-                        : "bg-background border-border"
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h5 className="font-semibold">{team.name}</h5>
-                      <Badge variant={isFull ? "default" : "outline"} className="text-xs">
-                        {team.memberIds.length}/{suggestedTeamSize}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {team.memberIds.map(memberId => {
-                        const profile = getProfileById(memberId);
-                        const isLeader = memberId === team.leaderId;
-                        
-                        return (
-                          <div
-                            key={memberId}
-                            className="group relative flex items-center gap-1 px-2 py-1 rounded bg-muted/50 hover:bg-muted transition-colors"
-                          >
-                            <div
-                              className="flex items-center gap-1 cursor-pointer"
-                              onClick={() => onProfileClick(memberId, profile?.name || 'Unknown')}
-                            >
-                              <AvatarUpload
-                                currentAvatar={profile?.avatar || null}
-                                userName={profile?.name || 'Unknown'}
-                                userGender={profile?.gender as any}
-                                size="xs"
-                                editable={false}
-                              />
-                              <span className="text-xs font-medium">
-                                {profile?.name || 'Unknown'}
-                              </span>
-                              {isLeader && <Crown className="h-3 w-3 text-yellow-500" />}
-                            </div>
-                            
-                            {isCreator && !isLeader && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRemoveMember(team.id, memberId);
-                                }}
-                                className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                disabled={loading}
-                              >
-                                <X className="h-3 w-3 text-destructive hover:text-destructive/80" />
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )
-      )}
-      
       {/* Message for non-creator users without a team - Should not be visible since they can't access this tab */}
       {!isCreator && !userTeam && teams.length > 0 && (
         <div className="text-center py-12">
@@ -393,6 +327,79 @@ export function TeamManagement({
                 disabled={!teamName.trim() || loading}
               >
                 Create Team
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Team Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Team Details</DialogTitle>
+            <DialogDescription>
+              Update team name, project title, description, and tech stack
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="teamName">Team Name</Label>
+              <Input
+                id="teamName"
+                placeholder="e.g., Code Warriors, Team Alpha"
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="projectTitle">Project Title</Label>
+              <Input
+                id="projectTitle"
+                placeholder="e.g., AI Powered Task Manager"
+                value={editData.projectTitle}
+                onChange={(e) => setEditData({ ...editData, projectTitle: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="projectDescription">Project Description</Label>
+              <textarea
+                id="projectDescription"
+                placeholder="Describe your project"
+                value={editData.projectDescription}
+                onChange={(e) => setEditData({ ...editData, projectDescription: e.target.value })}
+                className="w-full px-3 py-2 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="techStack">Tech Stack</Label>
+              <Input
+                id="techStack"
+                placeholder="e.g., React, Node.js, Firebase (comma separated)"
+                value={editData.techStack.join(', ')}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    techStack: e.target.value.split(',').map(t => t.trim()).filter(Boolean),
+                  })
+                }
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSaveTeamChanges} 
+                disabled={!editData.name.trim() || loading}
+              >
+                Save Changes
               </Button>
             </div>
           </div>

@@ -50,8 +50,10 @@ export function TeamContract({
   const [showWarning, setShowWarning] = useState(false);
 
   const hasUserCommitted = user ? committedMembers.includes(user.uid) : false;
-  const commitmentProgress = (committedMembers.length / teamMembers.length) * 100;
-  const allCommitted = committedMembers.length === teamMembers.length;
+  // Only count committed members who are actually in the team
+  const committedInTeam = committedMembers.filter(uid => teamMembers.some(m => m.userId === uid));
+  const commitmentProgress = (committedInTeam.length / teamMembers.length) * 100;
+  const allCommitted = committedInTeam.length === teamMembers.length;
 
   const handleCommit = async () => {
     if (!user || hasUserCommitted) return;
@@ -93,28 +95,28 @@ export function TeamContract({
     }
   };
 
-  if (isLocked) {
+  if (isLocked && hasUserCommitted) {
     return (
-      <div className="glass rounded-xl p-6 border-2 border-green-500/30 bg-green-500/5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center">
-            <Lock className="h-6 w-6 text-green-500" />
+      <div className="glass rounded-xl p-4 border-2 border-green-500/30 bg-green-500/5">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center">
+            <Lock className="h-5 w-5 text-green-500" />
           </div>
           <div>
-            <h3 className="font-bold text-lg flex items-center gap-2">
+            <h3 className="font-bold text-base flex items-center gap-2">
               Team Locked
-              <Badge className="bg-green-500 text-white">Active</Badge>
+              <Badge className="bg-green-500 text-white text-xs">Active</Badge>
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               All members have committed to the project
             </p>
           </div>
         </div>
 
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-3">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-            <div className="text-sm">
+            <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div className="text-xs">
               <p className="font-semibold text-yellow-700 dark:text-yellow-400 mb-1">
                 ⚠️ Anti-Ghosting Protection Active
               </p>
@@ -127,24 +129,156 @@ export function TeamContract({
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium">Committed Team Members:</p>
+          <p className="text-xs font-medium">Committed ({committedInTeam.length}/{teamMembers.length}):</p>
           <div className="grid grid-cols-2 gap-2">
-            {teamMembers.map((member) => (
-              <div key={member.userId} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                <AvatarUpload
-                  currentAvatar={member.userAvatar || null}
-                  userName={member.userName}
-                  size="sm"
-                  editable={false}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{member.userName}</p>
+            {teamMembers.map((member) => {
+              const isCommitted = committedMembers.includes(member.userId);
+              return (
+                <div key={member.userId} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 text-xs">
+                  <AvatarUpload
+                    currentAvatar={member.userAvatar || null}
+                    userName={member.userName}
+                    size="xs"
+                    editable={false}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{member.userName}</p>
+                  </div>
+                  {isCommitted ? (
+                    <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <div className="h-3 w-3 rounded-full border border-yellow-500 flex-shrink-0" />
+                  )}
                 </div>
-                <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Show contract even if team is locked, if current user hasn't committed yet
+  if (isLocked && !hasUserCommitted) {
+    return (
+      <div className="glass rounded-xl p-6 border-2 border-yellow-500/30 bg-yellow-500/5 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+            <AlertTriangle className="h-6 w-6 text-yellow-500" />
+          </div>
+          <div>
+            <h3 className="font-bold text-lg">Team is Locked - Action Required</h3>
+            <p className="text-sm text-muted-foreground">
+              You haven't committed yet, but the team is now active
+            </p>
+          </div>
+        </div>
+
+        {/* What is the Team Contract? */}
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Shield className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="text-sm space-y-2">
+              <p className="font-semibold text-blue-700 dark:text-blue-400">
+                What is the Team Contract?
+              </p>
+              <ul className="space-y-1 text-blue-600 dark:text-blue-500">
+                <li>• Click "Start Project" to commit to this hackathon</li>
+                <li>• Once you commit, the team gets locked</li>
+                <li>• Leaving after committing will hurt your reliability score</li>
+                <li>• This ensures everyone is serious about the project</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Team Members Status */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Team Members Status:</p>
+          <div className="grid grid-cols-1 gap-2">
+            {teamMembers.map((member) => {
+              const hasCommitted = committedMembers.includes(member.userId);
+              const isCurrentUser = user?.uid === member.userId;
+              
+              return (
+                <div 
+                  key={member.userId} 
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-lg transition-all",
+                    hasCommitted 
+                      ? "bg-green-500/10 border border-green-500/30" 
+                      : "bg-muted/50 border border-border"
+                  )}
+                >
+                  <AvatarUpload
+                    currentAvatar={member.userAvatar || null}
+                    userName={member.userName}
+                    size="sm"
+                    editable={false}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {member.userName}
+                      {isCurrentUser && <span className="text-yellow-500 ml-1">(You - Pending)</span>}
+                    </p>
+                  </div>
+                  {hasCommitted ? (
+                    <div className="flex items-center gap-1 text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-xs font-medium">Committed</span>
+                    </div>
+                  ) : (
+                    <Badge variant="outline" className="text-xs">
+                      Pending
+                    </Badge>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Action Button */}
+        {user && teamMembers.some(m => m.userId === user.uid) && (
+          <div className="space-y-3">
+            {showWarning && (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 animate-fade-in">
+                <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                  ⚠️ By clicking "Start Project", you commit to completing this hackathon. 
+                  Leaving after this will negatively impact your reliability score.
+                </p>
+              </div>
+            )}
+            
+            <Button
+              onClick={() => {
+                if (!showWarning) {
+                  setShowWarning(true);
+                  setTimeout(() => setShowWarning(false), 10000);
+                } else {
+                  handleCommit();
+                }
+              }}
+              disabled={committing}
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+              size="lg"
+            >
+              {committing ? (
+                'Committing...'
+              ) : showWarning ? (
+                <>
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Confirm: Start Project
+                </>
+              ) : (
+                <>
+                  <Shield className="h-5 w-5 mr-2" />
+                  Start Project
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     );
   }

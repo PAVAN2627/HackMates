@@ -26,6 +26,7 @@ export function Sidebar() {
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Trophy, label: 'Hackathons', path: '/hackathons' },
+    { icon: Users, label: 'Teams', path: '/teams' },
     { icon: Plus, label: 'Post Hackathon', path: '/create-hackathon' },
     { icon: Users, label: 'Find Members', path: '/profiles' },
     { icon: MessageCircle, label: 'Messages', path: '/messages' },

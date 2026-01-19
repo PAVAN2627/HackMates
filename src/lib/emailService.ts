@@ -3,7 +3,7 @@
  * Sends HTML emails via Google Script Web App (no rate limits!)
  */
 
-import { getWelcomeEmailHTML, getTeamAdditionEmailHTML, getAnnouncementEmailHTML } from './emailTemplates';
+import { getWelcomeEmailHTML, getWelcomeEmailHTMLGoogle, getTeamAdditionEmailHTML, getAnnouncementEmailHTML } from './emailTemplates';
 
 // Google Apps Script Web App URL from environment variables
 // Fallback to hardcoded URL if env var is not set (for production)
@@ -36,6 +36,38 @@ export const sendWelcomeEmail = async (
     });
 
     console.log('✅ Welcome email sent to:', userEmail);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Failed to send welcome email:", error);
+    return { success: false };
+  }
+};
+
+/**
+ * Send welcome email to Google OAuth users (without password)
+ */
+export const sendWelcomeEmailGoogle = async (
+  userEmail: string,
+  userName: string
+): Promise<{ success: boolean }> => {
+  try {
+    const htmlMessage = getWelcomeEmailHTMLGoogle(userName, userEmail);
+
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors", // Required for Google Apps Script
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: userEmail,
+        name: userName,
+        subject: "🚀 Welcome to HackMates - Your Account is Ready!",
+        html: htmlMessage,
+      }),
+    });
+
+    console.log('✅ Welcome email sent to Google user:', userEmail);
     return { success: true };
   } catch (error) {
     console.error("❌ Failed to send welcome email:", error);

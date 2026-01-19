@@ -1,0 +1,27 @@
+{
+  "name": "HackMates - Hackathon Team Formation",
+  "short_name": "HackMates",
+  "description": "Find your perfect hackathon partner with AI-powered matching",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/roundlogohackmates.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/squarelogohackmates.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "social", "developer"],
+  "lang": "en",
+  "dir": "ltr"
+}

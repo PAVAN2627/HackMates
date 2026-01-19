@@ -3,11 +3,11 @@ export interface UserProfile {
   uid: string; // Firebase auth UID
   name: string;
   email: string;
-  college: string;
-  location: string;
+  college?: string; // Made optional for Google sign-in
+  location?: string; // Made optional for Google sign-in
   skills: string[];
   bio: string;
-  availableFor: 'online' | 'in-person' | 'both';
+  availableFor?: 'online' | 'in-person' | 'both'; // Made optional for Google sign-in
   lookingForTeam: boolean;
   avatar?: string;
   // Social links
@@ -21,10 +21,14 @@ export interface UserProfile {
   gender?: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
   // Work Style (for Synergy Matching)
   workStyle?: {
-    goal: 'win' | 'learn';
-    timePreference: 'night-owl' | 'early-bird' | 'flexible';
-    commitment: 'full-time' | 'part-time' | 'casual';
-    hoursAvailable: number;
+    goal?: 'win' | 'learn';
+    timePreference?: 'night-owl' | 'early-bird' | 'flexible';
+    commitment?: 'full-time' | 'part-time' | 'casual';
+    hoursAvailable?: number;
+    preferredRole?: string;
+    workingHours?: string;
+    communicationStyle?: string;
+    commitmentLevel?: string;
   };
   // Reliability Badge
   reliabilityScore?: number;

@@ -57,7 +57,7 @@ export function NotificationPermissionBanner() {
               Enable Notifications 🔔
             </h3>
             <p className="text-xs text-muted-foreground mb-3">
-              Get instant updates about announcements, team invitations, and hackathon reminders - even when the app is closed!
+              Get instant updates about hackathon announcements, team invitations, and important reminders - even when the app is closed!
             </p>
             
             <div className="flex gap-2">

@@ -32,10 +32,8 @@ export function UserProfileModal({
   onSendMessage 
 }: UserProfileModalProps) {
   const { user, profile: currentUserProfile } = useAuth();
-  const { sendMessage } = useDirectMessages();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sendingMessage, setSendingMessage] = useState(false);
   
   // Load reliability badge and calculate synergy score
   const { reliabilityBadge, feedbacks } = useTeamFeedback(userId || undefined);
@@ -102,52 +100,15 @@ export function UserProfileModal({
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!userId || !user || !currentUserProfile || !profile) {
-      toast.error('Unable to send message');
+  const handleSendMessage = () => {
+    if (!userId) {
+      toast.error('Unable to open conversation');
       return;
     }
 
-    setSendingMessage(true);
-
-    try {
-      // Create personalized professional message
-      let message = `Hi ${profile.name}! 👋\n\n`;
-      message += `I came across your profile on HackMates and I'm impressed with your background. `;
-      
-      if (profile.skills && profile.skills.length > 0) {
-        const skillsToMention = profile.skills.slice(0, 3);
-        message += `Your expertise in ${skillsToMention.join(', ')} `;
-        if (profile.skills.length > 3) {
-          message += `and other technologies `;
-        }
-        message += `caught my attention. `;
-      }
-      
-      if (profile.college && profile.college !== 'Unknown') {
-        message += `It's great to connect with someone from ${profile.college}. `;
-      }
-      
-      message += `\n\nI'm always looking to connect with talented developers `;
-      
-      if (profile.lookingForTeam) {
-        message += `and I noticed you're looking for team opportunities. `;
-      }
-      
-      message += `Would you be interested in collaborating on future projects or hackathons? `;
-      message += `I believe we could create something amazing together!\n\n`;
-      message += `Looking forward to hearing from you! 🚀`;
-
-      await sendMessage(userId, message, currentUserProfile.name, currentUserProfile.avatar);
-      toast.success(`Message sent to ${profile.name}!`);
-      onSendMessage(userId); // This will navigate to the messages page
-      onClose();
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast.error(error.message || 'Failed to send message');
-    } finally {
-      setSendingMessage(false);
-    }
+    // Close modal and navigate to Messages page with this user (WhatsApp-like experience)
+    onClose();
+    onSendMessage(userId);
   };
 
   if (!userId) return null;
@@ -457,11 +418,10 @@ export function UserProfileModal({
                   <div className="border-t border-border pt-4">
                     <Button
                       onClick={handleSendMessage}
-                      disabled={sendingMessage}
                       className="w-full gap-2"
                     >
                       <MessageCircle className="h-4 w-4" />
-                      {sendingMessage ? 'Sending...' : 'Send Message'}
+                      Message
                     </Button>
                   </div>
                 )}

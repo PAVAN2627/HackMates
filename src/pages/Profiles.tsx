@@ -133,52 +133,8 @@ export default function Profiles() {
       return;
     }
 
-    // Find the recipient profile to personalize the message
-    const recipientProfile = profiles.find(p => p.uid === recipientId);
-    if (!recipientProfile) {
-      toast.error('Profile not found');
-      return;
-    }
-
-    setSendingMessageTo(recipientId);
-
-    try {
-      // Create personalized professional message
-      let message = `Hi ${recipientProfile.name}! 👋\n\n`;
-      message += `I came across your profile on HackMates and I'm impressed with your background. `;
-      
-      if (recipientProfile.skills && recipientProfile.skills.length > 0) {
-        const skillsToMention = recipientProfile.skills.slice(0, 3);
-        message += `Your expertise in ${skillsToMention.join(', ')} `;
-        if (recipientProfile.skills.length > 3) {
-          message += `and other technologies `;
-        }
-        message += `caught my attention. `;
-      }
-      
-      if (recipientProfile.college) {
-        message += `It's great to connect with someone from ${recipientProfile.college}. `;
-      }
-      
-      message += `\n\nI'm always looking to connect with talented developers `;
-      
-      if (recipientProfile.lookingForTeam) {
-        message += `and I noticed you're looking for team opportunities. `;
-      }
-      
-      message += `Would you be interested in collaborating on future projects or hackathons? `;
-      message += `I believe we could create something amazing together!\n\n`;
-      message += `Looking forward to hearing from you! 🚀`;
-
-      await sendMessage(recipientId, message, currentProfile.name, currentProfile.avatar);
-      toast.success(`Message sent to ${recipientProfile.name}!`);
-      navigate(`/messages?with=${recipientId}`);
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast.error(error.message || 'Failed to send message');
-    } finally {
-      setSendingMessageTo(null);
-    }
+    // Navigate to Messages page with this user (WhatsApp-like experience)
+    navigate(`/messages?with=${recipientId}`);
   };
 
   const handleViewProfile = (userId: string, userName: string) => {
@@ -188,6 +144,7 @@ export default function Profiles() {
 
   const handleProfileModalMessage = (userId: string) => {
     setProfileModalOpen(false);
+    // Navigate to Messages page with this user (WhatsApp-like experience)
     navigate(`/messages?with=${userId}`);
   };
 

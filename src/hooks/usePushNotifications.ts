@@ -35,8 +35,17 @@ export function usePushNotifications(userId: string | null) {
       if (permission === 'granted') {
         // Get FCM token
         const messaging = getMessaging();
+        
+        // Check if VAPID key is configured
+        const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+        if (!vapidKey) {
+          console.error('VAPID key not configured');
+          toast.error('Push notifications not properly configured');
+          return false;
+        }
+
         const token = await getToken(messaging, {
-          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY
+          vapidKey: vapidKey
         });
 
         if (token) {
@@ -64,20 +73,24 @@ export function usePushNotifications(userId: string | null) {
           });
 
           return true;
+        } else {
+          toast.error('Failed to get notification token');
+          return false;
         }
       } else if (permission === 'denied') {
         toast.error('Notifications blocked. Please enable them in browser settings.');
         return false;
+      } else {
+        toast.error('Notification permission not granted');
+        return false;
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
-      toast.error('Failed to enable notifications');
+      toast.error(`Failed to enable notifications: ${error instanceof Error ? error.message : 'Unknown error'}`);
       return false;
     } finally {
       setLoading(false);
     }
-
-    return false;
   };
 
   const disableNotifications = async () => {

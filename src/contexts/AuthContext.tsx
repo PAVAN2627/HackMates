@@ -3,6 +3,8 @@ import { auth, db, COLLECTIONS } from '@/lib/firebase';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User as FirebaseUser
@@ -17,7 +19,10 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   signUp: (userData: Omit<UserProfile, 'id' | 'uid' | 'createdAt'> & { password: string; confirmPassword: string }) => Promise<void>;
+  signUpWithGoogle: (userData: Omit<UserProfile, 'id' | 'uid' | 'createdAt'>) => Promise<void>;
+  completeGoogleSignUp: (userData: Omit<UserProfile, 'id' | 'uid' | 'createdAt'>) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
@@ -138,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      await setDoc(doc(db, COLLECTIONS.USERS, userCredential.user.uid), {
+      const profileToSave = {
         ...profileData,
         email,
         avatar: profileData.avatar || '',
@@ -151,10 +156,200 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         lookingForTeam: true,
         createdAt: Timestamp.now(),
-      });
+      };
+
+      await setDoc(doc(db, COLLECTIONS.USERS, userCredential.user.uid), profileToSave);
+      
+      // IMPORTANT: Cache the profile immediately for fast UI update
+      const cachedProfile = {
+        ...profileToSave,
+        id: userCredential.user.uid,
+        uid: userCredential.user.uid,
+        createdAt: profileToSave.createdAt instanceof Timestamp ? profileToSave.createdAt.toDate() : new Date(),
+      };
+      localStorage.setItem(`profile_cache_${userCredential.user.uid}`, JSON.stringify(cachedProfile));
+      
+      // Update the context profile state immediately for instant UI update
+      setProfile(cachedProfile as UserProfile);
     } catch (error: any) {
       console.error('Signup error:', error);
       throw new Error(error.message || 'Failed to create account');
+    }
+  };
+
+  const signUpWithGoogle = async (userData: Omit<UserProfile, 'id' | 'uid' | 'createdAt'>) => {
+    try {
+      // Check if user is already authenticated from Google
+      if (auth.currentUser) {
+        // User already authenticated via Google on Auth page, just save profile
+        const user = auth.currentUser;
+
+        // Create the profile in Firestore
+        await setDoc(doc(db, COLLECTIONS.USERS, user.uid), {
+          ...userData,
+          avatar: userData.avatar || user.photoURL || '',
+          linkedin: userData.linkedin || '',
+          github: userData.github || '',
+          portfolio: userData.portfolio || '',
+          experience: userData.experience || 'Beginner',
+          interests: userData.interests || [],
+          gender: userData.gender || 'prefer-not-to-say',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          lookingForTeam: true,
+          createdAt: Timestamp.now(),
+        });
+      } else {
+        // This shouldn't happen in normal flow, but keep as fallback
+        const provider = new GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+        
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        // Create the profile in Firestore
+        await setDoc(doc(db, COLLECTIONS.USERS, user.uid), {
+          ...userData,
+          avatar: userData.avatar || user.photoURL || '',
+          linkedin: userData.linkedin || '',
+          github: userData.github || '',
+          portfolio: userData.portfolio || '',
+          experience: userData.experience || 'Beginner',
+          interests: userData.interests || [],
+          gender: userData.gender || 'prefer-not-to-say',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          lookingForTeam: true,
+          createdAt: Timestamp.now(),
+        });
+      }
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in was cancelled');
+      }
+      console.error('Google signup error:', error);
+      throw new Error(error.message || 'Failed to complete registration');
+    }
+  };
+
+  const completeGoogleSignUp = async (userData: Omit<UserProfile, 'id' | 'uid' | 'createdAt'>) => {
+    try {
+      // First check if user is currently authenticated
+      if (auth.currentUser) {
+        // User is logged in - use their UID
+        const uid = auth.currentUser.uid;
+        console.log('User is logged in. Saving profile for UID:', uid);
+        
+        const profileToSave = {
+          ...userData,
+          avatar: userData.avatar || auth.currentUser.photoURL || '',
+          linkedin: userData.linkedin || '',
+          github: userData.github || '',
+          portfolio: userData.portfolio || '',
+          experience: userData.experience || 'Beginner',
+          interests: userData.interests || [],
+          gender: userData.gender || 'prefer-not-to-say',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          lookingForTeam: true,
+          createdAt: Timestamp.now(),
+        };
+
+        console.log('Profile data to save:', profileToSave);
+        
+        await setDoc(doc(db, COLLECTIONS.USERS, uid), profileToSave);
+        
+        console.log('Profile saved successfully to Firestore');
+
+        // IMPORTANT: Cache the profile immediately for fast UI update
+        const cachedProfile = {
+          ...profileToSave,
+          id: uid,
+          uid: uid,
+          createdAt: profileToSave.createdAt instanceof Timestamp ? profileToSave.createdAt.toDate() : new Date(),
+        };
+        localStorage.setItem(`profile_cache_${uid}`, JSON.stringify(cachedProfile));
+        
+        // Update the context profile state immediately for instant UI update
+        setProfile(cachedProfile as UserProfile);
+
+        // Clear the session/storage data after successful signup
+        sessionStorage.removeItem('googleUserData');
+        sessionStorage.removeItem('signupMethod');
+        localStorage.removeItem('pendingGoogleSignup');
+        localStorage.removeItem('signupMethod');
+        localStorage.removeItem('registrationComplete');
+        localStorage.removeItem('newUserUID');
+
+        console.log('Registration complete. User is authenticated and ready.');
+        return;
+      }
+
+      // Fallback: Get UID from sessionStorage or localStorage
+      let googleUserDataStr = sessionStorage.getItem('googleUserData');
+      
+      if (!googleUserDataStr) {
+        googleUserDataStr = localStorage.getItem('pendingGoogleSignup');
+      }
+
+      console.log('Google signup data found:', !!googleUserDataStr);
+
+      if (!googleUserDataStr) {
+        throw new Error('User authentication data not found. Please sign in with Google first.');
+      }
+
+      const googleUserData = JSON.parse(googleUserDataStr);
+      const uid = googleUserData.uid;
+      
+      console.log('Saving profile for UID:', uid);
+
+      if (!uid) {
+        throw new Error('User ID not found. Please sign in with Google first.');
+      }
+
+      // Create the profile in Firestore using the stored UID
+      const profileToSave = {
+        ...userData,
+        avatar: userData.avatar || googleUserData.avatar || '',
+        linkedin: userData.linkedin || '',
+        github: userData.github || '',
+        portfolio: userData.portfolio || '',
+        experience: userData.experience || 'Beginner',
+        interests: userData.interests || [],
+        gender: userData.gender || 'prefer-not-to-say',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        lookingForTeam: true,
+        createdAt: Timestamp.now(),
+      };
+
+      console.log('Profile data to save:', profileToSave);
+      
+      await setDoc(doc(db, COLLECTIONS.USERS, uid), profileToSave);
+      
+      console.log('Profile saved successfully to Firestore');
+
+      // IMPORTANT: Cache the profile immediately for fast UI update
+      const cachedProfile = {
+        ...profileToSave,
+        id: uid,
+        uid: uid,
+        createdAt: profileToSave.createdAt instanceof Timestamp ? profileToSave.createdAt.toDate() : new Date(),
+      };
+      localStorage.setItem(`profile_cache_${uid}`, JSON.stringify(cachedProfile));
+      
+      // Update the context profile state immediately for instant UI update
+      setProfile(cachedProfile as UserProfile);
+
+      // Clear the session/storage data after successful signup
+      sessionStorage.removeItem('googleUserData');
+      sessionStorage.removeItem('signupMethod');
+      localStorage.removeItem('pendingGoogleSignup');
+      localStorage.removeItem('signupMethod');
+      localStorage.removeItem('registrationComplete');
+      localStorage.removeItem('newUserUID');
+
+      console.log('Registration complete. User will be redirected to dashboard.');
+    } catch (error: any) {
+      console.error('Complete Google signup error:', error);
+      throw new Error(error.message || 'Failed to complete registration');
     }
   };
 
@@ -162,7 +357,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to sign in');
+      // Handle specific Firebase auth errors
+      if (error.code === 'auth/user-not-found') {
+        throw new Error('No account found with this email');
+      } else if (error.code === 'auth/wrong-password') {
+        throw new Error('Incorrect password. Please try again.');
+      } else if (error.code === 'auth/invalid-email') {
+        throw new Error('Invalid email address');
+      } else if (error.code === 'auth/user-disabled') {
+        throw new Error('This account has been disabled');
+      } else if (error.message?.includes('ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL')) {
+        // User signed up with Google but trying to sign in with password
+        throw new Error('This email is linked to Google Sign-In. Please use "Sign in with Google" button instead.');
+      } else {
+        // Generic fallback error message
+        throw new Error(error.message || 'Failed to sign in. Please try again.');
+      }
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+      
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Check if user profile exists
+      const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+      
+      if (!profileDoc.exists()) {
+        // New user - store Google data and UID, but KEEP USER LOGGED IN
+        const googleUserData = {
+          uid: user.uid, // Store UID for later use
+          name: user.displayName || '',
+          email: user.email || '',
+          avatar: user.photoURL || '',
+          isGoogleUser: true
+        };
+        
+        // Store in both localStorage and sessionStorage for reliability
+        localStorage.setItem('pendingGoogleSignup', JSON.stringify(googleUserData));
+        sessionStorage.setItem('googleUserData', JSON.stringify(googleUserData));
+        
+        // IMPORTANT: Do NOT sign out the user - keep them logged in
+        // They will stay logged in and be directed to register page
+        // After they complete registration, they'll already be authenticated
+        
+        throw new Error('REDIRECT_TO_REGISTER');
+      }
+      
+      // Existing user - they're already signed in, profile will load automatically
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in was cancelled');
+      }
+      if (error.message === 'REDIRECT_TO_REGISTER') {
+        throw error; // Re-throw to handle in component
+      }
+      throw new Error(error.message || 'Failed to sign in with Google');
     }
   };
 
@@ -193,7 +448,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     try {
       // Update local state immediately first
-      setProfile(prev => prev ? { ...prev, ...updates } : null);
+      const updatedProfile = profile ? { ...profile, ...updates } : (updates as UserProfile);
+      setProfile(updatedProfile);
+      
+      // IMPORTANT: Update the cached profile immediately so avatar initials are recalculated with new name
+      localStorage.setItem(`profile_cache_${user.uid}`, JSON.stringify(updatedProfile));
       
       // Then try to update Firebase
       await setDoc(doc(db, COLLECTIONS.USERS, user.uid), {
@@ -209,7 +468,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, error, signUp, signIn, signOut, updateProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, error, signUp, signUpWithGoogle, completeGoogleSignUp, signIn, signInWithGoogle, signOut, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

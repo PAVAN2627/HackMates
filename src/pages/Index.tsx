@@ -83,5 +83,5 @@ export default function Index() {
   }
 
   // Render the main content
-  return <IndexPageContent hackathons={hackathons} signIn={signIn} />;
+  return <IndexPageContent hackathons={hackathons} />;
 }

@@ -10,37 +10,21 @@ import { toast } from 'sonner';
 
 interface IndexPageContentProps {
   hackathons: any[];
-  signIn: (email: string, password: string) => Promise<void>;
 }
 
-export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) {
+export function IndexPageContent({ hackathons }: IndexPageContentProps) {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   const handleExploreHackathons = () => {
     navigate('/explore');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+  const handleGetStarted = () => {
+    navigate('/auth');
+  };
 
-    try {
-      if (isLogin) {
-        await signIn(email, password);
-        toast.success('Welcome back to HackMates!');
-        navigate('/hackathons');
-      } else {
-        navigate('/register');
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to process request');
-    } finally {
-      setSubmitting(false);
-    }
+  const handleJoinHackathon = () => {
+    navigate('/auth');
   };
 
   const stats = [
@@ -157,7 +141,7 @@ export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) 
             </Button>
             <Button 
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
-              onClick={() => document.getElementById('auth-section')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={handleGetStarted}
             >
               Get Started
               <ArrowRight className="h-4 w-4 ml-2" />
@@ -199,7 +183,7 @@ export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) 
             variant="ghost" 
             size="sm"
             className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-600 hover:text-purple-600"
-            onClick={() => document.getElementById('auth-section')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={handleJoinHackathon}
           >
             <User className="h-5 w-5" />
             <span className="text-xs">Join</span>
@@ -260,7 +244,7 @@ export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) 
               <Button 
                 size="lg"
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-xl text-base md:text-lg px-6 md:px-8 py-3 md:py-4 h-auto"
-                onClick={() => document.getElementById('auth-section')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={handleGetStarted}
               >
                 Start Your Journey
                 <Rocket className="h-4 md:h-5 w-4 md:w-5 ml-2" />
@@ -437,158 +421,81 @@ export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) 
         </div>
       </section>
 
-      {/* Auth Section - Mobile Optimized */}
-      <section id="auth-section" className="py-16 md:py-20 relative mb-20 md:mb-0">
+      {/* Join Community Section - Mobile Optimized */}
+      <section className="py-16 md:py-20 relative mb-20 md:mb-0">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center max-w-6xl mx-auto">
-            {/* Benefits */}
-            <div className="px-4">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
-                Join the{' '}
-                <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  Community
-                </span>
-              </h2>
-              <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-6 md:mb-8">
-                Whether you're a seasoned developer, creative designer, or passionate student, 
-                HackMates connects you with like-minded innovators ready to build the future.
-              </p>
-              
-              <div className="space-y-4 md:space-y-6">
-                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
-                  <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4 flex items-center gap-2">
-                    <Trophy className="h-4 w-4 md:h-5 md:w-5 text-purple-500" />
-                    For Hackathon Organizers
-                  </h3>
-                  <ul className="space-y-2">
-                    {[
-                      'Host hackathons with detailed event pages',
-                      'Manage participants and team formations',
-                      'Send real-time announcements to participants',
-                      'Track event analytics and engagement'
-                    ].map((item) => (
-                      <li key={item} className="flex items-start gap-2 text-sm md:text-base text-slate-600 dark:text-slate-400">
-                        <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
+              Join the{' '}
+              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                Community
+              </span>
+            </h2>
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-8 md:mb-12 px-4">
+              Whether you're a seasoned developer, creative designer, or passionate student, 
+              HackMates connects you with like-minded innovators ready to build the future.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-12 px-4">
+              <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-white/20">
+                <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 md:mb-6">
+                  <Trophy className="h-6 w-6 md:h-8 md:w-8 text-white" />
                 </div>
+                <h3 className="text-lg md:text-xl font-bold mb-4 text-slate-800 dark:text-slate-200">For Hackathon Organizers</h3>
+                <ul className="space-y-2 text-left">
+                  {[
+                    'Host hackathons with detailed event pages',
+                    'Manage participants and team formations',
+                    'Send real-time announcements to participants',
+                    'Track event analytics and engagement'
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm md:text-base text-slate-600 dark:text-slate-400">
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
-                  <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4 flex items-center gap-2">
-                    <Users className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
-                    For Participants
-                  </h3>
-                  <ul className="space-y-2">
-                    {[
-                      'Discover hackathons matching your skills',
-                      'Find teammates with complementary expertise',
-                      'Build your developer profile and portfolio',
-                      'Network with the tech community'
-                    ].map((item) => (
-                      <li key={item} className="flex items-start gap-2 text-sm md:text-base text-slate-600 dark:text-slate-400">
-                        <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+              <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-white/20">
+                <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-4 md:mb-6">
+                  <Users className="h-6 w-6 md:h-8 md:w-8 text-white" />
                 </div>
+                <h3 className="text-lg md:text-xl font-bold mb-4 text-slate-800 dark:text-slate-200">For Participants</h3>
+                <ul className="space-y-2 text-left">
+                  {[
+                    'Discover hackathons matching your skills',
+                    'Find teammates with complementary expertise',
+                    'Build your developer profile and portfolio',
+                    'Network with the tech community'
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm md:text-base text-slate-600 dark:text-slate-400">
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
-            {/* Auth Form - Mobile Optimized */}
-            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 shadow-xl mx-4">
-              <div className="flex gap-2 mb-6 md:mb-8">
-                <Button
-                  variant={isLogin ? 'default' : 'ghost'}
-                  className={`flex-1 text-sm md:text-base ${isLogin ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : ''}`}
-                  onClick={() => setIsLogin(true)}
-                >
-                  Login
-                </Button>
-                <Button
-                  variant={!isLogin ? 'default' : 'ghost'}
-                  className={`flex-1 text-sm md:text-base ${!isLogin ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : ''}`}
-                  onClick={() => setIsLogin(false)}
-                >
-                  Sign Up
-                </Button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {!isLogin && (
-                  <div className="text-center p-4 md:p-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/30 dark:to-blue-900/30 rounded-lg border border-purple-200 dark:border-purple-700 mb-4">
-                    <h3 className="text-base md:text-lg font-semibold text-purple-600 dark:text-purple-400 mb-2">🚀 Ready to Join HackMates?</h3>
-                    <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-3">
-                      Create your complete profile with skills, experience, and showcase your projects!
-                    </p>
-                    <Button 
-                      type="button" 
-                      onClick={() => navigate('/register')}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-sm md:text-base"
-                    >
-                      Start Registration →
-                    </Button>
-                  </div>
-                )}
-
-                {isLogin && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 text-sm md:text-base">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="border-slate-200 dark:border-slate-700 focus:border-purple-500 text-sm md:text-base"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 text-sm md:text-base">Password</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        minLength={6}
-                        className="border-slate-200 dark:border-slate-700 focus:border-purple-500 text-sm md:text-base"
-                      />
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-sm md:text-base" 
-                      size="lg" 
-                      disabled={submitting}
-                    >
-                      {submitting ? 'Please wait...' : 'Login to HackMates'}
-                    </Button>
-                  </>
-                )}
-              </form>
-
-              <p className="text-center text-xs md:text-sm text-slate-600 dark:text-slate-400 mt-4 md:mt-6">
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
-                <button
-                  onClick={() => {
-                    if (isLogin) {
-                      navigate('/register');
-                    } else {
-                      setIsLogin(!isLogin);
-                    }
-                  }}
-                  className="text-purple-600 hover:text-purple-700 hover:underline font-medium"
-                >
-                  {isLogin ? 'Sign Up' : 'Login'}
-                </button>
-              </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
+              <Button 
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-xl text-base md:text-lg px-8 py-4 h-auto"
+                onClick={handleGetStarted}
+              >
+                Join HackMates Today
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-2 border-purple-200 hover:border-purple-400 text-purple-600 hover:bg-purple-50 text-base md:text-lg px-8 py-4 h-auto"
+                onClick={handleExploreHackathons}
+              >
+                Explore Hackathons
+                <Trophy className="h-5 w-5 ml-2" />
+              </Button>
             </div>
           </div>
         </div>
@@ -652,7 +559,7 @@ export function IndexPageContent({ hackathons, signIn }: IndexPageContentProps) 
                 <Button 
                   size="lg"
                   className="bg-white text-purple-600 hover:bg-gray-100 text-base md:text-lg px-6 md:px-8 py-3 md:py-4 h-auto"
-                  onClick={() => navigate('/register')}
+                  onClick={handleGetStarted}
                 >
                   Join HackMates
                   <ArrowRight className="h-4 md:h-5 w-4 md:w-5 ml-2" />
