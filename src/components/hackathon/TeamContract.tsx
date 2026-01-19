@@ -63,25 +63,56 @@ export function TeamContract({
   const handleCommit = async () => {
     if (!user || hasUserCommitted || !teamId) return;
 
+    // Check if teams array is valid
+    if (!teams || !Array.isArray(teams) || teams.length === 0) {
+      console.error('Teams array is invalid:', teams);
+      toast.error('Unable to commit - team data not loaded. Please refresh the page.');
+      return;
+    }
+
     setCommitting(true);
     try {
       const hackathonRef = doc(db, COLLECTIONS.HACKATHONS, hackathonId);
       
       // Update the specific team's committedMemberIds
+      // We need to properly serialize the teams data to avoid Firestore issues
       const updatedTeams = teams.map(team => {
         if (team.id === teamId) {
           const currentCommitted = team.committedMemberIds || [];
           const newCommitted = [...currentCommitted, user.uid];
           const allMembersCommitted = team.memberIds.every((id: string) => newCommitted.includes(id));
           
+          // Create a clean copy of the team object with only serializable data
           return {
-            ...team,
+            id: team.id,
+            name: team.name,
+            memberIds: team.memberIds || [],
+            leaderId: team.leaderId,
+            createdAt: team.createdAt || new Date(),
+            projectTitle: team.projectTitle || '',
+            projectDescription: team.projectDescription || '',
+            techStack: team.techStack || [],
+            projectStatus: team.projectStatus || 'planning',
             committedMemberIds: newCommitted,
             isTeamLocked: allMembersCommitted,
-            teamLockedAt: allMembersCommitted ? new Date() : team.teamLockedAt
+            teamLockedAt: allMembersCommitted ? new Date() : (team.teamLockedAt || null)
           };
         }
-        return team;
+        // Return clean copy for other teams too
+        return {
+          id: team.id,
+          name: team.name,
+          memberIds: team.memberIds || [],
+          leaderId: team.leaderId,
+          createdAt: team.createdAt || new Date(),
+          projectTitle: team.projectTitle || '',
+          projectDescription: team.projectDescription || '',
+          techStack: team.techStack || [],
+          projectStatus: team.projectStatus || 'planning',
+          committedMemberIds: team.committedMemberIds || [],
+          isTeamLocked: team.isTeamLocked || false,
+          teamLockedAt: team.teamLockedAt || null
+        };
       });
 
       // Update the hackathon with the modified teams array
