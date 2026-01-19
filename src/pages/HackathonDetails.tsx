@@ -682,11 +682,20 @@ export default function HackathonDetails() {
                     >
                       {/* Team Header */}
                       <div className="flex items-start justify-between">
-                        <div>
+                        <div className="flex items-center gap-2">
                           <h4 className="font-semibold text-lg">{team.name}</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Created by {team.creatorId === hackathon.creatorId ? 'Hackathon Creator' : 'Team Member'}
-                          </p>
+                          {/* Delete Team Button - Right next to team name for creator */}
+                          {isHackathonCreator && hackathon.status === 'open' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openDeleteTeamDialog(team)}
+                              className="h-7 px-2 text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-950"
+                              title="Delete Team"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           {isMemberOfThisTeam && (
@@ -694,19 +703,16 @@ export default function HackathonDetails() {
                               Your Team
                             </Badge>
                           )}
-                          {isHackathonCreator && hackathon.status === 'open' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openDeleteTeamDialog(team)}
-                              className="gap-1 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </Button>
+                          {team.isTeamLocked && (
+                            <Badge variant="outline" className="bg-yellow-500/10 border-yellow-500/30 text-yellow-600">
+                              🔒 Locked
+                            </Badge>
                           )}
                         </div>
                       </div>
+                      <p className="text-xs text-muted-foreground -mt-2">
+                        Created by {team.leaderId === hackathon.creatorId ? 'Hackathon Creator' : 'Team Member'}
+                      </p>
 
                       {/* Team Members Count */}
                       <div className="text-sm text-muted-foreground">
