@@ -108,6 +108,7 @@ export default function Auth() {
       // Store flag to indicate this is a Google signup
       localStorage.setItem('signupMethod', 'google');
       sessionStorage.setItem('signupMethod', 'google');
+      sessionStorage.setItem('googleAuthIntent', 'signup'); // Set signup intent
       await signInWithGoogle();
       toast.success('Welcome back to HackMates!');
       navigate('/hackathons');

@@ -48,10 +48,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (result) {
           const user = result.user;
-          console.log('Redirect result received for user:', user.email);
+          console.log('Redirect result received for user:', user.email?.substring(0, 3) + '***');
           
-          // Clear the redirect flag
+          // Clear the redirect flag and get intent
+          const authIntent = sessionStorage.getItem('googleAuthIntent') || 'signin';
           sessionStorage.removeItem('googleAuthRedirect');
+          sessionStorage.removeItem('googleAuthIntent');
           
           // Check if user profile exists
           const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
@@ -499,6 +501,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Use redirect for mobile and in-app browsers
         console.log('Using redirect method for mobile/in-app browser');
         sessionStorage.setItem('googleAuthRedirect', 'true');
+        sessionStorage.setItem('googleAuthIntent', 'signin'); // Track intent
         
         try {
           await signInWithRedirect(auth, provider);
@@ -507,6 +510,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (redirectError: any) {
           console.error('Redirect sign-in error:', redirectError);
           sessionStorage.removeItem('googleAuthRedirect');
+          sessionStorage.removeItem('googleAuthIntent');
           
           // For mobile, if redirect fails, show a helpful error message
           if (redirectError.code === 'auth/operation-not-allowed') {
@@ -530,7 +534,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const result = await signInWithPopup(auth, provider);
           const user = result.user;
           
-          console.log('Google sign-in successful:', user.email);
+          console.log('Google sign-in successful:', user.email?.substring(0, 3) + '***');
           
           // Check if user profile exists
           const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
