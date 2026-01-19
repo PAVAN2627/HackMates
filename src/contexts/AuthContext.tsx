@@ -75,12 +75,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('signupMethod', 'google');
             sessionStorage.setItem('signupMethod', 'google');
             
-            // Use replace to avoid back button issues
-            window.location.replace('/register');
+            // Use setTimeout to ensure auth state is set before redirect
+            setTimeout(() => {
+              window.location.replace('/register');
+            }, 100);
           } else {
             console.log('Existing user logged in via redirect, redirecting to hackathons');
-            // Existing user - redirect to hackathons
-            window.location.replace('/hackathons');
+            // Existing user - use setTimeout to ensure auth state is set
+            setTimeout(() => {
+              window.location.replace('/hackathons');
+            }, 100);
           }
         } else {
           console.log('No redirect result found');
@@ -114,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setError('Google Sign-In is not available. Please use email sign-in.');
         } else if (error.code === 'auth/unauthorized-domain') {
           console.error('Domain not authorized');
-          setError('This domain is not authorized for Google Sign-In.');
+          setError('Please use email sign-in instead. Google Sign-In is only available on the main website.');
         } else {
           console.error('Unknown redirect error:', error);
           setError('Sign-in failed. Please try again.');
@@ -517,7 +521,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             throw new Error('Google Sign-In is not properly configured. Please contact support.');
           }
           if (redirectError.code === 'auth/unauthorized-domain') {
-            throw new Error('This domain is not authorized for Google Sign-In. Please contact support.');
+            throw new Error('Domain authorization error. Please try again in a few minutes.');
           }
           if (redirectError.code === 'auth/network-request-failed') {
             throw new Error('Network error. Please check your internet connection and try again.');

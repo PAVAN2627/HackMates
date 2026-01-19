@@ -67,8 +67,12 @@ export default function Auth() {
     try {
       console.log('Starting Google sign-in process...');
       await signInWithGoogle();
-      toast.success('Welcome back to HackMates!');
-      navigate('/hackathons');
+      
+      // Wait a moment for auth state to update, then redirect
+      setTimeout(() => {
+        toast.success('Welcome back to HackMates!');
+        navigate('/hackathons');
+      }, 500);
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       
@@ -110,8 +114,12 @@ export default function Auth() {
       sessionStorage.setItem('signupMethod', 'google');
       sessionStorage.setItem('googleAuthIntent', 'signup'); // Set signup intent
       await signInWithGoogle();
-      toast.success('Welcome back to HackMates!');
-      navigate('/hackathons');
+      
+      // Wait a moment for auth state to update, then redirect
+      setTimeout(() => {
+        toast.success('Welcome back to HackMates!');
+        navigate('/hackathons');
+      }, 500);
     } catch (error: any) {
       console.error('Google sign-up error:', error);
       
