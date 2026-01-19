@@ -1054,7 +1054,7 @@ export default function HackathonDetails() {
         }}
       />
 
-      {/* Team Feedback Modal */}
+      {/* Team Feedback Modal - Only show committed team members */}
       {hackathon && userTeam && (
         <TeamFeedbackModal
           isOpen={feedbackModalOpen}
@@ -1062,7 +1062,11 @@ export default function HackathonDetails() {
           hackathonId={hackathon.id}
           hackathonTitle={hackathon.title}
           teamMembers={userTeam.memberIds
-            .filter(memberId => memberId !== user?.uid)
+            .filter(memberId => 
+              memberId !== user?.uid && 
+              // Only include members who have committed to the team
+              (userTeam.committedMemberIds?.includes(memberId) ?? false)
+            )
             .map(memberId => {
               const memberProfile = getProfileById(memberId);
               return {
