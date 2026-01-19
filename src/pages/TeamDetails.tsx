@@ -44,7 +44,7 @@ export default function TeamDetails() {
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ messageId: string; x: number; y: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const profileCacheRef = useRef<{ [userId: string]: string }>({});
+  const profileCacheRef = useRef<{ [userId: string]: { avatar: string; name: string; timestamp: number } }>({});
   const [editedProject, setEditedProject] = useState({
     title: '',
     description: '',
@@ -133,30 +133,36 @@ export default function TeamDetails() {
         for (const docSnap of snapshot.docs) {
           const data = docSnap.data();
           
-          // Start with avatar from message
-          let userAvatar = data.userAvatar || '';
+          // Always fetch avatar from Firestore profile (like general chat does)
+          let userAvatar = '';
+          let userName = data.userName || 'Unknown User';
           
-          // If message doesn't have avatar, fetch from profile
-          if (!userAvatar || userAvatar.trim() === '') {
-            if (data.userId) {
-              // Check cache first
-              if (profileCacheRef.current[data.userId]) {
-                userAvatar = profileCacheRef.current[data.userId];
-              } else {
-                // Fetch from Firestore if not in cache
-                try {
-                  const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, data.userId));
-                  if (profileDoc.exists()) {
-                    const avatar = profileDoc.data()?.avatar || '';
-                    if (avatar && avatar.trim() !== '') {
-                      userAvatar = avatar;
-                    }
-                    // Cache it even if empty
-                    profileCacheRef.current[data.userId] = avatar;
-                  }
-                } catch (error) {
-                  console.warn('Failed to load profile avatar for user:', data.userId, error);
+          if (data.userId) {
+            // Check cache first (with TTL)
+            const cached = profileCacheRef.current[data.userId];
+            const now = Date.now();
+            const CACHE_TTL = 60 * 1000; // 1 minute cache
+            
+            if (cached && cached.timestamp && (now - cached.timestamp) < CACHE_TTL) {
+              userAvatar = cached.avatar || '';
+              userName = cached.name || userName;
+            } else {
+              // Fetch from Firestore for fresh data
+              try {
+                const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, data.userId));
+                if (profileDoc.exists()) {
+                  const profileData = profileDoc.data();
+                  userAvatar = profileData?.avatar || '';
+                  userName = profileData?.name || userName;
+                  // Cache with timestamp
+                  profileCacheRef.current[data.userId] = {
+                    avatar: userAvatar,
+                    name: userName,
+                    timestamp: now
+                  };
                 }
+              } catch (error) {
+                console.warn('Failed to load profile for user:', data.userId, error);
               }
             }
           }
@@ -164,7 +170,7 @@ export default function TeamDetails() {
           loadedMessages.push({
             id: docSnap.id,
             userId: data.userId,
-            userName: data.userName || 'Unknown User',
+            userName: userName,
             userAvatar: userAvatar || undefined,
             content: data.content,
             timestamp: data.timestamp?.toDate?.() || new Date(),
@@ -192,32 +198,32 @@ export default function TeamDetails() {
 
     setSendingMessage(true);
     try {
-      // Fetch the current user's profile directly from Firestore
-      let userAvatar = user.photoURL || '';
+      // Always fetch fresh avatar from Firestore (like general chat does)
+      let userAvatar = '';
+      let userName = user.displayName || 'Unknown User';
       
-      // Check cache first
-      if (profileCacheRef.current[user.uid]) {
-        userAvatar = profileCacheRef.current[user.uid];
-      } else {
-        // Fetch from Firestore if not in cache
-        try {
-          const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
-          if (userDoc.exists()) {
-            const avatar = userDoc.data()?.avatar || user.photoURL || '';
-            userAvatar = avatar;
-            // Cache it
-            profileCacheRef.current[user.uid] = avatar;
-          }
-        } catch (error) {
-          console.warn('Failed to fetch user avatar from profile:', error);
-          userAvatar = user.photoURL || '';
+      try {
+        const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+        if (userDoc.exists()) {
+          const profileData = userDoc.data();
+          userAvatar = profileData?.avatar || '';
+          userName = profileData?.name || userName;
+          // Update cache
+          const now = Date.now();
+          profileCacheRef.current[user.uid] = {
+            avatar: userAvatar,
+            name: userName,
+            timestamp: now
+          };
         }
+      } catch (error) {
+        console.warn('Failed to fetch user profile:', error);
       }
       
       const messagesRef = collection(db, `${COLLECTIONS.HACKATHONS}/${hackathonId}/teamChat_${teamId}`);
       await addDoc(messagesRef, {
         userId: user.uid,
-        userName: user.displayName || 'Unknown User',
+        userName: userName,
         userAvatar: userAvatar,
         content: messageText,
         timestamp: serverTimestamp(),

@@ -172,18 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (uid: string) => {
     try {
-      // Check localStorage first for faster loading
-      const cachedProfile = localStorage.getItem(`profile_cache_${uid}`);
-      if (cachedProfile) {
-        try {
-          const cached = JSON.parse(cachedProfile);
-          setProfile(cached);
-        } catch (e) {
-          localStorage.removeItem(`profile_cache_${uid}`);
-        }
-      }
-
-      // Then load from Firebase with performance tracking
+      // Load from Firebase first - this is the source of truth
       const profileDoc = await performanceMonitor.trackFirebaseOperation(
         () => getDoc(doc(db, COLLECTIONS.USERS, uid)),
         'Load User Profile',
@@ -192,33 +181,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (profileDoc.exists()) {
         const data = profileDoc.data();
-        let profileData = {
+        const profileData = {
           ...data,
           id: uid,
           uid: uid,
           createdAt: data.createdAt?.toDate?.() || new Date(),
         } as UserProfile;
         
-        // Check for local backup data
-        try {
-          const backup = localStorage.getItem(`profile_backup_${uid}`);
-          if (backup) {
-            const backupData = JSON.parse(backup);
-            const backupTime = new Date(backupData.updatedAt);
-            const firebaseTime = data.updatedAt?.toDate?.() || new Date(0);
-            
-            if (backupTime > firebaseTime) {
-              profileData = { ...profileData, ...backupData };
-            }
-          }
-        } catch (backupError) {
-          console.log('Error reading backup data:', backupError);
-        }
-        
         setProfile(profileData);
         
         // Cache the profile for faster future loads
         localStorage.setItem(`profile_cache_${uid}`, JSON.stringify(profileData));
+        
+        // Clear any stale backup data
+        localStorage.removeItem(`profile_backup_${uid}`);
+      } else {
+        // No profile in Firebase, check cache as fallback
+        const cachedProfile = localStorage.getItem(`profile_cache_${uid}`);
+        if (cachedProfile) {
+          try {
+            const cached = JSON.parse(cachedProfile);
+            setProfile(cached);
+          } catch (e) {
+            localStorage.removeItem(`profile_cache_${uid}`);
+          }
+        }
       }
     } catch (profileError) {
       console.error('Error fetching profile:', profileError);
@@ -610,11 +597,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     try {
       // Update local state immediately first
-      const updatedProfile = profile ? { ...profile, ...updates } : (updates as UserProfile);
+      const updatedProfile = profile ? { ...profile, ...updates, updatedAt: new Date() } : (updates as UserProfile);
       setProfile(updatedProfile);
       
       // IMPORTANT: Update the cached profile immediately so avatar initials are recalculated with new name
       localStorage.setItem(`profile_cache_${user.uid}`, JSON.stringify(updatedProfile));
+      
+      // Clear any stale backup data
+      localStorage.removeItem(`profile_backup_${user.uid}`);
+      
+      // Dispatch a custom event to notify other parts of the app that profile changed
+      window.dispatchEvent(new CustomEvent('profileUpdated', { detail: { uid: user.uid, profile: updatedProfile } }));
       
       // Then try to update Firebase
       await setDoc(doc(db, COLLECTIONS.USERS, user.uid), {
