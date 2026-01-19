@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { Zap, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,7 @@ const signupSchema = loginSchema.extend({
 });
 
 export default function Auth() {
-  const { user, loading, signIn, signInWithGoogle } = useAuth();
+  const { user, loading, signIn, signInWithGoogle, error: authError } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -52,13 +52,78 @@ export default function Auth() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [redirectLoading, setRedirectLoading] = useState(false);
 
-  if (loading) {
+  // Check if we're in a redirect flow (mobile Google sign-in)
+  useEffect(() => {
+    const isRedirecting = sessionStorage.getItem('googleAuthRedirect');
+    if (isRedirecting) {
+      setRedirectLoading(true);
+      // Set a timeout to stop showing loading if redirect takes too long
+      const timeout = setTimeout(() => {
+        setRedirectLoading(false);
+        sessionStorage.removeItem('googleAuthRedirect');
+      }, 10000); // 10 second timeout
+      return () => clearTimeout(timeout);
+    }
+  }, []);
+
+  // Stop redirect loading once auth state is resolved
+  useEffect(() => {
+    if (!loading && redirectLoading) {
+      // Give a small delay for the auth state to fully propagate
+      const timeout = setTimeout(() => {
+        setRedirectLoading(false);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [loading, redirectLoading]);
+
+  // Handle pending redirect after mobile Google sign-in
+  useEffect(() => {
+    if (user && !loading) {
+      const pendingRedirect = sessionStorage.getItem('pendingRedirect');
+      if (pendingRedirect) {
+        sessionStorage.removeItem('pendingRedirect');
+        sessionStorage.removeItem('googleAuthRedirect');
+        setRedirectLoading(false);
+        console.log('Handling pending redirect to:', pendingRedirect);
+        navigate(pendingRedirect, { replace: true });
+      }
+    }
+  }, [user, loading, navigate]);
+
+  // Show auth error from context (e.g., from redirect flow)
+  useEffect(() => {
+    if (authError) {
+      toast.error(authError);
+    }
+  }, [authError]);
+
+  // Debug logging for auth state
+  useEffect(() => {
+    console.log('Auth page state:', { 
+      user: user?.email?.substring(0, 3) + '***' || 'null', 
+      loading, 
+      redirectLoading,
+      pendingRedirect: sessionStorage.getItem('pendingRedirect')
+    });
+  }, [user, loading, redirectLoading]);
+
+  if (loading || redirectLoading) {
     return <Loading />;
   }
 
+  // If user is logged in, redirect to hackathons (or pending redirect destination)
   if (user) {
-    return <Navigate to="/hackathons" replace />;
+    const pendingRedirect = sessionStorage.getItem('pendingRedirect');
+    const destination = pendingRedirect || '/hackathons';
+    if (pendingRedirect) {
+      sessionStorage.removeItem('pendingRedirect');
+      sessionStorage.removeItem('googleAuthRedirect');
+    }
+    console.log('User logged in, redirecting to:', destination);
+    return <Navigate to={destination} replace />;
   }
 
   const handleGoogleSignIn = async () => {

@@ -75,20 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('signupMethod', 'google');
             sessionStorage.setItem('signupMethod', 'google');
             
-            // Use setTimeout to ensure auth state is set before redirect
-            setTimeout(() => {
-              if (window.location.pathname === '/auth') {
-                window.location.href = '/register';
-              }
-            }, 100);
+            // Store flag for pending registration redirect
+            sessionStorage.setItem('pendingRedirect', '/register');
           } else {
-            console.log('Existing user logged in via redirect, redirecting to hackathons');
-            // Existing user - use setTimeout to ensure auth state is set
-            setTimeout(() => {
-              if (window.location.pathname === '/auth') {
-                window.location.href = '/hackathons';
-              }
-            }, 100);
+            console.log('Existing user logged in via redirect');
+            // Store flag for pending dashboard redirect
+            sessionStorage.setItem('pendingRedirect', '/hackathons');
           }
         } else {
           console.log('No redirect result found');
@@ -165,26 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Load profile in background
         loadUserProfile(firebaseUser.uid);
         
-        // Handle redirect after successful authentication
-        if (window.location.pathname === '/auth') {
-          // Small delay to ensure profile loading completes
-          setTimeout(async () => {
-            try {
-              const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, firebaseUser.uid));
-              if (profileDoc.exists()) {
-                // Existing user - redirect to hackathons
-                window.location.href = '/hackathons';
-              } else {
-                // New user - redirect to register
-                window.location.href = '/register';
-              }
-            } catch (error) {
-              console.error('Error checking profile:', error);
-              // Fallback - redirect to hackathons
-              window.location.href = '/hackathons';
-            }
-          }, 1000);
-        }
+        // Note: Redirect handling is done in Auth.tsx component via React Router
       } catch (authError) {
         console.error('Auth state change error:', authError);
         setError('Authentication error occurred');
