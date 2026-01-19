@@ -559,6 +559,34 @@ export default function HackathonDetails() {
         </div>
       </div>
 
+      {/* Feedback Reminder Banner for Completed Hackathons */}
+      {hackathon.status === 'completed' && userTeam && userTeam.memberIds.length > 1 && (
+        <div className="bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-500/20 rounded-full">
+                <Star className="h-5 w-5 text-yellow-500" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-yellow-700 dark:text-yellow-400">
+                  Rate Your Teammates!
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  This hackathon is completed. Please rate your team members to help build trust in the community.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setFeedbackModalOpen(true)}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white"
+            >
+              <Star className="h-4 w-4 mr-2" />
+              Give Feedback
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="w-full overflow-x-auto">

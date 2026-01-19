@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Plus, UserPlus, UserMinus, Crown, X, Star, Edit, Trash2 } from 'lucide-react';
+import { Users, Plus, UserPlus, UserMinus, Crown, X, Star, Edit, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,25 @@ import { useTeams } from '@/hooks/useTeams';
 import { useTeamFeedback } from '@/hooks/useTeamFeedback';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
+// Tech stack options for selection
+const TECH_STACK_OPTIONS = [
+  // Frontend
+  'React', 'Vue.js', 'Angular', 'Next.js', 'Svelte', 'HTML/CSS', 'Tailwind CSS', 'Bootstrap',
+  // Backend
+  'Node.js', 'Express.js', 'Python', 'Django', 'Flask', 'FastAPI', 'Java', 'Spring Boot', 
+  'Go', 'Rust', 'Ruby', 'Rails', 'PHP', 'Laravel', '.NET', 'C#',
+  // Mobile
+  'React Native', 'Flutter', 'Swift', 'Kotlin', 'Android', 'iOS',
+  // Database
+  'MongoDB', 'PostgreSQL', 'MySQL', 'Firebase', 'Supabase', 'Redis', 'SQLite',
+  // Cloud & DevOps
+  'AWS', 'Google Cloud', 'Azure', 'Docker', 'Kubernetes', 'Vercel', 'Netlify',
+  // AI/ML
+  'TensorFlow', 'PyTorch', 'OpenAI API', 'LangChain', 'Hugging Face', 'scikit-learn',
+  // Other
+  'GraphQL', 'REST API', 'WebSocket', 'Blockchain', 'Web3', 'Solidity', 'TypeScript', 'JavaScript'
+];
 
 interface TeamManagementProps {
   hackathonId: string;
@@ -52,6 +71,7 @@ export function TeamManagement({
   const [teamToDelete, setTeamToDelete] = useState<HackathonTeam | null>(null);
   const [teamName, setTeamName] = useState('');
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [techStackSearch, setTechStackSearch] = useState('');
   const [editData, setEditData] = useState({
     name: '',
     projectTitle: '',
@@ -133,6 +153,7 @@ export function TeamManagement({
       projectDescription: userTeam.projectDescription || '',
       techStack: userTeam.techStack || [],
     });
+    setTechStackSearch('');
     setEditDialogOpen(true);
   };
 
@@ -147,6 +168,7 @@ export function TeamManagement({
         techStack: editData.techStack,
       }, teams);
       setEditDialogOpen(false);
+      setTechStackSearch('');
       toast.success('Team details updated!');
     } catch (error) {
       console.error('Error updating team:', error);
@@ -156,6 +178,31 @@ export function TeamManagement({
 
   return (
     <div className="glass rounded-xl p-6">
+      {/* Hackathon Completed - Feedback Reminder Banner */}
+      {isCompleted && userTeam && userTeam.memberIds.length > 1 && (
+        <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/30">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-semibold text-yellow-700 dark:text-yellow-400 mb-1">
+                🎉 Hackathon Completed! Rate Your Teammates
+              </h4>
+              <p className="text-sm text-yellow-600 dark:text-yellow-500 mb-3">
+                Help build a reliable community by providing feedback for your teammates. 
+                Your ratings help others find great collaborators!
+              </p>
+              <Button
+                onClick={() => setFeedbackModalOpen(true)}
+                className="gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
+              >
+                <Star className="h-4 w-4" />
+                Rate Teammates Now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Users className="h-6 w-6 text-primary" />
@@ -412,18 +459,60 @@ export function TeamManagement({
             </div>
 
             <div>
-              <Label htmlFor="techStack">Tech Stack</Label>
+              <Label>Tech Stack</Label>
+              {/* Selected Tech Stack */}
+              <div className="flex flex-wrap gap-2 mb-2 min-h-[32px]">
+                {editData.techStack.map(tech => (
+                  <Badge 
+                    key={tech} 
+                    variant="default" 
+                    className="cursor-pointer hover:bg-destructive"
+                    onClick={() => setEditData({
+                      ...editData,
+                      techStack: editData.techStack.filter(t => t !== tech)
+                    })}
+                  >
+                    {tech} <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                ))}
+                {editData.techStack.length === 0 && (
+                  <span className="text-sm text-muted-foreground">No technologies selected</span>
+                )}
+              </div>
+              
+              {/* Search and Select */}
               <Input
-                id="techStack"
-                placeholder="e.g., React, Node.js, Firebase (comma separated)"
-                value={editData.techStack.join(', ')}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    techStack: e.target.value.split(',').map(t => t.trim()).filter(Boolean),
-                  })
-                }
+                placeholder="Search technologies..."
+                value={techStackSearch}
+                onChange={(e) => setTechStackSearch(e.target.value)}
+                className="mb-2"
               />
+              
+              {/* Tech Stack Options */}
+              <div className="max-h-32 overflow-y-auto border rounded-md p-2 bg-muted/30">
+                <div className="flex flex-wrap gap-1">
+                  {TECH_STACK_OPTIONS
+                    .filter(tech => 
+                      tech.toLowerCase().includes(techStackSearch.toLowerCase()) &&
+                      !editData.techStack.includes(tech)
+                    )
+                    .slice(0, 20)
+                    .map(tech => (
+                      <Badge
+                        key={tech}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                        onClick={() => setEditData({
+                          ...editData,
+                          techStack: [...editData.techStack, tech]
+                        })}
+                      >
+                        + {tech}
+                      </Badge>
+                    ))
+                  }
+                </div>
+              </div>
             </div>
             
             <div className="flex justify-end gap-2">
