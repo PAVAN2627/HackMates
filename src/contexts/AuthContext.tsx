@@ -4,10 +4,12 @@ import {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  User as FirebaseUser
+  User as FirebaseUser,
+  getRedirectResult
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { UserProfile } from '@/types';
@@ -34,6 +36,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Handle redirect result from Google Sign-In on mobile
+    const handleRedirect = async () => {
+      try {
+        console.log('Checking for redirect result...');
+        
+        // Check if we're returning from a redirect
+        const result = await getRedirectResult(auth);
+        
+        if (result) {
+          const user = result.user;
+          console.log('Redirect result received for user:', user.email);
+          
+          // Clear the redirect flag
+          sessionStorage.removeItem('googleAuthRedirect');
+          
+          // Check if user profile exists
+          const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+          
+          if (!profileDoc.exists()) {
+            console.log('New user from redirect, storing data and redirecting to register');
+            
+            // New user - store Google data
+            const googleUserData = {
+              uid: user.uid,
+              name: user.displayName || '',
+              email: user.email || '',
+              avatar: user.photoURL || '',
+              isGoogleUser: true
+            };
+            
+            localStorage.setItem('pendingGoogleSignup', JSON.stringify(googleUserData));
+            sessionStorage.setItem('googleUserData', JSON.stringify(googleUserData));
+            localStorage.setItem('signupMethod', 'google');
+            sessionStorage.setItem('signupMethod', 'google');
+            
+            // Use replace to avoid back button issues
+            window.location.replace('/register');
+          } else {
+            console.log('Existing user logged in via redirect, redirecting to hackathons');
+            // Existing user - redirect to hackathons
+            window.location.replace('/hackathons');
+          }
+        } else {
+          console.log('No redirect result found');
+          
+          // Check if we were expecting a redirect but didn't get one
+          const wasRedirecting = sessionStorage.getItem('googleAuthRedirect');
+          if (wasRedirecting) {
+            console.log('Expected redirect result but got none, clearing flag');
+            sessionStorage.removeItem('googleAuthRedirect');
+          }
+        }
+      } catch (error: any) {
+        console.error('Redirect result error:', error);
+        
+        // Clear redirect flag on error
+        sessionStorage.removeItem('googleAuthRedirect');
+        
+        // Handle specific redirect errors
+        if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+          console.log('Popup was blocked or closed');
+        } else if (error.code === 'auth/cancelled-popup-request') {
+          console.log('Another popup request cancelled this one');
+        } else if (error.code === 'auth/network-request-failed') {
+          console.error('Network error during sign-in');
+          setError('Network error. Please check your connection and try again.');
+        } else if (error.code === 'auth/internal-error') {
+          console.error('Internal auth error');
+          setError('Sign-in failed. Please try again.');
+        } else if (error.code === 'auth/operation-not-allowed') {
+          console.error('Google Sign-In not enabled');
+          setError('Google Sign-In is not available. Please use email sign-in.');
+        } else if (error.code === 'auth/unauthorized-domain') {
+          console.error('Domain not authorized');
+          setError('This domain is not authorized for Google Sign-In.');
+        } else {
+          console.error('Unknown redirect error:', error);
+          setError('Sign-in failed. Please try again.');
+        }
+      }
+    };
+    
+    // Only run redirect handling once on mount
+    handleRedirect();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -382,41 +471,127 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider.addScope('email');
       provider.addScope('profile');
       
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      // Enhanced mobile detection
+      const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+        navigator.userAgent.toLowerCase()
+      );
       
-      // Check if user profile exists
-      const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+      // Check for in-app browsers (Instagram, Facebook, etc.)
+      const isInAppBrowser = /FBAN|FBAV|Instagram|Line|WhatsApp|Snapchat|WeChat|TikTok/i.test(navigator.userAgent);
       
-      if (!profileDoc.exists()) {
-        // New user - store Google data and UID, but KEEP USER LOGGED IN
-        const googleUserData = {
-          uid: user.uid, // Store UID for later use
-          name: user.displayName || '',
-          email: user.email || '',
-          avatar: user.photoURL || '',
-          isGoogleUser: true
-        };
+      // Check for touch devices and small screens
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth < 768;
+      
+      // Use redirect for mobile, in-app browsers, or small touch screens
+      const shouldUseRedirect = isMobile || isInAppBrowser || (isTouch && isSmallScreen);
+      
+      console.log('Auth method decision:', {
+        isMobile,
+        isInAppBrowser,
+        isTouch,
+        isSmallScreen,
+        shouldUseRedirect,
+        userAgent: navigator.userAgent
+      });
+      
+      if (shouldUseRedirect) {
+        // Use redirect for mobile and in-app browsers
+        console.log('Using redirect method for mobile/in-app browser');
+        sessionStorage.setItem('googleAuthRedirect', 'true');
         
-        // Store in both localStorage and sessionStorage for reliability
-        localStorage.setItem('pendingGoogleSignup', JSON.stringify(googleUserData));
-        sessionStorage.setItem('googleUserData', JSON.stringify(googleUserData));
+        try {
+          await signInWithRedirect(auth, provider);
+          // Note: After redirect, getRedirectResult will be handled in useEffect
+          return; // Don't continue execution
+        } catch (redirectError: any) {
+          console.error('Redirect sign-in error:', redirectError);
+          sessionStorage.removeItem('googleAuthRedirect');
+          
+          // For mobile, if redirect fails, show a helpful error message
+          if (redirectError.code === 'auth/operation-not-allowed') {
+            throw new Error('Google Sign-In is not properly configured. Please contact support.');
+          }
+          if (redirectError.code === 'auth/unauthorized-domain') {
+            throw new Error('This domain is not authorized for Google Sign-In. Please contact support.');
+          }
+          if (redirectError.code === 'auth/network-request-failed') {
+            throw new Error('Network error. Please check your internet connection and try again.');
+          }
+          
+          // Don't try popup as fallback on mobile - it usually doesn't work
+          throw new Error('Google Sign-In failed. Please try again or use email sign-in instead.');
+        }
+      } else {
+        // Use popup for desktop
+        console.log('Using popup method for desktop');
         
-        // IMPORTANT: Do NOT sign out the user - keep them logged in
-        // They will stay logged in and be directed to register page
-        // After they complete registration, they'll already be authenticated
-        
-        throw new Error('REDIRECT_TO_REGISTER');
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+          
+          console.log('Google sign-in successful:', user.email);
+          
+          // Check if user profile exists
+          const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+          
+          if (!profileDoc.exists()) {
+            // New user - store Google data and UID, but KEEP USER LOGGED IN
+            const googleUserData = {
+              uid: user.uid,
+              name: user.displayName || '',
+              email: user.email || '',
+              avatar: user.photoURL || '',
+              isGoogleUser: true
+            };
+            
+            // Store in both localStorage and sessionStorage for reliability
+            localStorage.setItem('pendingGoogleSignup', JSON.stringify(googleUserData));
+            sessionStorage.setItem('googleUserData', JSON.stringify(googleUserData));
+            
+            console.log('New user detected, redirecting to register');
+            throw new Error('REDIRECT_TO_REGISTER');
+          }
+          
+          console.log('Existing user signed in successfully');
+          // Existing user - they're already signed in, profile will load automatically
+        } catch (popupError: any) {
+          if (popupError.message === 'REDIRECT_TO_REGISTER') {
+            throw popupError;
+          }
+          if (popupError.code === 'auth/popup-blocked') {
+            throw new Error('Pop-up was blocked. Please allow pop-ups for this site and try again.');
+          }
+          if (popupError.code === 'auth/popup-closed-by-user') {
+            throw new Error('Sign-in was cancelled');
+          }
+          if (popupError.code === 'auth/cancelled-popup-request') {
+            throw new Error('Sign-in was cancelled due to another popup request.');
+          }
+          throw new Error(popupError.message || 'Failed to sign in with Google. Please try again.');
+        }
       }
-      
-      // Existing user - they're already signed in, profile will load automatically
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Sign-in was cancelled');
-      }
+      console.error('Google sign-in error:', error);
+      
       if (error.message === 'REDIRECT_TO_REGISTER') {
         throw error; // Re-throw to handle in component
       }
+      
+      // Handle common Firebase Auth errors
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in was cancelled');
+      }
+      if (error.code === 'auth/popup-blocked') {
+        throw new Error('Pop-up was blocked. Please allow pop-ups for this site or try on a different browser.');
+      }
+      if (error.code === 'auth/network-request-failed') {
+        throw new Error('Network error. Please check your connection and try again.');
+      }
+      if (error.code === 'auth/too-many-requests') {
+        throw new Error('Too many failed attempts. Please try again later.');
+      }
+      
       throw new Error(error.message || 'Failed to sign in with Google');
     }
   };

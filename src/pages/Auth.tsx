@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loading } from '@/components/Loading';
+import { MobileDebugInfo } from '@/components/MobileDebugInfo';
+import { GoogleLoginTroubleshooting } from '@/components/GoogleLoginTroubleshooting';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -63,10 +65,13 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     try {
+      console.log('Starting Google sign-in process...');
       await signInWithGoogle();
       toast.success('Welcome back to HackMates!');
       navigate('/hackathons');
     } catch (error: any) {
+      console.error('Google sign-in error:', error);
+      
       if (error.message === 'REDIRECT_TO_REGISTER') {
         // Store flag to indicate this is a Google signup (not login)
         localStorage.setItem('signupMethod', 'google');
@@ -74,7 +79,22 @@ export default function Auth() {
         toast.success('Welcome to HackMates! Please complete your profile to get started.');
         navigate('/register');
       } else {
-        toast.error(error.message || 'Failed to sign in with Google');
+        // Show user-friendly error messages
+        let errorMessage = 'Failed to sign in with Google';
+        
+        if (error.message.includes('Pop-up was blocked')) {
+          errorMessage = 'Pop-up blocked. Please allow pop-ups and try again.';
+        } else if (error.message.includes('cancelled')) {
+          errorMessage = 'Sign-in was cancelled';
+        } else if (error.message.includes('Network error')) {
+          errorMessage = 'Network error. Please check your connection.';
+        } else if (error.message.includes('not properly configured')) {
+          errorMessage = 'Google Sign-In is not available. Please try email sign-in.';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        toast.error(errorMessage);
       }
     } finally {
       setIsSubmitting(false);
@@ -84,6 +104,7 @@ export default function Auth() {
   const handleGoogleSignUp = async () => {
     setIsSubmitting(true);
     try {
+      console.log('Starting Google sign-up process...');
       // Store flag to indicate this is a Google signup
       localStorage.setItem('signupMethod', 'google');
       sessionStorage.setItem('signupMethod', 'google');
@@ -91,12 +112,29 @@ export default function Auth() {
       toast.success('Welcome back to HackMates!');
       navigate('/hackathons');
     } catch (error: any) {
+      console.error('Google sign-up error:', error);
+      
       if (error.message === 'REDIRECT_TO_REGISTER') {
         // This is expected for new users
         toast.success('Welcome to HackMates! Please complete your profile.');
         navigate('/register');
       } else {
-        toast.error(error.message || 'Failed to sign up with Google');
+        // Show user-friendly error messages
+        let errorMessage = 'Failed to sign up with Google';
+        
+        if (error.message.includes('Pop-up was blocked')) {
+          errorMessage = 'Pop-up blocked. Please allow pop-ups and try again.';
+        } else if (error.message.includes('cancelled')) {
+          errorMessage = 'Sign-up was cancelled';
+        } else if (error.message.includes('Network error')) {
+          errorMessage = 'Network error. Please check your connection.';
+        } else if (error.message.includes('not properly configured')) {
+          errorMessage = 'Google Sign-In is not available. Please try email sign-up.';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        toast.error(errorMessage);
       }
     } finally {
       setIsSubmitting(false);
@@ -139,6 +177,9 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex bg-background">
+      {/* Debug component for mobile testing */}
+      <MobileDebugInfo />
+      
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero" />
@@ -203,12 +244,21 @@ export default function Auth() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full"
+                  className="w-full min-h-[48px] touch-manipulation"
                   onClick={handleGoogleSignIn}
                   disabled={isSubmitting}
                 >
-                  <GoogleIcon />
-                  <span className="ml-2">Continue with Google</span>
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <GoogleIcon />
+                      <span className="ml-2">Continue with Google</span>
+                    </>
+                  )}
                 </Button>
 
                 <div className="relative">
@@ -255,11 +305,20 @@ export default function Auth() {
                 <Button
                   type="submit"
                   variant="hero"
-                  className="w-full"
+                  className="w-full min-h-[48px] touch-manipulation"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Please wait...' : 'Sign In'}
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    <>
+                      Sign In
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </>
+                  )}
                 </Button>
               </form>
             ) : (
@@ -270,22 +329,34 @@ export default function Auth() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-auto py-6 flex flex-col items-center justify-center gap-2"
+                    className="w-full h-auto py-6 flex flex-col items-center justify-center gap-2 min-h-[64px] touch-manipulation"
                     onClick={handleGoogleSignUp}
                     disabled={isSubmitting}
                   >
-                    <GoogleIcon />
-                    <div className="text-center">
-                      <p className="font-medium">Sign up with Google</p>
-                      <p className="text-xs text-muted-foreground mt-1">No password needed</p>
-                    </div>
+                    {isSubmitting ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        <div className="text-center">
+                          <p className="font-medium">Signing up...</p>
+                          <p className="text-xs text-muted-foreground mt-1">Please wait</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <GoogleIcon />
+                        <div className="text-center">
+                          <p className="font-medium">Sign up with Google</p>
+                          <p className="text-xs text-muted-foreground mt-1">No password needed</p>
+                        </div>
+                      </>
+                    )}
                   </Button>
 
                   {/* Email & Password Signup Option */}
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-auto py-6 flex flex-col items-center justify-center gap-2"
+                    className="w-full h-auto py-6 flex flex-col items-center justify-center gap-2 min-h-[64px] touch-manipulation"
                     onClick={() => {
                       sessionStorage.setItem('signupMethod', 'email');
                       navigate('/register');
@@ -313,6 +384,11 @@ export default function Auth() {
                   {isLogin ? 'Sign up' : 'Sign in'}
                 </button>
               </p>
+            </div>
+            
+            {/* Troubleshooting component */}
+            <div className="mt-4 flex justify-center">
+              <GoogleLoginTroubleshooting />
             </div>
           </div>
         </div>
