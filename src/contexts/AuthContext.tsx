@@ -480,102 +480,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         navigator.userAgent.toLowerCase()
       );
       
-      // Check for in-app browsers (Instagram, Facebook, etc.)
+      // Check for in-app browsers (Instagram, Facebook, etc.) - these MUST use redirect
       const isInAppBrowser = /FBAN|FBAV|Instagram|Line|WhatsApp|Snapchat|WeChat|TikTok/i.test(navigator.userAgent);
-      
-      // Check for touch devices and small screens
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      const isSmallScreen = window.innerWidth < 768;
-      
-      // Use redirect for mobile, in-app browsers, or small touch screens
-      const shouldUseRedirect = isMobile || isInAppBrowser || (isTouch && isSmallScreen);
       
       console.log('Auth method decision:', {
         isMobile,
         isInAppBrowser,
-        isTouch,
-        isSmallScreen,
-        shouldUseRedirect,
         userAgent: navigator.userAgent
       });
       
-      if (shouldUseRedirect) {
-        // Use redirect for mobile and in-app browsers
-        console.log('Using redirect method for mobile/in-app browser');
+      // Only use redirect for in-app browsers where popup definitely won't work
+      if (isInAppBrowser) {
+        console.log('Using redirect method for in-app browser');
         sessionStorage.setItem('googleAuthRedirect', 'true');
-        sessionStorage.setItem('googleAuthIntent', 'signin'); // Track intent
+        sessionStorage.setItem('googleAuthIntent', 'signin');
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      
+      // For all other cases (including mobile browsers), try popup first
+      console.log('Using popup method');
+      
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
         
-        try {
-          await signInWithRedirect(auth, provider);
-          // Note: After redirect, getRedirectResult will be handled in useEffect
-          return; // Don't continue execution
-        } catch (redirectError: any) {
-          console.error('Redirect sign-in error:', redirectError);
-          sessionStorage.removeItem('googleAuthRedirect');
-          sessionStorage.removeItem('googleAuthIntent');
+        console.log('Google sign-in successful:', user.email?.substring(0, 3) + '***');
+        
+        // Check if user profile exists
+        const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+        
+        if (!profileDoc.exists()) {
+          // New user - store Google data and UID, but KEEP USER LOGGED IN
+          const googleUserData = {
+            uid: user.uid,
+            name: user.displayName || '',
+            email: user.email || '',
+            avatar: user.photoURL || '',
+            isGoogleUser: true
+          };
           
-          // For mobile, if redirect fails, show a helpful error message
-          if (redirectError.code === 'auth/operation-not-allowed') {
-            throw new Error('Google Sign-In is not properly configured. Please contact support.');
-          }
-          if (redirectError.code === 'auth/unauthorized-domain') {
-            throw new Error('Domain authorization error. Please try again in a few minutes.');
-          }
-          if (redirectError.code === 'auth/network-request-failed') {
-            throw new Error('Network error. Please check your internet connection and try again.');
-          }
+          // Store in both localStorage and sessionStorage for reliability
+          localStorage.setItem('pendingGoogleSignup', JSON.stringify(googleUserData));
+          sessionStorage.setItem('googleUserData', JSON.stringify(googleUserData));
           
-          // Don't try popup as fallback on mobile - it usually doesn't work
-          throw new Error('Google Sign-In failed. Please try again or use email sign-in instead.');
+          console.log('New user detected, redirecting to register');
+          throw new Error('REDIRECT_TO_REGISTER');
         }
-      } else {
-        // Use popup for desktop
-        console.log('Using popup method for desktop');
         
-        try {
-          const result = await signInWithPopup(auth, provider);
-          const user = result.user;
+        console.log('Existing user signed in successfully');
+        // Existing user - they're already signed in, profile will load automatically
+      } catch (popupError: any) {
+        if (popupError.message === 'REDIRECT_TO_REGISTER') {
+          throw popupError;
+        }
+        
+        console.error('Popup error:', popupError.code, popupError.message);
+        
+        // If popup was blocked or failed on mobile, try redirect as fallback
+        if (popupError.code === 'auth/popup-blocked' || 
+            popupError.code === 'auth/popup-closed-by-user' ||
+            popupError.code === 'auth/cancelled-popup-request') {
           
-          console.log('Google sign-in successful:', user.email?.substring(0, 3) + '***');
-          
-          // Check if user profile exists
-          const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
-          
-          if (!profileDoc.exists()) {
-            // New user - store Google data and UID, but KEEP USER LOGGED IN
-            const googleUserData = {
-              uid: user.uid,
-              name: user.displayName || '',
-              email: user.email || '',
-              avatar: user.photoURL || '',
-              isGoogleUser: true
-            };
-            
-            // Store in both localStorage and sessionStorage for reliability
-            localStorage.setItem('pendingGoogleSignup', JSON.stringify(googleUserData));
-            sessionStorage.setItem('googleUserData', JSON.stringify(googleUserData));
-            
-            console.log('New user detected, redirecting to register');
-            throw new Error('REDIRECT_TO_REGISTER');
+          if (isMobile) {
+            console.log('Popup failed on mobile, trying redirect...');
+            sessionStorage.setItem('googleAuthRedirect', 'true');
+            sessionStorage.setItem('googleAuthIntent', 'signin');
+            await signInWithRedirect(auth, provider);
+            return;
           }
           
-          console.log('Existing user signed in successfully');
-          // Existing user - they're already signed in, profile will load automatically
-        } catch (popupError: any) {
-          if (popupError.message === 'REDIRECT_TO_REGISTER') {
-            throw popupError;
-          }
           if (popupError.code === 'auth/popup-blocked') {
             throw new Error('Pop-up was blocked. Please allow pop-ups for this site and try again.');
           }
-          if (popupError.code === 'auth/popup-closed-by-user') {
-            throw new Error('Sign-in was cancelled');
-          }
-          if (popupError.code === 'auth/cancelled-popup-request') {
-            throw new Error('Sign-in was cancelled due to another popup request.');
-          }
-          throw new Error(popupError.message || 'Failed to sign in with Google. Please try again.');
+          throw new Error('Sign-in was cancelled');
         }
+        
+        throw new Error(popupError.message || 'Failed to sign in with Google. Please try again.');
       }
     } catch (error: any) {
       console.error('Google sign-in error:', error);

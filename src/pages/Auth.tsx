@@ -131,7 +131,10 @@ export default function Auth() {
     try {
       console.log('Starting Google sign-in process...');
       await signInWithGoogle();
-      // Don't navigate here - let AuthContext handle it
+      // If we reach here, sign-in was successful (existing user)
+      console.log('Google sign-in completed successfully, navigating to hackathons');
+      toast.success('Welcome back to HackMates!');
+      navigate('/hackathons', { replace: true });
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       
@@ -140,7 +143,7 @@ export default function Auth() {
         localStorage.setItem('signupMethod', 'google');
         sessionStorage.setItem('signupMethod', 'google');
         toast.success('Welcome to HackMates! Please complete your profile to get started.');
-        navigate('/register');
+        navigate('/register', { replace: true });
       } else {
         // Show user-friendly error messages
         let errorMessage = 'Failed to sign in with Google';
@@ -173,14 +176,17 @@ export default function Auth() {
       sessionStorage.setItem('signupMethod', 'google');
       sessionStorage.setItem('googleAuthIntent', 'signup'); // Set signup intent
       await signInWithGoogle();
-      // Don't navigate here - let AuthContext handle it
+      // If we reach here, user already exists (existing user trying to sign up)
+      console.log('Google sign-up completed - user already exists, navigating to hackathons');
+      toast.success('Welcome back to HackMates!');
+      navigate('/hackathons', { replace: true });
     } catch (error: any) {
       console.error('Google sign-up error:', error);
       
       if (error.message === 'REDIRECT_TO_REGISTER') {
         // This is expected for new users
         toast.success('Welcome to HackMates! Please complete your profile.');
-        navigate('/register');
+        navigate('/register', { replace: true });
       } else {
         // Show user-friendly error messages
         let errorMessage = 'Failed to sign up with Google';
