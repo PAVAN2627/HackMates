@@ -36,7 +36,7 @@
 ### 🎯 Mission
 To democratize innovation by connecting passionate developers, designers, and creators across India's vibrant tech ecosystem.
 
-### � HVision  
+### 👁️Vision  
 To become the go-to platform where India's next breakthrough innovations are born through meaningful collaborations and hackathon experiences.
 
 ---
