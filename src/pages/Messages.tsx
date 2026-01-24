@@ -54,7 +54,13 @@ export default function MessagesPage() {
   }, [selectedConversation, user, markConversationAsRead]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'end',
+        inline: 'nearest'
+      });
+    }, 150);
   };
 
   useEffect(() => {
@@ -135,10 +141,10 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col">
-      <div className="flex-1 flex overflow-hidden">
+    <div className="absolute inset-0 bg-background flex flex-col pb-16 md:pb-0">
+      <div className="flex-1 flex overflow-hidden min-h-0 h-full">
         {/* Conversations List */}
-        <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-80 border-r border-border bg-card flex flex-col`}>
+        <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-border bg-card flex-col min-h-0`}>
           {/* Header */}
           <div className="p-4 border-b border-border">
             <h2 className="text-xl font-bold">Messages</h2>
@@ -146,7 +152,7 @@ export default function MessagesPage() {
           </div>
 
           {/* Conversation List */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0">
             {messagesLoading || profilesLoading ? (
               <div className="p-4 text-center text-muted-foreground">
                 <div className="animate-pulse">Loading conversations...</div>
@@ -252,7 +258,7 @@ export default function MessagesPage() {
 
         {/* Chat Area - Mobile Responsive */}
         {selectedConversation ? (
-          <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
+          <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-h-0`}>
             {/* Chat Header - Mobile Responsive */}
             <div className="p-3 md:p-4 border-b border-border bg-card">
               <div className="flex items-center gap-3 md:gap-4">
@@ -307,7 +313,7 @@ export default function MessagesPage() {
             </div>
 
             {/* Messages - Mobile Responsive */}
-            <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 min-h-0">
               {selectedMessages.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
                   <p>No messages yet. Start the conversation!</p>
