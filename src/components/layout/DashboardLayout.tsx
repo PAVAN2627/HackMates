@@ -14,6 +14,10 @@ export function DashboardLayout() {
   // Pages where chatbot should be hidden (Messages and Create Hackathon)
   const hideChatbotPages = ['/messages', '/create-hackathon'];
   const shouldHideChatbot = hideChatbotPages.some(page => location.pathname.startsWith(page));
+  
+  // Pages where header should be hidden (Messages page)
+  const hideHeaderPages = ['/messages'];
+  const shouldHideHeader = hideHeaderPages.some(page => location.pathname.startsWith(page));
 
   if (loading) {
     return <Loading />;
@@ -27,8 +31,8 @@ export function DashboardLayout() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="md:pl-64 transition-all duration-300">
-        <Header />
-        <main className="p-4 md:p-6 pb-20 md:pb-6">
+        {!shouldHideHeader && <Header />}
+        <main className={`${shouldHideHeader ? '' : 'p-4 md:p-6'} pb-20 md:pb-6`}>
           <Outlet />
         </main>
       </div>
