@@ -197,17 +197,7 @@ Visit `http://localhost:5173` to see the application running! 🎉
 
 ---
 
-## 📱 Screenshots
 
-<div align="center">
-  <img src="docs/screenshots/landing-page.png" alt="Landing Page" width="45%" style="margin: 10px;">
-  <img src="docs/screenshots/hackathons-list.png" alt="Hackathons List" width="45%" style="margin: 10px;">
-  
-  <img src="docs/screenshots/profile-discovery.png" alt="Profile Discovery" width="45%" style="margin: 10px;">
-  <img src="docs/screenshots/messaging.png" alt="Real-time Messaging" width="45%" style="margin: 10px;">
-</div>
-
----
 
 ## 🔧 Installation
 
