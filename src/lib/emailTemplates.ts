@@ -392,3 +392,127 @@ export const getAnnouncementEmailHTML = (
 </html>
   `.trim();
 };
+
+export const getTeamRemovalEmailHTML = (
+  userName: string,
+  userEmail: string,
+  hackathonTitle: string,
+  teamName: string,
+  removedByName: string,
+  hackathonUrl: string
+): string => {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 40px 20px; text-align: center;">
+              <div style="font-size: 60px; margin-bottom: 10px;">📋</div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Team Update</h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h2 style="color: #1f2937; margin-top: 0; font-size: 24px;">Hi ${userName},</h2>
+
+              <p style="color: #4b5563; line-height: 1.6; font-size: 16px; margin: 16px 0;">
+                We're sorry to inform you that <strong style="color: #dc2626;">${removedByName}</strong> has removed you from the team. We regret any inconvenience this may have caused.
+              </p>
+
+              <!-- Details Box -->
+              <table width="100%" cellpadding="20" cellspacing="0" style="background: linear-gradient(135deg, #fef2f2 0%, #fff7ed 100%); border-left: 4px solid #ef4444; border-radius: 8px; margin: 24px 0;">
+                <tr>
+                  <td>
+                    <h3 style="color: #991b1b; margin: 0 0 16px 0; font-size: 18px;">📌 Removal Details</h3>
+                    <table width="100%" cellpadding="10" cellspacing="0" style="background: #ffffff; border-radius: 6px; margin-bottom: 10px;">
+                      <tr>
+                        <td>
+                          <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase;">Team</p>
+                          <p style="margin: 4px 0 0 0; color: #1f2937; font-size: 17px; font-weight: bold;">${teamName}</p>
+                        </td>
+                      </tr>
+                    </table>
+                    ${hackathonTitle ? `
+                    <table width="100%" cellpadding="10" cellspacing="0" style="background: #ffffff; border-radius: 6px; margin-bottom: 10px;">
+                      <tr>
+                        <td>
+                          <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase;">Hackathon</p>
+                          <p style="margin: 4px 0 0 0; color: #1f2937; font-size: 17px; font-weight: bold;">${hackathonTitle}</p>
+                        </td>
+                      </tr>
+                    </table>` : ''}
+                    <table width="100%" cellpadding="10" cellspacing="0" style="background: #ffffff; border-radius: 6px;">
+                      <tr>
+                        <td>
+                          <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase;">Removed By</p>
+                          <p style="margin: 4px 0 0 0; color: #1f2937; font-size: 17px; font-weight: bold;">${removedByName}</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- What's Next -->
+              <table width="100%" cellpadding="15" cellspacing="0" style="background: #f0f9ff; border: 2px solid #bae6fd; border-radius: 8px; margin: 24px 0;">
+                <tr>
+                  <td>
+                    <h3 style="color: #0369a1; margin: 0 0 12px 0; font-size: 18px;">💡 What You Can Do Next</h3>
+                    <ul style="color: #0284c7; line-height: 1.8; padding-left: 20px; margin: 0;">
+                      <li>Browse the hackathon's General Chat to find a new team</li>
+                      <li>Create your own team and invite members</li>
+                      <li>Explore other hackathons on the platform</li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
+
+              ${hackathonUrl ? `
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${hackathonUrl}" style="display: inline-block; text-decoration: none; color: #ffffff; background: linear-gradient(135deg, #9333ea 0%, #2563eb 100%); padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                      🔍 Find a New Team
+                    </a>
+                  </td>
+                </tr>
+              </table>` : ''}
+
+              <p style="color: #4b5563; line-height: 1.6; margin: 24px 0 0 0;">
+                We hope to see you back in action soon! 💪<br>
+                <strong style="color: #1f2937;">The HackMates Team</strong><br>
+                <span style="font-size: 13px; color: #9ca3af;">Built with ❤️ by NoobcodersIND</span>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: #f9fafb; padding: 20px 30px; border-top: 1px solid #e5e7eb; text-align: center;">
+              <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                This email was sent to <strong>${userEmail}</strong> regarding your team membership on HackMates.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+};

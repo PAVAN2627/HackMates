@@ -84,6 +84,21 @@ export function useHackathons() {
     if (!user || !profile) throw new Error('Must be logged in');
 
     try {
+      // ── Duplicate detection: same title + date + venue ──────────────────
+      const titleNorm = hackathonData.title.trim().toLowerCase();
+      const venueNorm = hackathonData.venue.trim().toLowerCase();
+      const duplicate = hackathons.find(h =>
+        h.title.trim().toLowerCase() === titleNorm &&
+        h.date === hackathonData.date &&
+        h.venue.trim().toLowerCase() === venueNorm
+      );
+      if (duplicate) {
+        throw new Error(
+          `DUPLICATE:${duplicate.id}`
+        );
+      }
+      // ────────────────────────────────────────────────────────────────────
+
       const docRef = await addDoc(collection(db, COLLECTIONS.HACKATHONS), {
         ...hackathonData,
         creatorId: user.uid,

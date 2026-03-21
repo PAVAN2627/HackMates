@@ -62,10 +62,8 @@ export function AnnouncementSection({
   };
 
   const handleDelete = async (announcementId: string) => {
-    if (window.confirm('Are you sure you want to delete this announcement?')) {
-      if (onDeleteAnnouncement) {
-        await onDeleteAnnouncement(announcementId);
-      }
+    if (onDeleteAnnouncement) {
+      await onDeleteAnnouncement(announcementId);
     }
   };
 

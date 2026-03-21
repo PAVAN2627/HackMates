@@ -13,7 +13,7 @@ export default function Index() {
   const { user, loading, error, signIn } = useAuth();
   const { hackathons } = useHackathons();
   const navigate = useNavigate();
-  const isTimeout = useTimeout(20000); // Increased to 20 seconds
+  const isTimeout = useTimeout(20000);
   const { isOnline, connectionSpeed } = useConnectionStatus();
 
   // Redirect authenticated users

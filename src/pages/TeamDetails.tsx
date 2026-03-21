@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Trophy, Lock, FileText, Code, MessageSquare, Send, X } from 'lucide-react';
+import { ArrowLeft, Users, Trophy, Lock, FileText, Code, MessageSquare, Send, X, Search, UserPlus, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,8 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { useProfiles } from '@/hooks/useProfiles';
 import { TeamContract } from '@/components/hackathon/TeamContract';
 import { MessageContextMenu } from '@/components/MessageContextMenu';
+import { sendTeamAdditionEmail, sendTeamRemovalEmail } from '@/lib/emailService';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 // Tech stack options for selection
 const TECH_STACK_OPTIONS = [
@@ -51,7 +53,7 @@ export default function TeamDetails() {
   const { hackathonId, teamId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { getProfileById } = useProfiles();
+  const { getProfileById, profiles } = useProfiles();
   
   const [team, setTeam] = useState<TeamDetailsData | null>(null);
   const [hackathon, setHackathon] = useState<Hackathon | null>(null);
@@ -63,7 +65,12 @@ export default function TeamDetails() {
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ messageId: string; x: number; y: number } | null>(null);
   const [techStackSearch, setTechStackSearch] = useState('');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [removingMember, setRemovingMember] = useState<string | null>(null);
+  const [invitingMember, setInvitingMember] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<string | null>(null); // memberId
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const profileCacheRef = useRef<{ [userId: string]: { avatar: string; name: string; timestamp: number } }>({});
   const [editedProject, setEditedProject] = useState({
     title: '',
@@ -86,7 +93,9 @@ export default function TeamDetails() {
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   };
 
   const loadTeamDetails = async () => {
@@ -315,6 +324,88 @@ export default function TeamDetails() {
     }
   };
 
+  const handleRemoveMember = async (memberId: string) => {
+    if (!hackathonId || !teamId || !hackathon || !team) return;
+    setRemovingMember(memberId);
+    try {
+      // Fetch fresh hackathon data from Firestore
+      const hackathonRef = doc(db, COLLECTIONS.HACKATHONS, hackathonId);
+      const freshSnap = await getDoc(hackathonRef);
+      const freshTeams = freshSnap.exists() ? (freshSnap.data().teams || []) : hackathon.teams || [];
+
+      const updatedTeams = freshTeams.map((t: HackathonTeam) =>
+        t.id === teamId
+          ? { ...t, memberIds: t.memberIds.filter((id: string) => id !== memberId) }
+          : t
+      );
+      await updateDoc(hackathonRef, { teams: updatedTeams });
+
+      // Fetch member email directly from Firestore (don't rely on profiles hook)
+      const leaderDoc = await getDoc(doc(db, COLLECTIONS.USERS, user!.uid));
+      const leaderName = leaderDoc.exists() ? leaderDoc.data().name : 'Team Leader';
+      const memberDoc = await getDoc(doc(db, COLLECTIONS.USERS, memberId));
+      if (memberDoc.exists()) {
+        const memberData = memberDoc.data();
+        if (memberData.email) {
+          sendTeamRemovalEmail(
+            memberData.email, memberData.name,
+            hackathon.title, team.name,
+            leaderName, hackathonId
+          ).catch(() => {});
+        }
+      }
+
+      setTeam(prev => prev ? { ...prev, memberIds: prev.memberIds.filter(id => id !== memberId) } : prev);
+      toast.success('Member removed');
+    } catch {
+      toast.error('Failed to remove member');
+    } finally {
+      setRemovingMember(null);
+    }
+  };
+
+  const handleInviteMember = async (candidateId: string) => {
+    if (!hackathonId || !teamId || !hackathon || !team) return;
+    setInvitingMember(candidateId);
+    try {
+      const hackathonRef = doc(db, COLLECTIONS.HACKATHONS, hackathonId);
+      const freshSnap = await getDoc(hackathonRef);
+      const freshTeams = freshSnap.exists() ? (freshSnap.data().teams || []) : hackathon.teams || [];
+
+      const updatedTeams = freshTeams.map((t: HackathonTeam) =>
+        t.id === teamId
+          ? { ...t, memberIds: [...t.memberIds, candidateId] }
+          : t
+      );
+      await updateDoc(hackathonRef, { teams: updatedTeams });
+
+      // Fetch emails directly from Firestore
+      const leaderDoc = await getDoc(doc(db, COLLECTIONS.USERS, user!.uid));
+      const leaderName = leaderDoc.exists() ? leaderDoc.data().name : 'Team Leader';
+      const candidateDoc = await getDoc(doc(db, COLLECTIONS.USERS, candidateId));
+      let candidateName = 'Member';
+      if (candidateDoc.exists()) {
+        const candidateData = candidateDoc.data();
+        candidateName = candidateData.name;
+        if (candidateData.email) {
+          sendTeamAdditionEmail(
+            candidateData.email, candidateData.name,
+            hackathon.title, team.name,
+            leaderName, hackathonId
+          ).catch(() => {});
+        }
+      }
+
+      setTeam(prev => prev ? { ...prev, memberIds: [...prev.memberIds, candidateId] } : prev);
+      setMemberSearch('');
+      toast.success(`${candidateName} invited!`);
+    } catch {
+      toast.error('Failed to invite member');
+    } finally {
+      setInvitingMember(null);
+    }
+  };
+
   const isTeamLeader = team?.leaderId === user?.uid;
   const isTeamMember = team?.memberIds?.includes(user?.uid || '');
 
@@ -515,14 +606,14 @@ export default function TeamDetails() {
           )}
         </div>
 
-        {/* Team Members - Grid Layout 2 per row */}
+        {/* Team Members */}
         <div className="glass rounded-xl p-4">
           <div className="flex items-center gap-2 mb-4">
             <Users className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-bold">Team Members</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             {team.memberIds?.map(memberId => {
               const memberProfile = getProfileById(memberId);
               const isLeader = memberId === team.leaderId;
@@ -533,13 +624,11 @@ export default function TeamDetails() {
                 <div
                   key={memberId}
                   className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border"
-                  onClick={() => {
-                    if (!isCurrentUser) {
-                      navigate(`/profile/${memberId}`);
-                    }
-                  }}
                 >
-                  <div className="flex items-center gap-3 flex-1 cursor-pointer hover:opacity-80 min-w-0">
+                  <div
+                    className="flex items-center gap-3 flex-1 cursor-pointer hover:opacity-80 min-w-0"
+                    onClick={() => { if (!isCurrentUser) navigate(`/profile/${memberId}`); }}
+                  >
                     <AvatarUpload
                       currentAvatar={memberProfile?.avatar || null}
                       userName={memberProfile?.name || 'Unknown'}
@@ -548,29 +637,103 @@ export default function TeamDetails() {
                       editable={false}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">
+                      <p className="font-medium text-sm truncate flex items-center gap-1">
                         {isCurrentUser ? '👤 Me' : memberProfile?.name || 'Unknown User'}
+                        {isLeader && <Crown className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {memberProfile?.college || 'Unknown College'}
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-1 flex-shrink-0 ml-2">
-                    {isLeader && (
-                      <Badge className="bg-primary text-xs py-0">Leader</Badge>
-                    )}
-                    {!isLeader && (
-                      <Badge variant="outline" className="text-xs py-0">Member</Badge>
-                    )}
-                    <Badge variant={hasCommitted ? "default" : "secondary"} className="text-xs py-0">
+                  <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                    <Badge variant={hasCommitted ? 'default' : 'secondary'} className="text-xs py-0">
                       {hasCommitted ? '✓' : '○'}
                     </Badge>
+                    {isTeamLeader && !isLeader && (
+                      <button
+                        className="ml-1 p-1 rounded text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                        title="Remove from team"
+                        disabled={removingMember === memberId}
+                        onClick={() => setConfirmRemove(memberId)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {/* Find Members — leader only */}
+          {isTeamLeader && (
+            <div className="border rounded-lg p-3 bg-muted/30 space-y-2">
+              <p className="text-sm font-medium flex items-center gap-1.5">
+                <UserPlus className="h-4 w-4" /> Find Members
+              </p>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name or skill..."
+                  value={memberSearch}
+                  onChange={e => setMemberSearch(e.target.value)}
+                  className="pl-8 h-8 text-sm"
+                />
+              </div>
+              <div className="max-h-48 overflow-y-auto space-y-1">
+                {profiles
+                  .filter(p =>
+                    p.uid !== user?.uid &&
+                    !team.memberIds.includes(p.uid) &&
+                    (memberSearch === '' ||
+                      p.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                      p.skills?.some(s => s.toLowerCase().includes(memberSearch.toLowerCase())))
+                  )
+                  .slice(0, 10)
+                  .map(candidate => (
+                    <div
+                      key={candidate.uid}
+                      className="flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-background transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <AvatarUpload
+                          currentAvatar={candidate.avatar || null}
+                          userName={candidate.name}
+                          userGender={candidate.gender as any}
+                          size="sm"
+                          editable={false}
+                        />
+                        <div>
+                          <p className="text-sm font-medium">{candidate.name}</p>
+                          <p className="text-xs text-muted-foreground">{candidate.skills?.slice(0, 2).join(', ')}</p>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="h-7 text-xs px-3"
+                        disabled={invitingMember === candidate.uid}
+                        onClick={() => handleInviteMember(candidate.uid)}
+                      >
+                        {invitingMember === candidate.uid ? '...' : 'Invite'}
+                      </Button>
+                    </div>
+                  ))
+                }
+                {profiles.filter(p =>
+                  p.uid !== user?.uid &&
+                  !team.memberIds.includes(p.uid) &&
+                  (memberSearch === '' ||
+                    p.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                    p.skills?.some(s => s.toLowerCase().includes(memberSearch.toLowerCase())))
+                ).length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    {memberSearch ? 'No users match your search' : 'All platform users are already in the team'}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Team Chat */}
@@ -581,7 +744,7 @@ export default function TeamDetails() {
           </div>
 
           {/* Messages Container - Fixed Height with Scroll */}
-          <div className="flex-1 overflow-y-auto mb-2 space-y-2">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto mb-2 space-y-2">
             {loadingMessages ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
@@ -732,6 +895,15 @@ export default function TeamDetails() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!confirmRemove}
+        title="Remove Member"
+        description={`Remove ${getProfileById(confirmRemove || '')?.name || 'this member'} from the team?`}
+        confirmLabel="Remove"
+        onConfirm={() => { if (confirmRemove) handleRemoveMember(confirmRemove); setConfirmRemove(null); }}
+        onCancel={() => setConfirmRemove(null)}
+      />
     </div>
   );
 }

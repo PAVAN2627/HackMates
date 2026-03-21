@@ -1,15 +1,14 @@
-import { useState, useMemo } from 'react';
-import { MessageCircle, Users, Star, Filter, RefreshCw, Zap } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { MessageCircle, Users, Star, Filter, RefreshCw, Zap, Sparkles } from 'lucide-react';
+import { getAIMatchReasons, CandidateSummary } from '@/lib/matchingAI';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useProfiles } from '@/hooks/useProfiles';
-import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useAuth } from '@/contexts/AuthContext';
 import { calculateSynergyScore } from '@/lib/synergyAlgorithm';
 import { Hackathon, UserProfile } from '@/types';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface EnhancedProfile extends UserProfile {
   matchScore: number;
@@ -26,7 +25,6 @@ interface RecommendedProfilesProps {
 
 export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }: RecommendedProfilesProps) {
   const { profiles, loading, refreshProfiles } = useProfiles();
-  const { sendMessage } = useDirectMessages();
   const { user, profile: currentProfile } = useAuth();
   const [selectedExperience, setSelectedExperience] = useState<'all' | 'Beginner' | 'Intermediate' | 'Advanced'>('all');
   const [selectedAvailability, setSelectedAvailability] = useState<'all' | 'online' | 'in-person' | 'both'>('all');
@@ -34,7 +32,10 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
   const [showLookingForTeamOnly, setShowLookingForTeamOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'synergy' | 'skills' | 'recent'>('synergy');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [sendingMessageTo, setSendingMessageTo] = useState<string | null>(null);
+
+  // AI match reasons — fetched once for top 5 candidates
+  const [aiReasons, setAiReasons] = useState<Map<string, string>>(new Map());
+  const aiCalledRef = useRef(false);
 
   // Calculate recommended profiles based on hackathon skills, technologies, and interests
   const recommendedProfiles = useMemo((): EnhancedProfile[] => {
@@ -182,63 +183,44 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
     return filtered;
   }, [recommendedProfiles, selectedExperience, selectedAvailability, selectedReliability, showLookingForTeamOnly]);
 
+  // Fire ONE Gemini batch call when top candidates are ready
+  useEffect(() => {
+    if (aiCalledRef.current || !currentProfile || filteredProfiles.length === 0) return;
+    aiCalledRef.current = true;
+
+    const top5: CandidateSummary[] = filteredProfiles.slice(0, 5).map(p => ({
+      uid: p.uid,
+      name: p.name,
+      skills: p.skills ?? [],
+      interests: p.interests,
+      workStyle: p.workStyle
+        ? {
+            goal: p.workStyle.goal,
+            timePreference: p.workStyle.timePreference,
+            commitment: p.workStyle.commitment,
+          }
+        : undefined,
+      experience: p.experience,
+      synergyScore: p.synergyScore ?? 0,
+    }));
+
+    getAIMatchReasons(
+      {
+        name: currentProfile.name,
+        skills: currentProfile.skills ?? [],
+        interests: currentProfile.interests,
+        workStyle: currentProfile.workStyle as Record<string, string> | undefined,
+      },
+      hackathon.title,
+      hackathon.requiredSkills ?? [],
+      top5
+    ).then(reasons => setAiReasons(reasons));
+  }, [filteredProfiles, currentProfile, hackathon]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    try {
-      refreshProfiles();
-      toast.success('Profiles refreshed!');
-    } catch (error) {
-      toast.error('Failed to refresh profiles');
-    } finally {
-      setTimeout(() => setIsRefreshing(false), 1000);
-    }
-  };
-
-  const handleSendAutoMessage = async (recipientProfile: EnhancedProfile) => {
-    if (!user || !currentProfile) {
-      toast.error('Please log in to send messages');
-      return;
-    }
-
-    setSendingMessageTo(recipientProfile.uid);
-
-    try {
-      // Create personalized message based on hackathon and matching skills
-      let message = `Hi ${recipientProfile.name}! 👋\n\n`;
-      message += `I saw your profile and I think you'd be a great fit for my hackathon "${hackathon.title}". `;
-      
-      if (recipientProfile.matchingSkills && recipientProfile.matchingSkills.length > 0) {
-        message += `Your skills in ${recipientProfile.matchingSkills.slice(0, 3).join(', ')} `;
-        if (recipientProfile.matchingSkills.length > 3) {
-          message += `and ${recipientProfile.matchingSkills.length - 3} other skills `;
-        }
-        message += `are exactly what we're looking for! `;
-      }
-      
-      message += `\n\nWould you be interested in joining our team? `;
-      message += `The hackathon is on ${new Date(hackathon.date).toLocaleDateString('en-IN', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })} `;
-      message += `in ${hackathon.location}. `;
-      
-      if (hackathon.mode !== 'in-person') {
-        message += `It's ${hackathon.mode}, so location flexibility is available. `;
-      }
-      
-      message += `\n\nLet me know if you're interested! 🚀`;
-
-      await sendMessage(recipientProfile.uid, message, currentProfile.name, currentProfile.avatar);
-      toast.success(`Message sent to ${recipientProfile.name}!`);
-      onSendMessage(recipientProfile.uid);
-    } catch (error: any) {
-      console.error('Error sending auto message:', error);
-      toast.error(error.message || 'Failed to send message');
-    } finally {
-      setSendingMessageTo(null);
-    }
+    refreshProfiles();
+    setTimeout(() => setIsRefreshing(false), 1000);
   };
 
   const getMatchScoreColor = (score: number) => {
@@ -529,6 +511,14 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
                   </p>
                 )}
 
+                {/* AI Match Reason */}
+                {aiReasons.get(profile.uid) && (
+                  <div className="mb-3 flex items-start gap-1.5 text-xs text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 rounded-md px-2 py-1.5">
+                    <Sparkles className="w-3 h-3 mt-0.5 shrink-0" />
+                    <span>{aiReasons.get(profile.uid)}</span>
+                  </div>
+                )}
+
                 {/* Matching Skills */}
                 {profile.matchingSkills && profile.matchingSkills.length > 0 && (
                   <div className="mb-3">
@@ -618,14 +608,14 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleSendAutoMessage(profile);
+                    onSendMessage(profile.uid);
                   }}
-                  disabled={sendingMessageTo === profile.uid}
                   className="w-full gap-2 text-xs"
                   size="sm"
+                  variant="outline"
                 >
                   <MessageCircle className="h-3 w-3" />
-                  {sendingMessageTo === profile.uid ? 'Sending...' : 'Send Message'}
+                  Message
                 </Button>
               </div>
             ))}

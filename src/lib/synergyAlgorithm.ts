@@ -1,90 +1,140 @@
 import { UserProfile } from '@/types';
 import { SynergyScore, MatchResult } from '@/types/synergy';
 
+// ─── TF-IDF Cosine Similarity ────────────────────────────────────────────────
+
 /**
- * Calculate synergy score between two users
- * Returns a percentage (0-100) indicating compatibility
+ * Build a term-frequency map from a list of tokens (skills, interests, bio words)
  */
+function buildTF(tokens: string[]): Map<string, number> {
+  const tf = new Map<string, number>();
+  for (const t of tokens) {
+    const key = t.toLowerCase().trim();
+    if (key) tf.set(key, (tf.get(key) ?? 0) + 1);
+  }
+  return tf;
+}
+
+/**
+ * Cosine similarity between two TF maps
+ */
+function cosineSimilarity(a: Map<string, number>, b: Map<string, number>): number {
+  let dot = 0, normA = 0, normB = 0;
+  for (const [term, valA] of a) {
+    dot += valA * (b.get(term) ?? 0);
+    normA += valA * valA;
+  }
+  for (const [, valB] of b) normB += valB * valB;
+  if (normA === 0 || normB === 0) return 0;
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+/**
+ * Build a profile token vector from skills + interests + bio keywords
+ */
+function profileTokens(user: UserProfile): string[] {
+  const tokens: string[] = [
+    ...(user.skills ?? []),
+    ...(user.interests ?? []),
+    // bio words (split on whitespace, filter short words)
+    ...(user.bio ?? '').split(/\s+/).filter(w => w.length > 3),
+  ];
+  return tokens;
+}
+
+/**
+ * Complementary skill score (0-100).
+ * Sweet spot: teams need SOME overlap (shared language) but mostly different skills.
+ * Ideal overlap: 20-50% of combined unique skills.
+ */
+function complementarySkillScore(user1: UserProfile, user2: UserProfile): number {
+  const s1 = new Set((user1.skills ?? []).map(s => s.toLowerCase()));
+  const s2 = new Set((user2.skills ?? []).map(s => s.toLowerCase()));
+  const common = [...s1].filter(s => s2.has(s)).length;
+  const total = new Set([...s1, ...s2]).size;
+  if (total === 0) return 50;
+  const overlap = common / total;
+  // Score peaks at 20-50% overlap, drops off on both ends
+  if (overlap >= 0.20 && overlap <= 0.50) return 100;
+  if (overlap >= 0.10 && overlap < 0.20) return 75;
+  if (overlap > 0.50 && overlap <= 0.65) return 75;
+  if (overlap < 0.10) return 45; // too different — no common ground
+  return 55; // > 65% overlap — too similar, redundant
+}
+
+// ─── Main Scoring ─────────────────────────────────────────────────────────────
+
 export function calculateSynergyScore(
   user1: UserProfile,
   user2: UserProfile
 ): SynergyScore {
-  // Default scores
+
+  // ── 1. GOAL MATCH (25% weight) ──────────────────────────────────────────
+  // Hard rule: win vs learn = friction. Same goal = aligned.
   let goalMatch = 50;
+  if (user1.workStyle && user2.workStyle) {
+    goalMatch = user1.workStyle.goal === user2.workStyle.goal ? 100 : 20;
+  }
+
+  // ── 2. TIME COVERAGE (25% weight) ───────────────────────────────────────
+  // Hackathons are 24-36hrs. Complementary schedules = full coverage.
+  // day + night > day + day.
   let timeMatch = 50;
+  if (user1.workStyle && user2.workStyle) {
+    const t1 = user1.workStyle.timePreference;
+    const t2 = user2.workStyle.timePreference;
+    if (t1 === 'flexible' || t2 === 'flexible') {
+      timeMatch = t1 === 'flexible' && t2 === 'flexible' ? 90 : 100;
+    } else if (t1 !== t2) {
+      timeMatch = 95; // complementary — ideal 24hr coverage
+    } else {
+      timeMatch = 55; // same shift — gaps in off-hours
+    }
+  }
+
+  // ── 3. COMMITMENT MATCH (20% weight) ────────────────────────────────────
+  // Similar commitment levels avoid resentment.
   let commitmentMatch = 50;
-  let skillMatch = 0;
-
-  // 1. GOAL MATCH (30% weight)
-  // Never pair "win" with "learn" - they will fight
   if (user1.workStyle && user2.workStyle) {
-    if (user1.workStyle.goal === user2.workStyle.goal) {
-      goalMatch = 100; // Perfect match
-    } else {
-      goalMatch = 20; // Incompatible
-    }
+    const order: Record<string, number> = { 'full-time': 3, 'part-time': 2, 'casual': 1 };
+    const c1 = order[user1.workStyle.commitment ?? 'part-time'] ?? 2;
+    const c2 = order[user2.workStyle.commitment ?? 'part-time'] ?? 2;
+    const diff = Math.abs(c1 - c2);
+    commitmentMatch = diff === 0 ? 100 : diff === 1 ? 65 : 25;
   }
 
-  // 2. TIME MATCH (25% weight)
-  // Code collaboration fails when schedules don't align
-  if (user1.workStyle && user2.workStyle) {
-    const time1 = user1.workStyle.timePreference;
-    const time2 = user2.workStyle.timePreference;
-    
-    if (time1 === time2) {
-      timeMatch = 100; // Same schedule
-    } else if (time1 === 'flexible' || time2 === 'flexible') {
-      timeMatch = 80; // One is flexible
-    } else {
-      timeMatch = 30; // Opposite schedules (night-owl vs early-bird)
-    }
+  // ── 4. SKILL COMPLEMENTARITY (20% weight) ───────────────────────────────
+  // TF-IDF cosine on full profile vectors + complementary overlap check.
+  const tokens1 = profileTokens(user1);
+  const tokens2 = profileTokens(user2);
+  const tf1 = buildTF(tokens1);
+  const tf2 = buildTF(tokens2);
+  const cosine = cosineSimilarity(tf1, tf2); // 0-1, higher = more similar
+  const complementary = complementarySkillScore(user1, user2);
+
+  // Blend: we want SOME similarity (shared context) but not too much (redundant)
+  // cosine similarity inverted slightly — 0.3-0.6 range is ideal
+  const cosineScore = cosine >= 0.3 && cosine <= 0.6
+    ? 100
+    : cosine < 0.3
+      ? Math.round(cosine / 0.3 * 80)   // too different
+      : Math.round((1 - (cosine - 0.6) / 0.4) * 80); // too similar
+
+  const skillMatch = Math.round(cosineScore * 0.5 + complementary * 0.5);
+
+  // ── 5. HOURS AVAILABILITY (10% weight) ──────────────────────────────────
+  let hoursMatch = 50;
+  if (user1.workStyle?.hoursAvailable && user2.workStyle?.hoursAvailable) {
+    const diff = Math.abs(user1.workStyle.hoursAvailable - user2.workStyle.hoursAvailable);
+    hoursMatch = diff <= 5 ? 100 : diff <= 15 ? 70 : 40;
   }
 
-  // 3. COMMITMENT MATCH (25% weight)
-  // Match availability levels
-  if (user1.workStyle && user2.workStyle) {
-    const hours1 = user1.workStyle.hoursAvailable;
-    const hours2 = user2.workStyle.hoursAvailable;
-    const hoursDiff = Math.abs(hours1 - hours2);
-    
-    if (hoursDiff <= 5) {
-      commitmentMatch = 100; // Very similar availability
-    } else if (hoursDiff <= 15) {
-      commitmentMatch = 70; // Somewhat similar
-    } else {
-      commitmentMatch = 40; // Very different availability
-    }
-  }
-
-  // 4. SKILL MATCH (20% weight)
-  // Complementary skills are better than identical skills
-  const skills1 = new Set(user1.skills || []);
-  const skills2 = new Set(user2.skills || []);
-  
-  const commonSkills = [...skills1].filter(s => skills2.has(s)).length;
-  const totalUniqueSkills = new Set([...skills1, ...skills2]).size;
-  
-  if (totalUniqueSkills > 0) {
-    // Sweet spot: 30-50% overlap (some common ground, but complementary)
-    const overlapPercentage = (commonSkills / totalUniqueSkills) * 100;
-    
-    if (overlapPercentage >= 30 && overlapPercentage <= 50) {
-      skillMatch = 100; // Perfect balance
-    } else if (overlapPercentage >= 20 && overlapPercentage <= 60) {
-      skillMatch = 80; // Good balance
-    } else if (overlapPercentage < 20) {
-      skillMatch = 50; // Too different
-    } else {
-      skillMatch = 60; // Too similar
-    }
-  }
-
-  // Calculate weighted overall score
   const overall = Math.round(
-    goalMatch * 0.30 +
-    timeMatch * 0.25 +
-    commitmentMatch * 0.25 +
-    skillMatch * 0.20
+    goalMatch       * 0.25 +
+    timeMatch       * 0.25 +
+    commitmentMatch * 0.20 +
+    skillMatch      * 0.20 +
+    hoursMatch      * 0.10
   );
 
   return {
@@ -94,24 +144,23 @@ export function calculateSynergyScore(
     commitmentMatch,
     skillMatch,
     breakdown: {
-      goal: getGoalMatchDescription(goalMatch),
-      time: getTimeMatchDescription(timeMatch),
-      commitment: getCommitmentMatchDescription(commitmentMatch),
-      skills: getSkillMatchDescription(skillMatch)
-    }
+      goal:       describeGoal(goalMatch),
+      time:       describeTime(timeMatch),
+      commitment: describeCommitment(commitmentMatch),
+      skills:     describeSkills(skillMatch),
+    },
   };
 }
 
-/**
- * Find best matches for a user from a list of candidates
- */
+// ─── Find Best Matches ────────────────────────────────────────────────────────
+
 export function findBestMatches(
   currentUser: UserProfile,
   candidates: UserProfile[],
-  limit: number = 10
+  limit = 10
 ): MatchResult[] {
-  const matches: MatchResult[] = candidates
-    .filter(candidate => candidate.uid !== currentUser.uid)
+  return candidates
+    .filter(c => c.uid !== currentUser.uid)
     .map(candidate => {
       const synergyScore = calculateSynergyScore(currentUser, candidate);
       return {
@@ -120,57 +169,51 @@ export function findBestMatches(
         userAvatar: candidate.avatar,
         synergyScore,
         isHighSynergy: synergyScore.overall >= 75,
-        compatibilityBadge: 
+        compatibilityBadge:
           synergyScore.overall >= 75 ? 'high' :
-          synergyScore.overall >= 50 ? 'medium' : 'low'
-      };
+          synergyScore.overall >= 50 ? 'medium' : 'low',
+      } as MatchResult;
     })
     .sort((a, b) => b.synergyScore.overall - a.synergyScore.overall)
     .slice(0, limit);
-
-  return matches;
 }
 
-// Helper functions for descriptions
-function getGoalMatchDescription(score: number): string {
-  if (score >= 90) return 'Both focused on winning';
-  if (score >= 70) return 'Both focused on learning';
+// ─── Descriptions ─────────────────────────────────────────────────────────────
+
+function describeGoal(score: number): string {
+  if (score >= 90) return 'Aligned goals — both want the same outcome';
   if (score >= 40) return 'Somewhat aligned goals';
-  return 'Conflicting goals - may cause friction';
+  return 'Conflicting goals — may cause friction';
 }
 
-function getTimeMatchDescription(score: number): string {
-  if (score >= 90) return 'Perfect schedule alignment';
-  if (score >= 70) return 'Good schedule compatibility';
-  if (score >= 40) return 'Some schedule overlap';
-  return 'Opposite schedules - coordination difficult';
+function describeTime(score: number): string {
+  if (score >= 95) return 'Complementary schedules — full 24hr team coverage';
+  if (score >= 85) return 'Flexible schedules — great coverage';
+  if (score >= 50) return 'Same schedule — good overlap, some off-hour gaps';
+  return 'Schedule coverage unclear';
 }
 
-function getCommitmentMatchDescription(score: number): string {
-  if (score >= 90) return 'Similar time availability';
-  if (score >= 60) return 'Compatible availability';
-  return 'Different availability levels';
+function describeCommitment(score: number): string {
+  if (score >= 90) return 'Same commitment level — no resentment risk';
+  if (score >= 60) return 'Compatible commitment levels';
+  return 'Very different commitment — may cause imbalance';
 }
 
-function getSkillMatchDescription(score: number): string {
-  if (score >= 90) return 'Perfect skill balance';
-  if (score >= 70) return 'Complementary skills';
+function describeSkills(score: number): string {
+  if (score >= 90) return 'Ideal skill balance — complementary with common ground';
+  if (score >= 70) return 'Good complementary skills';
   if (score >= 50) return 'Some skill overlap';
-  return 'Skills too similar or too different';
+  return 'Skills too similar (redundant) or too different (no common ground)';
 }
 
-/**
- * Get synergy badge color
- */
+// ─── Badge Helpers ────────────────────────────────────────────────────────────
+
 export function getSynergyBadgeColor(score: number): string {
   if (score >= 75) return 'bg-green-500';
   if (score >= 50) return 'bg-yellow-500';
   return 'bg-red-500';
 }
 
-/**
- * Get synergy badge text
- */
 export function getSynergyBadgeText(score: number): string {
   if (score >= 85) return 'Excellent Match';
   if (score >= 75) return 'High Synergy';

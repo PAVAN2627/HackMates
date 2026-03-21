@@ -1,12 +1,8 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Trophy, Users, Code, Globe, Rocket, MessageCircle, Calendar, Shield, Award, ChevronRight, Mail, Code2, Plus, Megaphone, User, Star, Zap, Heart, Target, CheckCircle, Github, Linkedin, Twitter } from 'lucide-react';
+import { ArrowRight, Trophy, Rocket, MessageCircle, Shield, Award, User, Zap, Heart, Target, CheckCircle, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { TypewriterText } from '@/components/TypewriterText';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { toast } from 'sonner';
 
 interface IndexPageContentProps {
   hackathons: any[];
@@ -27,93 +23,45 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
     navigate('/auth');
   };
 
-  const stats = [
-    { label: 'Active Hackathons', value: `${hackathons.length}+`, icon: Trophy, color: 'text-purple-500' },
-    { label: 'Registered Developers', value: '15,000+', icon: Users, color: 'text-blue-500' },
-    { label: 'Teams Formed', value: '3,200+', icon: Code, color: 'text-green-500' },
-    { label: 'Success Stories', value: '850+', icon: Star, color: 'text-yellow-500' },
-  ];
-
   const features = [
     {
       icon: Trophy,
-      title: 'Discover Amazing Hackathons',
-      description: 'Browse through hundreds of hackathons across India. Filter by skills, location, mode, and find the perfect event that matches your interests and expertise.',
+      title: 'Discover & Host Hackathons',
+      description: 'Browse hackathons across India filtered by skills, location, and mode. Or host your own — manage participants, set requirements, and send announcements effortlessly.',
       gradient: 'from-purple-500 to-pink-500'
     },
     {
-      icon: Zap,
-      title: 'AI-Powered Assistant',
-      description: 'Get personalized hackathon guidance from our Gemini AI assistant. Receive project ideas, technical help, pitch coaching, and time management tips tailored to your skills.',
-      gradient: 'from-indigo-500 to-purple-500'
+      icon: Target,
+      title: 'Smart Team Matching',
+      description: 'AI-powered synergy scoring finds compatible teammates based on work style, goals (win vs learn), schedule, and commitment. Filter by skills, experience, and reliability.',
+      gradient: 'from-green-500 to-emerald-500'
     },
     {
       icon: Shield,
       title: 'Reliability & Trust System',
-      description: 'Build trust with our 4-tier badge system (Newbie → Reliable → Finisher → Legend). Rate teammates after hackathons and view trust scores before joining teams.',
+      description: 'Build credibility with our 4-tier badge system (Newbie → Reliable → Finisher → Legend). Rate teammates after hackathons and check trust scores before joining any team.',
       gradient: 'from-blue-500 to-cyan-500'
     },
     {
-      icon: Target,
-      title: 'Smart Synergy Matching',
-      description: 'Find perfectly compatible teammates with our synergy algorithm. Match based on work style, goals (win vs learn), schedule preferences, and commitment levels.',
-      gradient: 'from-green-500 to-emerald-500'
-    },
-    {
-      icon: Users,
-      title: 'Intelligent Team Discovery',
-      description: 'AI-powered profile recommendations with skill matching. Filter by experience, reliability, and availability. Get auto-generated personalized invitations.',
-      gradient: 'from-yellow-500 to-orange-500'
-    },
-    {
-      icon: Plus,
-      title: 'Host Your Own Event',
-      description: 'Organize hackathons effortlessly. Set requirements, manage participants, send announcements, and create memorable experiences for the developer community.',
-      gradient: 'from-pink-500 to-rose-500'
+      icon: Zap,
+      title: 'AI-Powered Assistant',
+      description: 'Get personalized guidance from our Gemini AI mentor — project ideas tailored to your skills, technical help, pitch coaching, and step-by-step platform guidance.',
+      gradient: 'from-indigo-500 to-purple-500'
     },
     {
       icon: MessageCircle,
       title: 'Real-time Communication',
-      description: 'Chat directly with team members and participants. Direct messaging, hackathon group chats, and instant notifications keep everyone connected.',
+      description: 'Direct messages, hackathon group chats, and team-specific chat rooms. Organizers post announcements with unread tracking and instant email notifications.',
       gradient: 'from-orange-500 to-red-500'
     },
     {
-      icon: Megaphone,
-      title: 'Smart Announcements',
-      description: 'Never miss important updates. Organizers can post announcements with unread tracking, pin important messages, and notify all team members instantly.',
-      gradient: 'from-violet-500 to-purple-500'
-    },
-    {
       icon: Award,
-      title: 'Comprehensive Profiles',
-      description: 'Showcase your skills, work style preferences, and achievements. Display reliability badges, synergy scores, and build your developer reputation.',
+      title: 'Developer Profiles & Reputation',
+      description: 'Showcase skills, work style, and achievements. Display reliability badges and synergy scores. Build your reputation across every hackathon you participate in.',
       gradient: 'from-cyan-500 to-blue-500'
     },
   ];
 
-  const testimonials = [
-    {
-      name: 'Arjun Sharma',
-      role: 'Full Stack Developer',
-      company: 'Tech Startup',
-      content: 'HackMates helped me find amazing teammates for multiple hackathons. The platform is intuitive and the community is incredibly supportive!',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=arjun'
-    },
-    {
-      name: 'Priya Patel',
-      role: 'UI/UX Designer',
-      company: 'Design Agency',
-      content: 'As a designer, finding developer teammates was always challenging. HackMates made it so easy to connect with skilled developers who appreciate good design.',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=priya'
-    },
-    {
-      name: 'Rahul Kumar',
-      role: 'Student',
-      company: 'IIT Delhi',
-      content: 'I\'ve participated in 8 hackathons through HackMates and won 3 of them! The platform helped me grow as a developer and build lasting connections.',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=rahul'
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -210,7 +158,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
       </nav>
 
       {/* Hero Section - Mobile Optimized */}
-      <section className="relative pt-20 md:pt-32 pb-16 md:pb-20 overflow-hidden">
+      <section className="relative pt-20 md:pt-32 pb-8 md:pb-12 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-purple-400/30 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-48 md:w-96 h-48 md:h-96 bg-blue-400/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '-3s' }} />
@@ -259,25 +207,12 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                 <Trophy className="h-4 md:h-5 w-4 md:w-5 ml-2" />
               </Button>
             </div>
-
-            {/* Stats - Mobile Optimized */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto px-4">
-              {stats.map((stat) => (
-                <div key={stat.label} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 text-center border border-white/20 hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <div className={`h-8 md:h-12 w-8 md:w-12 rounded-lg md:rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center mx-auto mb-2 md:mb-4`}>
-                    <stat.icon className={`h-4 md:h-6 w-4 md:w-6 ${stat.color}`} />
-                  </div>
-                  <p className="text-xl md:text-3xl font-bold mb-1 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">{stat.value}</p>
-                  <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">{stat.label}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
 
       {/* About Platform Section - Mobile Optimized */}
-      <section id="about-section" className="py-16 md:py-20 relative">
+      <section id="about-section" className="py-8 md:py-12 relative">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="flex justify-center mb-8 md:mb-12">
@@ -379,11 +314,11 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Active community of 15,000+ developers</span>
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Open to all — students, professionals, anyone</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Success stories from 850+ winning teams</span>
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Off-platform team support for any hackathon</span>
                   </div>
                 </div>
               </div>
@@ -415,128 +350,6 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                 </div>
                 <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4 text-slate-800 dark:text-slate-200">{feature.title}</h3>
                 <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 leading-relaxed">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Join Community Section - Mobile Optimized */}
-      <section className="py-16 md:py-20 relative mb-20 md:mb-0">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
-              Join the{' '}
-              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Community
-              </span>
-            </h2>
-            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-8 md:mb-12 px-4">
-              Whether you're a seasoned developer, creative designer, or passionate student, 
-              HackMates connects you with like-minded innovators ready to build the future.
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-12 px-4">
-              <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-white/20">
-                <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 md:mb-6">
-                  <Trophy className="h-6 w-6 md:h-8 md:w-8 text-white" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold mb-4 text-slate-800 dark:text-slate-200">For Hackathon Organizers</h3>
-                <ul className="space-y-2 text-left">
-                  {[
-                    'Host hackathons with detailed event pages',
-                    'Manage participants and team formations',
-                    'Send real-time announcements to participants',
-                    'Track event analytics and engagement'
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm md:text-base text-slate-600 dark:text-slate-400">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-white/20">
-                <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-4 md:mb-6">
-                  <Users className="h-6 w-6 md:h-8 md:w-8 text-white" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold mb-4 text-slate-800 dark:text-slate-200">For Participants</h3>
-                <ul className="space-y-2 text-left">
-                  {[
-                    'Discover hackathons matching your skills',
-                    'Find teammates with complementary expertise',
-                    'Build your developer profile and portfolio',
-                    'Network with the tech community'
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm md:text-base text-slate-600 dark:text-slate-400">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-              <Button 
-                size="lg"
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-xl text-base md:text-lg px-8 py-4 h-auto"
-                onClick={handleGetStarted}
-              >
-                Join HackMates Today
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="border-2 border-purple-200 hover:border-purple-400 text-purple-600 hover:bg-purple-50 text-base md:text-lg px-8 py-4 h-auto"
-                onClick={handleExploreHackathons}
-              >
-                Explore Hackathons
-                <Trophy className="h-5 w-5 ml-2" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section - Mobile Optimized */}
-      <section className="py-16 md:py-20 relative">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
-              What our{' '}
-              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                community
-              </span>{' '}
-              says
-            </h2>
-            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto px-4">
-              Join thousands of developers who have found their perfect hackathon partners through HackMates.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 px-4">
-            {testimonials.map((testimonial, index) => (
-              <div key={testimonial.name} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-                  <img 
-                    src={testimonial.avatar} 
-                    alt={testimonial.name}
-                    className="h-10 w-10 md:h-12 md:w-12 rounded-full"
-                  />
-                  <div>
-                    <h4 className="font-bold text-sm md:text-base text-slate-800 dark:text-slate-200">{testimonial.name}</h4>
-                    <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">{testimonial.role} at {testimonial.company}</p>
-                  </div>
-                </div>
-                <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 leading-relaxed italic">"{testimonial.content}"</p>
-                <div className="flex gap-1 mt-3 md:mt-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3 w-3 md:h-4 md:w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
               </div>
             ))}
           </div>
@@ -597,15 +410,30 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                 India's premier hackathon community platform connecting developers, designers, and innovators to build the future together.
               </p>
               <div className="flex gap-3 md:gap-4">
-                <Button variant="ghost" size="sm" className="text-slate-600 hover:text-purple-600 p-2">
-                  <Github className="h-4 w-4 md:h-5 md:w-5" />
-                </Button>
-                <Button variant="ghost" size="sm" className="text-slate-600 hover:text-purple-600 p-2">
-                  <Twitter className="h-4 w-4 md:h-5 md:w-5" />
-                </Button>
-                <Button variant="ghost" size="sm" className="text-slate-600 hover:text-purple-600 p-2">
+                {/* Instagram */}
+                <a
+                  href="https://instagram.com/hackmates.tech"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-600 hover:text-purple-600 transition-colors p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                  aria-label="Instagram"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                    <circle cx="12" cy="12" r="4"/>
+                    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+                  </svg>
+                </a>
+                {/* LinkedIn */}
+                <a
+                  href="https://linkedin.com/company/hackmates.tech"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-600 hover:text-purple-600 transition-colors p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                  aria-label="LinkedIn"
+                >
                   <Linkedin className="h-4 w-4 md:h-5 md:w-5" />
-                </Button>
+                </a>
               </div>
             </div>
             
@@ -613,26 +441,30 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
               <h4 className="font-bold text-sm md:text-base text-slate-800 dark:text-slate-200 mb-3 md:mb-4">Platform</h4>
               <ul className="space-y-1 md:space-y-2">
                 <li><Link to="/explore" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Browse Hackathons</Link></li>
-                <li><Link to="/auth" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Find Members</Link></li>
-                <li><Link to="/auth" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Host Event</Link></li>
-                <li><Link to="/register" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Join Community</Link></li>
+                <li><Link to="/auth" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Get Started</Link></li>
+                <li><Link to="/auth" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Post a Hackathon</Link></li>
+                <li><Link to="/register" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Create Account</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-bold text-sm md:text-base text-slate-800 dark:text-slate-200 mb-3 md:mb-4">Support</h4>
+              <h4 className="font-bold text-sm md:text-base text-slate-800 dark:text-slate-200 mb-3 md:mb-4">Legal</h4>
               <ul className="space-y-1 md:space-y-2">
-                <li><a href="#" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Help Center</a></li>
-                <li><a href="#" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Community Guidelines</a></li>
-                <li><a href="#" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Privacy Policy</a></li>
-                <li><a href="#" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Terms of Service</a></li>
+                <li><Link to="/faq" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">FAQ</Link></li>
+                <li><Link to="/privacy" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Terms of Service</Link></li>
+                <li>
+                  <Link to="/contact" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">
+                    Contact Us
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-white/20 mt-6 md:mt-8 pt-6 md:pt-8 text-center">
             <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 px-4">
-              © 2025 HackMates. Built with <Heart className="h-3 w-3 md:h-4 md:w-4 inline text-red-500" /> for the NoobCodersIND developer community.
+              © 2026 HackMates. Built by <a href="https://hackmates.tech" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline font-medium">hackmates.tech</a>
             </p>
           </div>
         </div>

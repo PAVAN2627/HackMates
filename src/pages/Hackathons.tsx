@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { HackathonCard } from '@/components/HackathonCardNew';
 import { TeamContractDialog } from '@/components/TeamContractDialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useHackathons } from '@/hooks/useHackathons';
 import { toast } from 'sonner';
@@ -26,6 +27,8 @@ export default function Hackathons() {
   const [contractDialogOpen, setContractDialogOpen] = useState(false);
   const [selectedHackathonForJoin, setSelectedHackathonForJoin] = useState<{ id: string; title: string } | null>(null);
   const [joiningHackathon, setJoiningHackathon] = useState(false);
+  // Confirm delete dialog
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Filter hackathons
   let filtered = hackathons;
@@ -123,13 +126,15 @@ export default function Hackathons() {
   };
 
   const handleDelete = async (hackathonId: string) => {
-    if (window.confirm('Are you sure you want to delete this hackathon? This action cannot be undone.')) {
-      try {
-        await deleteHackathon(hackathonId);
-        toast.success('Hackathon deleted successfully!');
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to delete hackathon');
-      }
+    setConfirmDeleteId(hackathonId);
+  };
+
+  const doDelete = async (hackathonId: string) => {
+    try {
+      await deleteHackathon(hackathonId);
+      toast.success('Hackathon deleted successfully!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete hackathon');
     }
   };
 
@@ -321,6 +326,16 @@ export default function Hackathons() {
         onAccept={handleAcceptContract}
         hackathonTitle={selectedHackathonForJoin?.title || ''}
         loading={joiningHackathon}
+      />
+
+      {/* Confirm Delete Hackathon */}
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        title="Delete Hackathon"
+        description="Are you sure you want to delete this hackathon? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { const id = confirmDeleteId!; setConfirmDeleteId(null); doDelete(id); }}
+        onCancel={() => setConfirmDeleteId(null)}
       />
     </div>
   );

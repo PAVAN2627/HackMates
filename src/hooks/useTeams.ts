@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { doc, updateDoc, addDoc, collection, getDoc } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { HackathonTeam } from '@/types';
-import { sendTeamAdditionEmail } from '@/lib/emailService';
+import { sendTeamAdditionEmail, sendTeamRemovalEmail } from '@/lib/emailService';
 import { toast } from 'sonner';
 
 export function useTeams() {
@@ -94,25 +94,60 @@ export function useTeams() {
     hackathonId: string,
     teamId: string,
     userId: string,
-    currentTeams: HackathonTeam[]
+    currentTeams: HackathonTeam[],
+    hackathonTitle?: string,
+    teamName?: string,
+    removedByName?: string
   ): Promise<boolean> => {
     try {
       setLoading(true);
-      
-      const updatedTeams = currentTeams.map(team => {
+
+      // Fetch fresh from Firestore to avoid stale/serialization issues
+      const hackathonRef = doc(db, COLLECTIONS.HACKATHONS, hackathonId);
+      const freshSnap = await getDoc(hackathonRef);
+      const freshTeams: HackathonTeam[] = freshSnap.exists()
+        ? (freshSnap.data().teams || [])
+        : currentTeams;
+
+      const updatedTeams = freshTeams.map(team => {
         if (team.id === teamId) {
-          return {
-            ...team,
-            memberIds: team.memberIds.filter(id => id !== userId)
-          };
+          return { ...team, memberIds: team.memberIds.filter((id: string) => id !== userId) };
         }
         return team;
-      }).filter(team => team.memberIds.length > 0);
-
-      const hackathonRef = doc(db, 'hackathons', hackathonId);
-      await updateDoc(hackathonRef, {
-        teams: updatedTeams
       });
+
+      await updateDoc(hackathonRef, { teams: updatedTeams });
+
+      // Send removal email
+      try {
+        const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, userId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.email && hackathonTitle && teamName && removedByName) {
+            sendTeamRemovalEmail(
+              userData.email,
+              userData.name,
+              hackathonTitle,
+              teamName,
+              removedByName,
+              hackathonId
+            ).catch(() => {});
+          }
+        }
+      } catch {}
+
+      // Notification
+      try {
+        await addDoc(collection(db, COLLECTIONS.NOTIFICATIONS), {
+          userId,
+          type: 'team_removed',
+          title: 'Removed from Team',
+          message: `${removedByName || 'Team leader'} removed you from team "${teamName}" in ${hackathonTitle}`,
+          read: false,
+          hackathonId,
+          createdAt: new Date(),
+        });
+      } catch {}
 
       toast.success('Member removed from team!');
       return true;

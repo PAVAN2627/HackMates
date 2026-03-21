@@ -1,4 +1,5 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Loading } from '@/components/Loading';
@@ -11,9 +12,14 @@ export function DashboardLayout() {
   const { isOpen, hasNewMessage, toggleAI, closeAI } = useAIAssistant();
   const location = useLocation();
 
-  // Pages where chatbot should be hidden (Messages and Create Hackathon)
-  const hideChatbotPages = ['/messages', '/create-hackathon'];
-  const shouldHideChatbot = hideChatbotPages.some(page => location.pathname.startsWith(page));
+  // Scroll to top on every page navigation
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
+  // Chatbot only on Dashboard (overview). Hide everywhere else.
+  const showChatbotPages = ['/dashboard'];
+  const shouldHideChatbot = !showChatbotPages.some(page => location.pathname.startsWith(page));
   
   // Pages where header should be hidden (Messages page)
   const hideHeaderPages = ['/messages'];

@@ -32,11 +32,16 @@ const genderPreferenceOptions = [
 ];
 
 const hackathonSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  venue: z.string().min(2, 'Venue is required'),
-  location: z.string().min(2, 'Location is required'),
-  date: z.string().min(10, 'Date is required'),
+  title: z.string().min(3, 'Title must be at least 3 characters').max(100, 'Title too long'),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(2000, 'Description too long'),
+  venue: z.string().min(2, 'Venue is required').max(200, 'Venue too long'),
+  location: z.string().min(2, 'Location is required').max(200, 'Location too long'),
+  date: z.string().min(10, 'Date is required').refine(val => {
+    const selected = new Date(val);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selected >= today;
+  }, 'Date cannot be in the past'),
   time: z.string().min(5, 'Time is required'),
   mode: z.enum(['online', 'in-person', 'both']),
   teamSize: z.number().min(1, 'Team size must be at least 1').max(20, 'Team size cannot exceed 20'),
@@ -165,6 +170,16 @@ export default function CreateHackathon() {
       toast.success('Hackathon created successfully!');
       navigate(`/hackathons/${hackathonId}`);
     } catch (error: any) {
+      // Duplicate hackathon — redirect to existing one
+      if (error.message?.startsWith('DUPLICATE:')) {
+        const existingId = error.message.split(':')[1];
+        toast.error(
+          'This hackathon already exists with the same title, date, and venue. Redirecting you there...',
+          { duration: 4000 }
+        );
+        setTimeout(() => navigate(`/hackathons/${existingId}?tab=chat`), 1500);
+        return;
+      }
       toast.error(error.message || 'Failed to create hackathon');
     } finally {
       setIsSubmitting(false);

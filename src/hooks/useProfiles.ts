@@ -71,11 +71,12 @@ export function useProfiles() {
       setLoading(false);
     });
 
-    // Add timeout to prevent infinite loading
+    // Timeout: stop spinner but keep empty array — UI shows "loading" state gracefully
     const timeoutId = setTimeout(() => {
       console.warn('Profile loading timeout - setting loading to false');
       setLoading(false);
-    }, 10000); // Reduced to 10 seconds
+      // Don't clear profiles — keep whatever partial data arrived
+    }, 15000); // 15s before giving up
 
     return () => {
       clearTimeout(timeoutId);

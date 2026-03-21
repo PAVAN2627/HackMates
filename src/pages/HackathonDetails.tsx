@@ -15,12 +15,17 @@ import {
   UserPlus,
   UserMinus,
   Star,
-  CheckCircle
+  CheckCircle,
+  Plus,
+  Search,
+  Crown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { AnnouncementSection } from '@/components/hackathon/AnnouncementSection';
 import { ChatSection } from '@/components/hackathon/ChatSection';
 import { TeamContract } from '@/components/hackathon/TeamContract';
@@ -53,7 +58,7 @@ export default function HackathonDetails() {
   const { messages, loading: chatLoading, sendMessage, editMessage, deleteMessage } = useChat(id || '');
   const { getProfileById, profiles } = useProfiles();
   const { submitFeedback } = useTeamFeedback();
-  const { getUserTeam, isUserInAnyTeam, addMemberToTeam, removeNonTeamMembers, leaveTeam, deleteTeam } = useTeams();
+  const { getUserTeam, isUserInAnyTeam, addMemberToTeam, removeMemberFromTeam, removeNonTeamMembers, leaveTeam, deleteTeam, createTeam } = useTeams();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [profileModalUser, setProfileModalUser] = useState<{ id: string; name: string } | null>(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -65,6 +70,18 @@ export default function HackathonDetails() {
   const [deleteTeamDialogOpen, setDeleteTeamDialogOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<{ id: string; name: string; memberCount: number } | null>(null);
   const [deletingTeam, setDeletingTeam] = useState(false);
+  // Confirm dialogs (replacing native confirm())
+  const [confirmDeleteHackathon, setConfirmDeleteHackathon] = useState(false);
+  const [confirmRemoveNonTeam, setConfirmRemoveNonTeam] = useState(false);
+  const [confirmLeaveTeam, setConfirmLeaveTeam] = useState<{ teamId: string } | null>(null);
+  const [confirmRemoveMember, setConfirmRemoveMember] = useState<{ teamId: string; memberId: string; memberName: string } | null>(null);
+
+  // Create team inline state
+  const [createTeamDialogOpen, setCreateTeamDialogOpen] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [creatingTeam, setCreatingTeam] = useState(false);
+  const [invitingMemberId, setInvitingMemberId] = useState<string | null>(null);
 
   // Update active tab when URL parameter changes
   useEffect(() => {
@@ -90,9 +107,8 @@ export default function HackathonDetails() {
     }
   }, [userTeam, hackathon?.committedMembers]);
   
-  // Determine if user can see teams tab
-  // Only creator and users who are in a team can see it
-  const canSeeTeamsTab = isHackathonCreator || isUserInTeam;
+  // Any joined member can see the Teams tab (to create or view their team)
+  const canSeeTeamsTab = isUserJoined || isHackathonCreator;
   
   // Members tab is ONLY visible to creator (not team members)
   const canSeeMembersTab = isHackathonCreator;
@@ -233,15 +249,12 @@ export default function HackathonDetails() {
 
   const handleDelete = async () => {
     if (!hackathon || !isHackathonCreator) return;
-    
-    if (window.confirm('Are you sure you want to delete this hackathon? This action cannot be undone.')) {
-      try {
-        await deleteHackathon(hackathon.id);
-        toast.success('Hackathon deleted successfully!');
-        navigate('/hackathons');
-      } catch (error) {
-        toast.error('Failed to delete hackathon');
-      }
+    try {
+      await deleteHackathon(hackathon.id);
+      toast.success('Hackathon deleted successfully!');
+      navigate('/hackathons');
+    } catch (error) {
+      toast.error('Failed to delete hackathon');
     }
   };
 
@@ -275,19 +288,11 @@ export default function HackathonDetails() {
 
   const handleRemoveNonTeamMembers = async () => {
     if (!hackathon) return;
-    
-    const confirmed = window.confirm(
-      'This will remove all members who are not in any team from the hackathon. Continue?'
+    await removeNonTeamMembers(
+      hackathon.id,
+      hackathon.teams || [],
+      hackathon.teamMembers || []
     );
-    
-    if (confirmed) {
-      await removeNonTeamMembers(
-        hackathon.id,
-        hackathon.teams || [],
-        hackathon.teamMembers || []
-      );
-      // No reload needed - useHackathon listener will update automatically
-    }
   };
 
   const handleDeleteTeam = async () => {
@@ -312,6 +317,18 @@ export default function HackathonDetails() {
       memberCount: team.memberIds?.length || 0
     });
     setDeleteTeamDialogOpen(true);
+  };
+
+  const handleCreateTeamInline = async () => {
+    if (!user || !newTeamName.trim() || !hackathon) return;
+    setCreatingTeam(true);
+    const result = await createTeam(hackathon.id, newTeamName.trim(), user.uid, hackathon.teams || []);
+    if (result) {
+      setCreateTeamDialogOpen(false);
+      setNewTeamName('');
+      toast.success(`Team "${newTeamName.trim()}" created! Now invite members by searching below.`);
+    }
+    setCreatingTeam(false);
   };
 
   const statusColors = {
@@ -431,7 +448,7 @@ export default function HackathonDetails() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={handleDelete}
+                      onClick={() => setConfirmDeleteHackathon(true)}
                       className="gap-1 text-xs md:text-sm px-3 py-2 min-w-[70px]"
                     >
                       <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
@@ -651,8 +668,8 @@ export default function HackathonDetails() {
         </TabsContent>
 
         <TabsContent value="teams" className="space-y-6">
-          {/* Simplified Teams Section - Only Team Creation and Member Management */}
           <div className="glass rounded-xl p-6">
+            {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-xl font-bold flex items-center gap-2">
@@ -660,140 +677,249 @@ export default function HackathonDetails() {
                   Teams
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {isHackathonCreator ? 'Create and manage teams for your hackathon' : 'View your team information'}
+                  {hackathon.teams?.length || 0} team{(hackathon.teams?.length || 0) !== 1 ? 's' : ''} formed
                 </p>
               </div>
-              <Badge variant="secondary">
-                {hackathon.teams?.length || 0} teams
-              </Badge>
+              {/* Create Team — any joined member without a team */}
+              {isUserJoined && hackathon.status === 'open' && !userTeam && (
+                <Button onClick={() => setCreateTeamDialogOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Team
+                </Button>
+              )}
             </div>
 
-            {/* Creator Only - Create Team Section */}
-            {isHackathonCreator && hackathon.status === 'open' && (
-              <div className="mb-8 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                <h4 className="font-semibold mb-4 flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-primary" />
-                  Create New Team
-                </h4>
-                <TeamManagement
-                  hackathonId={hackathon.id}
-                  hackathonTitle={hackathon.title}
-                  hackathonStatus={hackathon.status}
-                  teams={hackathon.teams || []}
-                  suggestedTeamSize={hackathon.teamSize}
-                  allParticipants={hackathon.teamMembers || []}
-                  isCreator={isHackathonCreator}
-                  committedMembers={hackathon.committedMembers || []}
-                  isTeamLocked={hackathon.isTeamLocked || false}
-                  onProfileClick={handleProfileClick}
-                  onRefresh={() => {}}
-                />
-              </div>
-            )}
-
-            {/* Teams List */}
+            {/* Teams list */}
             {hackathon.teams && hackathon.teams.length > 0 ? (
               <div className="space-y-4">
                 {hackathon.teams.map((team) => {
-                  const isUserTeamCreator = team.creatorId === user?.uid;
                   const isMemberOfThisTeam = team.memberIds?.includes(user?.uid || '');
-                  
+                  const isLeaderOfThisTeam = team.leaderId === user?.uid;
+                  const hasCommitted = (team.committedMemberIds || []).includes(user?.uid || '');
+
+                  // Candidates for invite: hackathon members first, then rest of platform
+                  // Mode matching: profile's availableFor must be compatible with hackathon mode
+                  // online hackathon → show online + both profiles
+                  // in-person hackathon → show in-person + both profiles
+                  // both/hybrid hackathon → show all profiles
+                  const hackathonMode = hackathon.mode as string;
+                  const modeMatch = (profileMode?: string) => {
+                    if (!profileMode || profileMode === 'both') return true;
+                    if (hackathonMode === 'both' || hackathonMode === 'hybrid') return true;
+                    return profileMode === hackathonMode;
+                  };
+
+                  // Split into two groups for display
+                  const alreadyInATeam = new Set(
+                    (hackathon.teams || []).flatMap(t => t.memberIds || [])
+                  );
+                  const hackathonCandidates = profiles.filter(p =>
+                    p.uid !== user?.uid &&
+                    !alreadyInATeam.has(p.uid) &&
+                    hackathon.teamMembers?.includes(p.uid) &&
+                    modeMatch(p.availableFor) &&
+                    (memberSearch.trim() === '' ||
+                      p.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                      p.skills?.some(s => s.toLowerCase().includes(memberSearch.toLowerCase())))
+                  );
+                  const platformCandidates = profiles.filter(p =>
+                    p.uid !== user?.uid &&
+                    !alreadyInATeam.has(p.uid) &&
+                    !hackathon.teamMembers?.includes(p.uid) &&
+                    modeMatch(p.availableFor) &&
+                    (memberSearch.trim() === '' ||
+                      p.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                      p.skills?.some(s => s.toLowerCase().includes(memberSearch.toLowerCase())))
+                  );
+
                   return (
                     <div
                       key={team.id}
                       className={cn(
-                        'p-4 rounded-lg border transition-all space-y-4',
+                        'p-4 rounded-lg border transition-all',
                         isMemberOfThisTeam
                           ? 'bg-green-500/5 border-green-500/30'
                           : 'bg-muted/50 border-border'
                       )}
                     >
-                      {/* Team Header */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-lg">{team.name}</h4>
-                          {/* Delete Team Button - Right next to team name for creator */}
-                          {isHackathonCreator && hackathon.status === 'open' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openDeleteTeamDialog(team)}
-                              className="h-7 px-2 text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-950"
-                              title="Delete Team"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
+                      {/* Team name + badges */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-semibold text-base">{team.name}</h4>
                           {isMemberOfThisTeam && (
-                            <Badge className="bg-green-500 text-white">
-                              Your Team
+                            <Badge className="bg-green-500 text-white text-xs">Your Team</Badge>
+                          )}
+                          {isLeaderOfThisTeam && (
+                            <Badge variant="outline" className="text-xs gap-1">
+                              <Crown className="h-3 w-3 text-yellow-500" /> Leader
                             </Badge>
                           )}
                           {team.isTeamLocked && (
-                            <Badge variant="outline" className="bg-yellow-500/10 border-yellow-500/30 text-yellow-600">
+                            <Badge variant="outline" className="text-xs bg-yellow-500/10 border-yellow-500/30 text-yellow-600">
                               🔒 Locked
                             </Badge>
                           )}
                         </div>
+                        {isHackathonCreator && hackathon.status === 'open' && (
+                          <Button
+                            variant="ghost" size="sm"
+                            onClick={() => openDeleteTeamDialog(team)}
+                            className="h-7 px-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
-                      <p className="text-xs text-muted-foreground -mt-2">
-                        Created by {team.leaderId === hackathon.creatorId ? 'Hackathon Creator' : 'Team Member'}
-                      </p>
 
-                      {/* Team Members Count */}
-                      <div className="text-sm text-muted-foreground">
-                        <p>{team.memberIds?.length || 0} members</p>
+                      {/* Members chips */}
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {team.memberIds?.map(memberId => {
+                          const p = getProfileById(memberId);
+                          const isLeader = memberId === team.leaderId;
+                          const committed = (team.committedMemberIds || []).includes(memberId);
+                          const canRemove = isLeaderOfThisTeam && !isLeader; // Leader can always remove misbehaving members
+                          return (
+                            <div
+                              key={memberId}
+                              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-background border text-xs hover:border-primary/50 group"
+                            >
+                              <span
+                                className="flex items-center gap-1.5 cursor-pointer"
+                                onClick={() => handleProfileClick(memberId, p?.name || 'User')}
+                              >
+                                <AvatarUpload currentAvatar={p?.avatar || null} userName={p?.name || '?'} userGender={p?.gender as any} size="sm" editable={false} />
+                                <span>{memberId === user?.uid ? 'You' : p?.name || 'Unknown'}</span>
+                                {isLeader && <Crown className="h-3 w-3 text-yellow-500" />}
+                                {committed && <CheckCircle className="h-3 w-3 text-green-500" />}
+                              </span>
+                              {canRemove && (
+                                <button
+                                  className="ml-1 text-muted-foreground hover:text-red-500 transition-colors"
+                                  title="Remove from team"
+                                  onClick={async () => {
+                                    setConfirmRemoveMember({
+                                      teamId: team.id,
+                                      memberId,
+                                      memberName: p?.name || 'this member',
+                                    });
+                                  }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
 
-                      {/* Contract and Actions - Only show if user is member of this team */}
-                      {isMemberOfThisTeam && (
-                        <div className="space-y-4 pt-4 border-t border-border">
-                          {/* Team Contract Section */}
-                          <div>
-                            <TeamContract
-                              hackathonId={hackathon.id}
-                              teamId={team.id}
-                              teamMembers={team.memberIds?.map(memberId => {
-                                const memberProfile = getProfileById(memberId);
-                                return {
-                                  userId: memberId,
-                                  userName: memberProfile?.name || memberId,
-                                  userAvatar: memberProfile?.avatar || undefined,
-                                };
-                              }) || []}
-                              committedMembers={team.committedMemberIds || []}
-                              isLocked={team.isTeamLocked || false}
-                              teams={hackathon.teams || []}
-                              onContractUpdate={() => {
-                                // Real-time listener will update - no reload needed
-                              }}
+                      {/* Invite section — team leader only */}
+                      {isLeaderOfThisTeam && hackathon.status === 'open' && !team.isTeamLocked && (
+                        <div className="mb-3 border rounded-lg p-3 bg-muted/30">
+                          <p className="text-xs font-medium mb-2 flex items-center gap-1">
+                            <UserPlus className="h-3.5 w-3.5" /> Add Members
+                          </p>
+                          <div className="relative mb-2">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input
+                              placeholder="Search by name or skill..."
+                              value={memberSearch}
+                              onChange={e => setMemberSearch(e.target.value)}
+                              className="pl-8 h-8 text-xs"
                             />
                           </div>
 
-                          {/* Leave Team Button - Show if user hasn't committed yet to THIS team */}
-                          {!(team.committedMemberIds || []).includes(user?.uid || '') && (
+                          {/* Hackathon participants first */}
+                          {hackathonCandidates.length > 0 && (
+                            <div className="mb-2">
+                              <p className="text-xs text-muted-foreground mb-1 px-1">Already joined this hackathon</p>
+                              <div className="space-y-1 max-h-36 overflow-y-auto">
+                                {hackathonCandidates.slice(0, 8).map(candidate => (
+                                  <div key={candidate.uid} className="flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-background transition-colors">
+                                    <div className="flex items-center gap-2">
+                                      <AvatarUpload currentAvatar={candidate.avatar || null} userName={candidate.name} userGender={candidate.gender as any} size="sm" editable={false} />
+                                      <div>
+                                        <p className="text-xs font-medium">{candidate.name}</p>
+                                        <p className="text-xs text-muted-foreground">{candidate.skills?.slice(0, 2).join(', ')}</p>
+                                      </div>
+                                    </div>
+                                    <Button
+                                      size="sm" className="h-6 text-xs px-2"
+                                      disabled={invitingMemberId === candidate.uid}
+                                      onClick={async () => {
+                                        setInvitingMemberId(candidate.uid);
+                                        await addMemberToTeam(hackathon.id, hackathon.title, team.id, team.name, candidate.uid, profiles.find(p => p.uid === user?.uid)?.name || 'Team Leader', hackathon.teams || []);
+                                        setInvitingMemberId(null);
+                                      }}
+                                    >
+                                      {invitingMemberId === candidate.uid ? '...' : 'Invite'}
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Platform users (not yet joined hackathon) */}
+                          {platformCandidates.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1 px-1">Other platform users</p>
+                              <div className="space-y-1 max-h-36 overflow-y-auto">
+                                {platformCandidates.slice(0, 8).map(candidate => (
+                                  <div key={candidate.uid} className="flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-background transition-colors">
+                                    <div className="flex items-center gap-2">
+                                      <AvatarUpload currentAvatar={candidate.avatar || null} userName={candidate.name} userGender={candidate.gender as any} size="sm" editable={false} />
+                                      <div>
+                                        <p className="text-xs font-medium">{candidate.name}</p>
+                                        <p className="text-xs text-muted-foreground">{candidate.skills?.slice(0, 2).join(', ')}</p>
+                                      </div>
+                                    </div>
+                                    <Button
+                                      size="sm" variant="outline" className="h-6 text-xs px-2"
+                                      disabled={invitingMemberId === candidate.uid}
+                                      onClick={async () => {
+                                        setInvitingMemberId(candidate.uid);
+                                        // First join them to hackathon, then add to team
+                                        await addMemberToTeam(hackathon.id, hackathon.title, team.id, team.name, candidate.uid, profiles.find(p => p.uid === user?.uid)?.name || 'Team Leader', hackathon.teams || []);
+                                        setInvitingMemberId(null);
+                                      }}
+                                    >
+                                      {invitingMemberId === candidate.uid ? '...' : 'Invite'}
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {hackathonCandidates.length === 0 && platformCandidates.length === 0 && (
+                            <p className="text-xs text-muted-foreground text-center py-2">
+                              {memberSearch.trim() ? 'No users match your search' : 'No available users to invite'}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Contract + Leave — team members only */}
+                      {isMemberOfThisTeam && (
+                        <div className="space-y-3 pt-3 border-t border-border">
+                          <TeamContract
+                            hackathonId={hackathon.id}
+                            teamId={team.id}
+                            teamMembers={team.memberIds?.map(memberId => {
+                              const p = getProfileById(memberId);
+                              return { userId: memberId, userName: p?.name || memberId, userAvatar: p?.avatar };
+                            }) || []}
+                            committedMembers={team.committedMemberIds || []}
+                            isLocked={team.isTeamLocked || false}
+                            teams={hackathon.teams || []}
+                            onContractUpdate={() => {}}
+                          />
+                          {!hasCommitted && (
                             <Button
-                              variant="destructive"
-                              size="sm"
-                              className="w-full gap-2"
-                              onClick={async () => {
-                                if (confirm('Are you sure you want to leave this team?')) {
-                                  const success = await leaveTeam(
-                                    hackathon.id,
-                                    team.id,
-                                    user?.uid || '',
-                                    hackathon.teams || []
-                                  );
-                                  if (success) {
-                                    navigate(`/hackathons/${hackathon.id}`);
-                                  }
-                                }
-                              }}
+                              variant="destructive" size="sm" className="w-full gap-2"
+                              onClick={() => setConfirmLeaveTeam({ teamId: team.id })}
                             >
-                              <UserMinus className="h-4 w-4" />
-                              Leave Team
+                              <UserMinus className="h-4 w-4" /> Leave Team
                             </Button>
                           )}
                         </div>
@@ -806,20 +932,49 @@ export default function HackathonDetails() {
               <div className="text-center py-12">
                 <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <h4 className="text-lg font-semibold mb-2">No teams yet</h4>
-                <p className="text-muted-foreground mb-4">
-                  {isHackathonCreator
-                    ? 'Create a team to get started'
-                    : 'Wait for the creator to add you to a team'}
+                <p className="text-sm text-muted-foreground mb-4">
+                  {isUserJoined ? 'Be the first to create a team!' : 'Join the hackathon to create or join a team'}
                 </p>
-                {isHackathonCreator && hackathon.status === 'open' && (
-                  <Button onClick={() => setActiveTab('teams')} className="gap-2">
-                    <Trophy className="h-4 w-4" />
-                    Create First Team
+                {isUserJoined && hackathon.status === 'open' && (
+                  <Button onClick={() => setCreateTeamDialogOpen(true)} className="gap-2">
+                    <Plus className="h-4 w-4" /> Create First Team
                   </Button>
                 )}
               </div>
             )}
           </div>
+
+          {/* Create Team Dialog */}
+          <Dialog open={createTeamDialogOpen} onOpenChange={open => { setCreateTeamDialogOpen(open); if (!open) { setNewTeamName(''); setMemberSearch(''); } }}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" /> Create a Team
+                </DialogTitle>
+                <DialogDescription>
+                  Give your team a name. You'll be the leader and can invite members right after.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Team Name</label>
+                  <Input
+                    placeholder="e.g. Code Warriors, Team Alpha..."
+                    value={newTeamName}
+                    onChange={e => setNewTeamName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && !creatingTeam && newTeamName.trim() && handleCreateTeamInline()}
+                    autoFocus
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setCreateTeamDialogOpen(false)}>Cancel</Button>
+                  <Button disabled={!newTeamName.trim() || creatingTeam} onClick={handleCreateTeamInline}>
+                    {creatingTeam ? 'Creating...' : 'Create Team'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         {canSeeMembersTab && (
@@ -843,7 +998,7 @@ export default function HackathonDetails() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={handleRemoveNonTeamMembers}
+                    onClick={() => setConfirmRemoveNonTeam(true)}
                     className="gap-2"
                   >
                     <UserMinus className="h-4 w-4" />
@@ -1132,6 +1287,63 @@ export default function HackathonDetails() {
           loading={joiningHackathon}
         />
       )}
+
+      {/* Confirm: Delete Hackathon */}
+      <ConfirmDialog
+        open={confirmDeleteHackathon}
+        title="Delete Hackathon"
+        description={`Are you sure you want to delete "${hackathon.title}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => { setConfirmDeleteHackathon(false); handleDelete(); }}
+        onCancel={() => setConfirmDeleteHackathon(false)}
+      />
+
+      {/* Confirm: Remove Non-Team Members */}
+      <ConfirmDialog
+        open={confirmRemoveNonTeam}
+        title="Remove Non-Team Members"
+        description="This will remove all members who are not in any team from this hackathon. Are you sure?"
+        confirmLabel="Remove"
+        onConfirm={() => { setConfirmRemoveNonTeam(false); handleRemoveNonTeamMembers(); }}
+        onCancel={() => setConfirmRemoveNonTeam(false)}
+      />
+
+      {/* Confirm: Leave Team */}
+      <ConfirmDialog
+        open={!!confirmLeaveTeam}
+        title="Leave Team"
+        description="Are you sure you want to leave this team? You can rejoin or create a new team later."
+        confirmLabel="Leave"
+        onConfirm={async () => {
+          if (!confirmLeaveTeam) return;
+          setConfirmLeaveTeam(null);
+          await leaveTeam(hackathon.id, confirmLeaveTeam.teamId, user?.uid, hackathon.teams || []);
+          navigate('/hackathons');
+        }}
+        onCancel={() => setConfirmLeaveTeam(null)}
+      />
+
+      {/* Confirm: Remove Member */}
+      <ConfirmDialog
+        open={!!confirmRemoveMember}
+        title="Remove Member"
+        description={`Remove ${confirmRemoveMember?.memberName || 'this member'} from the team?`}
+        confirmLabel="Remove"
+        onConfirm={async () => {
+          if (!confirmRemoveMember) return;
+          const { teamId, memberId } = confirmRemoveMember;
+          setConfirmRemoveMember(null);
+          const team = hackathon.teams?.find(t => t.id === teamId);
+          const leaderProfile = getProfileById(user?.uid || '');
+          const leaderName = leaderProfile?.name || user?.displayName || 'Team Leader';
+          await removeMemberFromTeam(
+            hackathon.id, teamId, memberId,
+            hackathon.teams || [], hackathon.title,
+            team?.name || '', leaderName
+          );
+        }}
+        onCancel={() => setConfirmRemoveMember(null)}
+      />
 
       {/* Delete Team Confirmation Dialog */}
       <Dialog open={deleteTeamDialogOpen} onOpenChange={setDeleteTeamDialogOpen}>

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Edit, Trash2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 
 interface MessageContextMenuProps {
@@ -26,6 +27,7 @@ export function MessageContextMenu({
 }: MessageContextMenuProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(messageContent);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -95,10 +97,8 @@ export function MessageContextMenu({
   };
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this message?')) {
-      onDelete();
-      onClose();
-    }
+    setConfirmDeleteOpen(true);
+    onClose();
   };
 
   // Add haptic feedback for mobile
@@ -201,6 +201,17 @@ export function MessageContextMenu({
     </div>
   );
 
-  // Use portal to render the menu at document body level to avoid z-index issues
-  return createPortal(menuContent, document.body);
+  return (
+    <>
+      {createPortal(menuContent, document.body)}
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete Message"
+        description="Are you sure you want to delete this message? This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { setConfirmDeleteOpen(false); onDelete(); }}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
+    </>
+  );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Plus, UserPlus, UserMinus, Crown, X, Star, Edit, Trash2, AlertCircle } from 'lucide-react';
+import { Users, Plus, UserPlus, UserMinus, Crown, X, Star, Edit, Trash2, AlertCircle, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -41,9 +41,9 @@ interface TeamManagementProps {
   teams: HackathonTeam[];
   suggestedTeamSize: number;
   allParticipants?: string[]; // All hackathon participants
-  isCreator?: boolean; // Is current user the hackathon creator
-  committedMembers?: string[]; // Members who committed to the project
-  isTeamLocked?: boolean; // Is the team contract locked
+  isCreator?: boolean;
+  committedMembers?: string[];
+  isTeamLocked?: boolean;
   onProfileClick: (userId: string, userName: string) => void;
   onRefresh: () => void;
 }
@@ -62,8 +62,8 @@ export function TeamManagement({
   onRefresh
 }: TeamManagementProps) {
   const { user } = useAuth();
-  const { getProfileById } = useProfiles();
-  const { createTeam, leaveTeam, removeMemberFromTeam, getUserTeam, isUserInAnyTeam, updateTeam, deleteTeam, loading } = useTeams();
+  const { getProfileById, profiles } = useProfiles();
+  const { createTeam, leaveTeam, removeMemberFromTeam, getUserTeam, isUserInAnyTeam, updateTeam, deleteTeam, addMemberToTeam, loading } = useTeams();
   const { submitFeedback } = useTeamFeedback();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -79,11 +79,28 @@ export function TeamManagement({
     techStack: [] as string[],
   });
 
+  // Invite members state
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteSearch, setInviteSearch] = useState('');
+  const [invitingUserId, setInvitingUserId] = useState<string | null>(null);
+
   const userTeam = getUserTeam(teams, user?.uid || '');
   const isCompleted = hackathonStatus === 'completed';
   const isTeamLeader = userTeam?.leaderId === user?.uid;
-  // Check if user has committed to their specific team
   const hasUserCommittedToTeam = userTeam?.committedMemberIds?.includes(user?.uid || '') || false;
+  // Any joined participant can create a team (not just creator)
+  const canCreateTeam = !isCompleted && hackathonStatus === 'open' && !userTeam;
+
+  // Participants available to invite: joined hackathon, not already in any team
+  const invitableCandidates = profiles.filter(p =>
+    p.uid !== user?.uid &&
+    allParticipants?.includes(p.uid) &&
+    !teams.some(t => t.memberIds.includes(p.uid))
+  ).filter(p =>
+    inviteSearch.trim() === '' ||
+    p.name.toLowerCase().includes(inviteSearch.toLowerCase()) ||
+    p.skills?.some(s => s.toLowerCase().includes(inviteSearch.toLowerCase()))
+  );
 
   const handleCreateTeam = async () => {
     if (!user || !teamName.trim()) return;
@@ -92,8 +109,28 @@ export function TeamManagement({
     if (result) {
       setTeamName('');
       setCreateDialogOpen(false);
-      onRefresh(); // This will trigger parent to refetch
+      onRefresh();
     }
+  };
+
+  const handleInviteMember = async (candidateId: string) => {
+    if (!user || !userTeam) return;
+    setInvitingUserId(candidateId);
+    const candidateProfile = profiles.find(p => p.uid === candidateId);
+    const success = await addMemberToTeam(
+      hackathonId,
+      hackathonTitle,
+      userTeam.id,
+      userTeam.name,
+      candidateId,
+      candidateProfile?.name || 'A teammate',
+      teams
+    );
+    if (success) {
+      setInviteSearch('');
+      onRefresh();
+    }
+    setInvitingUserId(null);
   };
 
   const handleLeaveTeam = async (teamId: string) => {
@@ -116,7 +153,7 @@ export function TeamManagement({
   const handleRemoveMember = async (teamId: string, memberId: string) => {
     if (!isCreator) return;
     
-    const confirmed = window.confirm('Remove this member from the team?');
+    const confirmed = true; // handled by ConfirmDialog in HackathonDetails
     if (!confirmed) return;
     
     await removeMemberFromTeam(hackathonId, teamId, memberId, teams);
@@ -217,11 +254,18 @@ export function TeamManagement({
           </div>
         </div>
         
-        {/* Only hackathon creator can create teams */}
-        {isCreator && (
+        {/* Any joined member without a team can create one */}
+        {canCreateTeam && (
           <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             Create Team
+          </Button>
+        )}
+        {/* Team leader can invite members */}
+        {userTeam && isTeamLeader && !isCompleted && (
+          <Button variant="outline" onClick={() => setInviteDialogOpen(true)} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Invite Members
           </Button>
         )}
       </div>
@@ -288,7 +332,7 @@ export function TeamManagement({
               const profile = getProfileById(memberId);
               const isLeader = memberId === userTeam.leaderId;
               const isCurrentUser = memberId === user?.uid;
-              const canRemove = isCreator && !isLeader && !isCompleted; // Can't remove when completed
+              const canRemove = isCreator && !isLeader; // Leader can always remove, even after commit
               
               return (
                 <div
@@ -367,14 +411,18 @@ export function TeamManagement({
         </div>
       )}
 
-      {/* Message for non-creator users without a team - Should not be visible since they can't access this tab */}
-      {!isCreator && !userTeam && teams.length > 0 && (
-        <div className="text-center py-12">
-          <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h4 className="text-lg font-semibold mb-2">You're not in a team yet</h4>
-          <p className="text-muted-foreground">
-            Wait for the hackathon organizer to add you to a team. Once added, you'll be able to see the Teams tab.
+      {/* Member without a team — prompt to create one */}
+      {!userTeam && hackathonStatus === 'open' && (
+        <div className="text-center py-10 border-2 border-dashed border-border rounded-lg">
+          <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+          <h4 className="text-base font-semibold mb-1">You're not in a team yet</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            Create your own team and invite other participants, or wait to be invited.
           </p>
+          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create a Team
+          </Button>
         </div>
       )}
 
@@ -540,9 +588,74 @@ export function TeamManagement({
         </DialogContent>
       </Dialog>
 
+      {/* Invite Members Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5" />
+              Invite Members to {userTeam?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Search and invite participants who haven't joined a team yet.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name or skill..."
+                value={inviteSearch}
+                onChange={e => setInviteSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            <div className="max-h-72 overflow-y-auto space-y-2">
+              {invitableCandidates.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  {allParticipants?.length === 1
+                    ? 'No other participants have joined this hackathon yet.'
+                    : 'All participants are already in teams.'}
+                </p>
+              ) : (
+                invitableCandidates.map(candidate => (
+                  <div
+                    key={candidate.uid}
+                    className="flex items-center gap-3 p-3 rounded-lg border bg-background hover:border-primary/50 transition-colors"
+                  >
+                    <AvatarUpload
+                      currentAvatar={candidate.avatar || null}
+                      userName={candidate.name}
+                      userGender={candidate.gender as any}
+                      size="sm"
+                      editable={false}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{candidate.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {candidate.skills?.slice(0, 3).join(', ')}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      disabled={invitingUserId === candidate.uid || loading}
+                      onClick={() => handleInviteMember(candidate.uid)}
+                      className="shrink-0"
+                    >
+                      {invitingUserId === candidate.uid ? 'Inviting...' : 'Invite'}
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Team Feedback Modal - Only show committed team members */}
-      {userTeam && isCompleted && (
-        <TeamFeedbackModal
+      {userTeam && isCompleted && (        <TeamFeedbackModal
           isOpen={feedbackModalOpen}
           onClose={() => setFeedbackModalOpen(false)}
           hackathonId={hackathonId}

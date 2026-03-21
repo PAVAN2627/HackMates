@@ -3,7 +3,7 @@
  * Sends HTML emails via Google Script Web App (no rate limits!)
  */
 
-import { getWelcomeEmailHTML, getWelcomeEmailHTMLGoogle, getTeamAdditionEmailHTML, getAnnouncementEmailHTML } from './emailTemplates';
+import { getWelcomeEmailHTML, getWelcomeEmailHTMLGoogle, getTeamAdditionEmailHTML, getAnnouncementEmailHTML, getTeamRemovalEmailHTML } from './emailTemplates';
 
 // Google Apps Script Web App URL from environment variables
 // Fallback to hardcoded URL if env var is not set (for production)
@@ -159,6 +159,45 @@ export const sendAnnouncementEmail = async (
     return { success: true };
   } catch (error) {
     console.error("❌ Failed to send announcement email:", error);
+    return { success: false };
+  }
+};
+
+/**
+ * Send team removal notification email
+ */
+export const sendTeamRemovalEmail = async (
+  userEmail: string,
+  userName: string,
+  hackathonTitle: string,
+  teamName: string,
+  removedByName: string,
+  hackathonId: string
+): Promise<{ success: boolean }> => {
+  try {
+    const hackathonUrl = hackathonId
+      ? `https://hackmates-mu.vercel.app/hackathons/${hackathonId}`
+      : '';
+    const html = getTeamRemovalEmailHTML(
+      userName, userEmail, hackathonTitle, teamName, removedByName, hackathonUrl
+    );
+
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: userEmail,
+        name: userName,
+        subject: `You've been removed from team "${teamName}"${hackathonTitle ? ` in ${hackathonTitle}` : ''}`,
+        html,
+      }),
+    });
+
+    console.log('✅ Team removal email sent to:', userEmail);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Failed to send team removal email:", error);
     return { success: false };
   }
 };

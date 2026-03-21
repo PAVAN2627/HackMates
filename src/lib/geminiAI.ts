@@ -2,6 +2,20 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
+// ── Client-side rate limiter (10 calls / 60s) ─────────────────────────────────
+const rateLimiter = {
+  calls: [] as number[],
+  MAX_CALLS: 10,
+  WINDOW_MS: 60_000,
+  check(): boolean {
+    const now = Date.now();
+    this.calls = this.calls.filter(t => now - t < this.WINDOW_MS);
+    if (this.calls.length >= this.MAX_CALLS) return false;
+    this.calls.push(now);
+    return true;
+  },
+};
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -157,15 +171,67 @@ METHOD 2 - Join Hackathon First:
 8. Check "Recommended Profiles" for AI-suggested matches
 9. Message potential teammates directly
 
-HOW TO CREATE A HACKATHON:
-1. Click "Public Hackathons" in sidebar
-2. Click "Create Hackathon" button
-3. Fill in: Title, Description, Dates, Location
-4. Select mode: Online, Offline, or Hybrid
-5. Add required skills for better matching
-6. Set max team size
-7. Upload hackathon poster/image
-8. Click "Create" - your hackathon is now live!
+HOW TO CREATE A TEAM & INVITE TEAMMATES (UPDATED):
+
+STEP 1 — Join a Hackathon:
+1. Go to "Hackathons" in sidebar
+2. Find a hackathon and click "Join"
+3. Accept the participation contract
+
+STEP 2 — Create Your Team:
+1. Open the hackathon details page
+2. Click the "Teams" tab
+3. Click "Create Team" button (visible to any joined member)
+4. Enter a team name and click "Create Team"
+5. You become the team leader automatically
+
+STEP 3 — Invite Members:
+1. In the Teams tab, your team card shows an "Add Members" search box
+2. Type a name or skill to search (min 2 characters)
+3. Two sections appear:
+   - "Already joined this hackathon" — participants first (best matches)
+   - "Other platform users" — everyone else on the platform
+4. Click "Invite" next to any user — they get an email notification
+5. Members appear in your team chip list instantly
+
+STEP 4 — Remove a Member (Leader only):
+1. In the Teams tab, find the member chip in your team
+2. Click the X button next to their name
+3. Confirm in the popup — they get a removal email
+
+TEAMS PAGE (My Teams):
+- Go to "Teams" in sidebar to see ALL your teams
+- Filter: All / Created (you're leader) / Member (you joined)
+- Platform teams: Click "View" to open full team details page
+- Off-platform teams: For hackathons NOT on HackMates — create here
+- Off-platform team leaders can invite/remove members from the Teams page
+
+TEAM DETAILS PAGE (Platform Teams):
+- Access via Teams page → View button
+- Shows: Project title, tech stack, team members, team chat
+- Leader can remove any member anytime (even committed members)
+- "Find Members" search bar to add new members
+- Team chat for internal communication
+
+HOW TO LEAVE A TEAM:
+1. Go to hackathon details → Teams tab
+2. Find your team card
+3. Click "Leave Team" (only visible if you haven't committed)
+4. Once you commit to a project, you cannot leave (protects reliability score)
+
+OFF-PLATFORM TEAMS:
+- For hackathons not listed on HackMates (e.g. Smart India Hackathon, college events)
+- Go to "Teams" in sidebar → Click "Create Team"
+- Enter hackathon name + team name
+- Invite platform users by searching name/skill (min 2 chars)
+- Leader can remove members with X button
+
+MEMBER AVAILABILITY MODES:
+- Profiles have an "Available For" setting: Online / In-Person / Both
+- When searching for teammates, the filter respects hackathon mode:
+  * Online hackathon → shows Online + Both profiles
+  * In-Person hackathon → shows In-Person + Both profiles
+  * Both/Hybrid hackathon → shows all profiles
 
 HOW TO USE HACKATHON FEATURES:
 - Members Tab: See all participants, view their profiles
@@ -221,6 +287,18 @@ HOW ANNOUNCEMENTS WORK:
 Q: How do I find teammates?
 A: Two ways: (1) Use "Find Members" page with filters, or (2) Join a hackathon and use the chat/members tabs to connect with participants.
 
+Q: How do I create a team?
+A: Join a hackathon first → go to hackathon details → Teams tab → click "Create Team" → enter a name → you become leader. Then use the "Add Members" search to invite people.
+
+Q: How do I invite someone to my team?
+A: In the Teams tab of your hackathon, find your team card. Use the "Add Members" search box — type at least 2 characters. Hackathon participants appear first, then all platform users. Click "Invite" and they get an email.
+
+Q: Can I remove a team member?
+A: Yes, if you're the team leader. Click the X button on any member chip in the Teams tab. You can remove anyone, even committed members. They receive a removal email.
+
+Q: What are off-platform teams?
+A: Teams for hackathons NOT listed on HackMates (like college events or Smart India Hackathon). Go to "Teams" in sidebar → Create Team → enter hackathon name + team name.
+
 Q: What's a synergy score?
 A: It's a 0-100% compatibility rating based on your work style, goals, time preferences, and commitment level compared to another user.
 
@@ -228,7 +306,7 @@ Q: How do I improve my reliability badge?
 A: Complete hackathons you join, get good ratings from teammates, and maintain a high completion rate.
 
 Q: Can I create my own hackathon?
-A: Yes! Any user can create hackathons. Go to "Public Hackathons" and click "Create Hackathon".
+A: Yes! Any user can create hackathons. Go to "Hackathons" and click "Post Hackathon".
 
 Q: What's the difference between hackathon chat and direct messages?
 A: Hackathon chat is a group discussion for all participants. Direct messages are private 1-on-1 conversations.
@@ -243,7 +321,7 @@ Q: How do I know if someone is a good teammate?
 A: Check: (1) Reliability badge, (2) Trust score, (3) Synergy score, (4) Past hackathon history, (5) Skills match.
 
 Q: Can I leave a hackathon after joining?
-A: Yes, you can leave anytime before it closes. But it may affect your reliability score.
+A: Yes, you can leave anytime before committing to a team project. Once committed, you cannot leave (protects your reliability score).
 
 Q: How do announcements work?
 A: Organizers post updates that all team members see. You get browser notifications and email alerts.
@@ -412,6 +490,10 @@ You are specifically designed for the HackMates platform - always reference plat
       throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.');
     }
 
+    if (!rateLimiter.check()) {
+      throw new Error('Too many requests. Please wait a moment before sending another message.');
+    }
+
     try {
       // Build conversation context with user profile
       let prompt = this.context;
@@ -500,12 +582,12 @@ IMPORTANT: Use this profile information to provide highly personalized advice an
   getQuickResponses(): { question: string; response: string }[] {
     return [
       {
-        question: "How do I find teammates?",
-        response: "How do I find teammates?"
+        question: "How do I create a team?",
+        response: "How do I create a team and invite teammates?"
       },
       {
-        question: "What makes a good hackathon project?",
-        response: "What makes a good hackathon project?"
+        question: "How do I find teammates?",
+        response: "How do I find teammates?"
       },
       {
         question: "Give me project ideas",
