@@ -37,8 +37,8 @@ export function useProfiles() {
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           
-          // Ensure we have required fields
-          if (data.name && data.email) {
+          // Ensure we have required fields, exclude admin accounts
+          if (data.name && data.email && !data.isAdmin) {
             profilesData.push({
               id: docSnap.id,
               uid: docSnap.id,

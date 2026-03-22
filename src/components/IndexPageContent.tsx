@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Trophy, Rocket, MessageCircle, Shield, Award, User, Zap, Heart, Target, CheckCircle, Linkedin } from 'lucide-react';
+import { ArrowRight, Trophy, Rocket, MessageCircle, Shield, Award, User, Zap, Heart, Target, CheckCircle, Linkedin, Mail, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TypewriterText } from '@/components/TypewriterText';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -59,6 +59,24 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
       title: 'Developer Profiles & Reputation',
       description: 'Showcase skills, work style, and achievements. Display reliability badges and synergy scores. Build your reputation across every hackathon you participate in.',
       gradient: 'from-cyan-500 to-blue-500'
+    },
+    {
+      icon: Shield,
+      title: 'Report & Block System',
+      description: 'Report scammers, harassers, or fake profiles in 3 steps — search the user, pick a reason, upload screenshot proofs. Admins review every report and can permanently block bad actors.',
+      gradient: 'from-red-500 to-rose-500'
+    },
+    {
+      icon: Mail,
+      title: 'Smart Email Notifications',
+      description: 'Get instant emails when you\'re invited to a team, removed, or when organizers post announcements. Professional templates with all the details you need — no app required.',
+      gradient: 'from-violet-500 to-purple-500'
+    },
+    {
+      icon: Globe,
+      title: 'Off-Platform Teams',
+      description: 'Participating in a hackathon not listed on HackMates? Create an off-platform team for any external event — Smart India Hackathon, college fests, anything — and manage your crew here.',
+      gradient: 'from-teal-500 to-green-500'
     },
   ];
 
@@ -320,6 +338,10 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                     <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
                     <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Off-platform team support for any hackathon</span>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Report & block bad actors with proof uploads</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -342,14 +364,31 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-4">
-            {features.map((feature, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-4 mb-6 md:mb-8">
+            {features.slice(0, 6).map((feature) => (
               <div key={feature.title} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 hover:shadow-xl transition-all duration-300 hover:scale-105 group">
                 <div className={`h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 md:mb-6 group-hover:shadow-lg group-hover:scale-110 transition-all`}>
                   <feature.icon className="h-6 w-6 md:h-8 md:w-8 text-white" />
                 </div>
                 <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4 text-slate-800 dark:text-slate-200">{feature.title}</h3>
                 <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 px-4">
+            {features.slice(6).map((feature) => (
+              <div key={feature.title} className={`relative overflow-hidden rounded-xl md:rounded-2xl p-5 md:p-6 bg-gradient-to-br ${feature.gradient} text-white group hover:shadow-2xl hover:scale-[1.03] transition-all duration-300`}>
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors" />
+                <div className="relative z-10 flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:bg-white/30 transition-colors">
+                    <feature.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-base md:text-lg font-bold mb-1.5">{feature.title}</h3>
+                    <p className="text-xs md:text-sm leading-relaxed text-white/85">{feature.description}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
