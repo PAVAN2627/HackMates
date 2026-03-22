@@ -58,7 +58,7 @@ export function Sidebar() {
             {!collapsed && (
               <div className="flex items-center gap-2">
                 <img 
-                  src="/assets/roundlogohackmates.png" 
+                  src="/assets/hackmatesroundlogo.png" 
                   alt="HackMates Logo" 
                   className="h-8 w-8 rounded-full"
                 />
@@ -67,7 +67,7 @@ export function Sidebar() {
             )}
             {collapsed && (
               <img 
-                src="/assets/roundlogohackmates.png" 
+                src="/assets/hackmatesroundlogo.png" 
                 alt="HackMates Logo" 
                 className="h-8 w-8 rounded-full mx-auto"
               />

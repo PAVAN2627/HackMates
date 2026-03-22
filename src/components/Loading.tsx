@@ -27,7 +27,7 @@ export function Loading({ message = 'Loading...', className = '', size = 'md', i
       <div className="text-center">
         <div className="flex items-center justify-center mx-auto mb-4">
           <img 
-            src="/assets/roundlogohackmates.png" 
+            src="/assets/hackmatesroundlogo.png" 
             alt="HackMates Logo" 
             className={`${sizeClasses[size]} rounded-full animate-pulse`}
           />

@@ -750,7 +750,7 @@ export default function TeamDetails() {
                 <div className="text-center">
                   <div className="flex items-center justify-center mx-auto mb-3">
                     <img 
-                      src="/assets/roundlogohackmates.png" 
+                      src="/assets/hackmatesroundlogo.png" 
                       alt="Loading" 
                       className="h-8 w-8 rounded-full animate-pulse"
                     />

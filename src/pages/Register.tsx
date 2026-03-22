@@ -421,7 +421,7 @@ export default function Register() {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
               <img 
-                src="/assets/roundlogohackmates.png" 
+                src="/assets/hackmatesroundlogo.png" 
                 alt="HackMates Logo" 
                 className="h-10 w-10 rounded-full"
               />

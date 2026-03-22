@@ -256,7 +256,7 @@ export default function Auth() {
         <div className="relative z-10 flex flex-col justify-center items-center w-full p-12">
           <div className="flex items-center gap-3 mb-8">
             <img 
-              src="/assets/roundlogohackmates.png" 
+              src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
               className="h-14 w-14 rounded-full"
             />
@@ -280,7 +280,7 @@ export default function Auth() {
           {/* Mobile logo */}
           <Link to="/" className="flex lg:hidden items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity">
             <img 
-              src="/assets/roundlogohackmates.png" 
+              src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
               className="h-10 w-10 rounded-full"
             />

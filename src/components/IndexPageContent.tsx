@@ -70,7 +70,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <img 
-              src="/assets/roundlogohackmates.png" 
+              src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
               className="h-10 w-10 rounded-full"
             />
@@ -103,7 +103,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <img 
-              src="/assets/roundlogohackmates.png" 
+              src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
               className="h-8 w-8 rounded-full"
             />
@@ -217,7 +217,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
           <div className="max-w-4xl mx-auto text-center">
             <div className="flex justify-center mb-8 md:mb-12">
               <img 
-                src="/assets/squarelogohackmates.png" 
+                src="/assets/hackmatesroundlogo.png" 
                 alt="HackMates Platform Logo" 
                 className="h-24 w-24 md:h-32 lg:h-40 md:w-32 lg:w-40 rounded-2xl md:rounded-3xl shadow-2xl hover:scale-105 transition-transform duration-300"
               />
@@ -398,7 +398,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                 <img 
-                  src="/assets/roundlogohackmates.png" 
+                  src="/assets/hackmatesroundlogo.png" 
                   alt="HackMates Logo" 
                   className="h-8 w-8 md:h-10 md:w-10 rounded-full"
                 />

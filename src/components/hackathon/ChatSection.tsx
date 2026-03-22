@@ -151,7 +151,7 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
             <div className="text-center">
               <div className="flex items-center justify-center mx-auto mb-3">
                 <img 
-                  src="/assets/roundlogohackmates.png" 
+                  src="/assets/hackmatesroundlogo.png" 
                   alt="Loading" 
                   className="h-10 w-10 rounded-full animate-pulse"
                 />

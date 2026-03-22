@@ -33,7 +33,7 @@ export function Header() {
       {/* Logo/Brand - Visible on Mobile */}
       <div className="flex items-center gap-2 md:hidden">
         <img 
-          src="/assets/roundlogohackmates.png" 
+          src="/assets/hackmatesroundlogo.png" 
           alt="HackMates Logo" 
           className="h-8 w-8 rounded-full"
         />

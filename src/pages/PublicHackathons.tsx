@@ -72,7 +72,7 @@ export default function PublicHackathons() {
               </Link>
               <div className="flex items-center gap-2 md:gap-3">
                 <img 
-                  src="/assets/roundlogohackmates.png" 
+                  src="/assets/hackmatesroundlogo.png" 
                   alt="HackMates Logo" 
                   className="h-6 w-6 md:h-8 md:w-8 rounded-full"
                 />

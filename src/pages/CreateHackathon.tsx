@@ -194,7 +194,7 @@ export default function CreateHackathon() {
           <div className="mb-6 md:mb-8">
             <div className="flex items-center justify-center gap-2 mb-3 md:mb-4">
               <img 
-                src="/assets/roundlogohackmates.png" 
+                src="/assets/hackmatesroundlogo.png" 
                 alt="HackMates Logo" 
                 className="h-8 w-8 md:h-10 md:w-10 rounded-full"
               />
