@@ -196,7 +196,7 @@ export default function CreateHackathon() {
               <img 
                 src="/assets/hackmatesroundlogo.png" 
                 alt="HackMates Logo" 
-                className="h-8 w-8 md:h-10 md:w-10 rounded-full"
+                className="h-8 w-14 md:h-10 md:w-16 rounded-lg object-contain"
               />
               <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</h1>
             </div>

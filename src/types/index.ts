@@ -48,6 +48,10 @@ export interface UserProfile {
     languages: string[];
     verifiedAt: Date;
   };
+  // Admin & moderation
+  isAdmin?: boolean;
+  isBlocked?: boolean;
+  blockedAt?: Date;
   createdAt: Date;
   updatedAt?: Date;
 }

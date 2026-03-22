@@ -10,7 +10,10 @@ import {
   User,
   MessageCircle,
   Megaphone,
-  Plus
+  Plus,
+  Flag,
+  Shield,
+  BarChart2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -20,10 +23,16 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
 
-  // Unified navigation items for all users
-  const navItems = [
+  const adminNavItems = [
+    { icon: BarChart2, label: 'Overview', path: '/admin' },
+    { icon: Trophy, label: 'Hackathons', path: '/admin/hackathons' },
+    { icon: Users, label: 'Users', path: '/admin/users' },
+    { icon: Flag, label: 'Reports', path: '/admin/reports' },
+  ];
+
+  const userNavItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Trophy, label: 'Hackathons', path: '/hackathons' },
     { icon: Users, label: 'Teams', path: '/teams' },
@@ -32,7 +41,10 @@ export function Sidebar() {
     { icon: MessageCircle, label: 'Messages', path: '/messages' },
     { icon: Megaphone, label: 'Announcements', path: '/announcements' },
     { icon: User, label: 'Profile', path: '/profile' },
+    { icon: Flag, label: 'Report User', path: '/report' },
   ];
+
+  const navItems = profile?.isAdmin ? adminNavItems : userNavItems;
 
   const handleSignOut = async () => {
     try {
@@ -60,16 +72,19 @@ export function Sidebar() {
                 <img 
                   src="/assets/hackmatesroundlogo.png" 
                   alt="HackMates Logo" 
-                  className="h-8 w-8 rounded-full"
+                  className="h-8 w-14 rounded-lg object-contain"
                 />
-                <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</span>
+                <div>
+                  <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</span>
+                  {profile?.isAdmin && <p className="text-xs text-purple-500 font-medium -mt-1">Admin Panel</p>}
+                </div>
               </div>
             )}
             {collapsed && (
               <img 
                 src="/assets/hackmatesroundlogo.png" 
                 alt="HackMates Logo" 
-                className="h-8 w-8 rounded-full mx-auto"
+                className="h-8 w-14 rounded-lg object-contain mx-auto"
               />
             )}
           </div>
@@ -82,10 +97,10 @@ export function Sidebar() {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive: routeIsActive }) =>
+                  className={() =>
                     cn(
                       'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                      routeIsActive
+                      isActive
                         ? 'bg-sidebar-accent text-primary'
                         : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                     )
@@ -129,7 +144,9 @@ export function Sidebar() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-sidebar border-t border-sidebar-border">
         <div className="flex items-center justify-around px-2 py-3">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const [itemPath, itemQuery] = item.path.split('?');
+            const isActive = location.pathname === itemPath &&
+              (!itemQuery || location.search === `?${itemQuery}`);
             return (
               <NavLink
                 key={item.path}

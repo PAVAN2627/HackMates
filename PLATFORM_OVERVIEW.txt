@@ -1,0 +1,165 @@
+================================================================================
+                         HACKMATES — PLATFORM OVERVIEW
+================================================================================
+
+  What is it? Who is it for? What problem does it solve? Why does it matter?
+
+================================================================================
+
+
+WHAT IS HACKMATES?
+──────────────────
+HackMates is a web platform built for students and developers in India who
+participate in hackathons. It helps them discover hackathons, build teams,
+communicate with teammates, and track their reputation — all in one place.
+
+Live at: https://hackmates-mu.vercel.app
+Built by: PAVAN MALI (NoobcodersIND)
+
+
+WHO IS IT FOR?
+──────────────
+HackMates is built for:
+
+  • College students who want to participate in hackathons but don't have a
+    team yet.
+
+  • Developers, designers, and creators who are looking for people with
+    complementary skills to build something together.
+
+  • Hackathon organizers who want to post their event and attract participants.
+
+  • Anyone who has been burned by unreliable teammates and wants a way to
+    find people they can actually trust.
+
+In short: if you've ever thought "I want to join a hackathon but I don't know
+anyone to team up with" — HackMates is for you.
+
+
+THE PROBLEM
+───────────
+Hackathons are one of the best ways to learn, build, and get noticed. But
+there's a frustrating gap that almost every participant faces:
+
+  1. FINDING TEAMMATES IS HARD
+     Most people find teammates through WhatsApp groups, college friends, or
+     random Discord servers. There's no structured way to search for someone
+     with the exact skills you need — like "I need a React developer who is
+     available on weekends and wants to build something in AI."
+
+  2. YOU DON'T KNOW WHO TO TRUST
+     You invite someone to your team, they say yes, and then they ghost you
+     two days before the submission. This is extremely common. There's no
+     accountability system — anyone can join and disappear.
+
+  3. HACKATHON DISCOVERY IS SCATTERED
+     Hackathons are announced across Instagram, LinkedIn, college notice
+     boards, and random websites. There's no single place to find them all,
+     filter by mode (online/offline), or see which ones are still open.
+
+  4. TEAM COMMUNICATION IS MESSY
+     Teams end up using a mix of WhatsApp, Discord, Google Docs, and email.
+     There's no dedicated space for hackathon-specific team chat, announcements
+     from organizers, or project coordination.
+
+  5. NO WAY TO REPORT BAD ACTORS
+     If someone scams you, harasses you, or fakes their profile, there's
+     nothing you can do. No reporting system, no moderation, no consequences.
+
+
+HOW HACKMATES SOLVES IT
+────────────────────────
+
+  PROBLEM 1 → Smart Profile Search
+  Users build detailed profiles with skills, experience level, work style,
+  availability, and location. You can search and filter by any of these.
+  The platform also shows a "Synergy Score" — a compatibility percentage
+  calculated from your work goals, schedule, and commitment level — so you
+  can instantly see who you'd work well with.
+
+  PROBLEM 2 → Reliability Badge System
+  Every user has a trust score (0–100) and a badge: Newbie, Reliable,
+  Finisher, or Legend. Badges are earned by completing hackathons and getting
+  rated by teammates. Before you invite someone, you can see their track
+  record. This creates real accountability.
+
+  PROBLEM 3 → Hackathon Discovery
+  Any user can post a hackathon. All hackathons are listed in one place with
+  filters for mode (online/offline/hybrid), required skills, location, and
+  status (open/closed). No more hunting across five different platforms.
+
+  PROBLEM 4 → Built-in Communication
+  HackMates has direct messaging (1-on-1), team chat (for your specific team),
+  and hackathon-wide group chat. Organizers can post announcements that go to
+  all participants via the platform and email. Everything is in one place.
+
+  PROBLEM 5 → Report & Moderation System
+  Users can report others for scam, harassment, fake profiles, ghosting, or
+  inappropriate behavior. Reports include a description and up to 5 screenshot
+  proofs. An admin team reviews every report and can block users, removing
+  all their content from the platform.
+
+
+KEY FEATURES AT A GLANCE
+─────────────────────────
+
+  • Hackathon discovery and posting (any user can post)
+  • Team creation and member invitations with email notifications
+  • Live user search by name, skill, or email
+  • Synergy Score — compatibility matching based on work style
+  • Reliability badges — trust system built on real participation history
+  • Direct messages, team chat, and hackathon group chat
+  • Organizer announcements with email alerts to all members
+  • Off-platform teams — for hackathons not listed on HackMates
+  • Report User — 3-step reporting with image proof uploads
+  • Admin dashboard — analytics, user management, report moderation
+  • AI Assistant — Gemini-powered chatbot for hackathon guidance
+  • GitHub profile verification badge
+  • Dark/light theme, fully mobile responsive
+
+
+WHY IT'S WORTH USING
+─────────────────────
+
+Most hackathon participants waste hours finding teammates, lose trust in
+people who ghost them, and miss events because they didn't hear about them
+in time. HackMates removes all of that friction.
+
+  • You find the right people faster — not just "someone available" but
+    someone whose skills, schedule, and goals actually match yours.
+
+  • You build with people you can trust — the reliability system means
+    consistent performers are visible and rewarded.
+
+  • You stay organized — one platform for discovery, communication,
+    announcements, and team management.
+
+  • You're protected — if someone behaves badly, there's a real reporting
+    and moderation system with consequences.
+
+  • You grow your reputation — every hackathon you complete improves your
+    badge and trust score, which makes future team invitations easier.
+
+For Indian college students especially, where hackathon culture is huge but
+infrastructure for team formation is almost nonexistent, HackMates fills a
+real and practical gap.
+
+
+THE BIGGER PICTURE
+──────────────────
+India has one of the largest and most active hackathon communities in the
+world. Thousands of events happen every year — from college-level to national
+competitions like Smart India Hackathon. But the ecosystem around team
+formation, trust, and communication is still primitive.
+
+HackMates is an attempt to build that infrastructure — to make it as easy to
+find a hackathon teammate as it is to find a ride on Ola, or a freelancer on
+Fiverr. The goal is not just to help individuals win hackathons, but to raise
+the overall quality of collaboration in India's tech community.
+
+
+================================================================================
+  Platform: HackMates | hackmates.tech@gmail.com | @hackmates.tech
+  Built with React, TypeScript, Firebase, and Gemini AI
+  © 2026 HackMates. All rights reserved.
+================================================================================

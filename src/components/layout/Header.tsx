@@ -35,7 +35,7 @@ export function Header() {
         <img 
           src="/assets/hackmatesroundlogo.png" 
           alt="HackMates Logo" 
-          className="h-8 w-8 rounded-full"
+          className="h-8 w-14 rounded-lg object-contain"
         />
         <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           HackMates

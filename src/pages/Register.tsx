@@ -98,7 +98,7 @@ const registrationSchema = z.object({
 });
 
 export default function Register() {
-  const { user, loading, signUp, completeGoogleSignUp } = useAuth();
+  const { user, loading, signUp, completeGoogleSignUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [isGoogleUser, setIsGoogleUser] = useState(false);
   const [signupMethod, setSignupMethod] = useState<'email' | 'google' | null>(null);
@@ -423,7 +423,7 @@ export default function Register() {
               <img 
                 src="/assets/hackmatesroundlogo.png" 
                 alt="HackMates Logo" 
-                className="h-10 w-10 rounded-full"
+                className="h-10 w-16 rounded-lg object-contain"
               />
               <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</h1>
             </div>

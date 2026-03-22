@@ -32,6 +32,12 @@ import FAQ from "./pages/FAQ";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Contact from "./pages/Contact";
+import ReportUser from "./pages/ReportUser";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminHackathons from "./pages/admin/AdminHackathons";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminUsers from "./pages/admin/AdminUsers";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 
@@ -67,6 +73,13 @@ const App = () => (
                 <Route path="/profile/:userId" element={<Profile />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/announcements" element={<Announcements />} />
+                <Route path="/report" element={<ReportUser />} />
+              </Route>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<AdminOverview />} />
+                <Route path="/admin/hackathons" element={<AdminHackathons />} />
+                <Route path="/admin/reports" element={<AdminReports />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

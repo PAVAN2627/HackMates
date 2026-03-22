@@ -24,6 +24,8 @@ dist-ssr
 firebase-debug.log
 firestore-debug.log
 scripts/serviceAccountKey.json
+*.adminsdk*.json
+hackathon-team-formation-firebase-adminsdk-*.json
 
 # Editor directories and files
 .vscode/*

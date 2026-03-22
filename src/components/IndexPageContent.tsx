@@ -72,7 +72,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             <img 
               src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
-              className="h-10 w-10 rounded-full"
+              className="h-10 w-16 rounded-lg object-contain"
             />
             <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               HackMates
@@ -105,7 +105,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             <img 
               src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
-              className="h-8 w-8 rounded-full"
+              className="h-8 w-14 rounded-lg object-contain"
             />
             <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               HackMates
@@ -158,7 +158,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
       </nav>
 
       {/* Hero Section - Mobile Optimized */}
-      <section className="relative pt-20 md:pt-32 pb-8 md:pb-12 overflow-hidden">
+      <section className="relative pt-20 md:pt-32 pb-2 md:pb-4 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-purple-400/30 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-48 md:w-96 h-48 md:h-96 bg-blue-400/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '-3s' }} />
@@ -174,7 +174,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
               </span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold mb-6 md:mb-8 leading-tight min-h-[120px] md:min-h-[200px] lg:min-h-[300px]">
+            <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold mb-4 md:mb-6 leading-tight min-h-[100px] md:min-h-[160px] lg:min-h-[240px]">
               <TypewriterText 
                 lines={["Find Your", "Perfect", "Hack Partner"]}
                 delay={120}
@@ -188,7 +188,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
               Connect with talented developers, discover hackathons, and build winning teams with confidence.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center mb-12 md:mb-16 px-4">
+            <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center mb-4 md:mb-6 px-4">
               <Button 
                 size="lg"
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-xl text-base md:text-lg px-6 md:px-8 py-3 md:py-4 h-auto"
@@ -212,14 +212,14 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
       </section>
 
       {/* About Platform Section - Mobile Optimized */}
-      <section id="about-section" className="py-8 md:py-12 relative">
+      <section id="about-section" className="py-4 md:py-6 relative">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="flex justify-center mb-8 md:mb-12">
+            <div className="flex justify-center mb-4 md:mb-6">
               <img 
                 src="/assets/hackmatesroundlogo.png" 
                 alt="HackMates Platform Logo" 
-                className="h-24 w-24 md:h-32 lg:h-40 md:w-32 lg:w-40 rounded-2xl md:rounded-3xl shadow-2xl hover:scale-105 transition-transform duration-300"
+                className="h-20 w-32 md:h-28 md:w-48 lg:h-32 lg:w-56 object-contain hover:scale-105 transition-transform duration-300"
               />
             </div>
             
@@ -400,7 +400,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                 <img 
                   src="/assets/hackmatesroundlogo.png" 
                   alt="HackMates Logo" 
-                  className="h-8 w-8 md:h-10 md:w-10 rounded-full"
+                  className="h-8 w-14 md:h-10 md:w-16 rounded-lg object-contain"
                 />
                 <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                   HackMates

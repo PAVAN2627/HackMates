@@ -181,6 +181,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (profileDoc.exists()) {
         const data = profileDoc.data();
+
+        // Block check
+        if (data.isBlocked) {
+          await firebaseSignOut(auth);
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          setError('Your account has been suspended. Contact support at @hackmates.tech.');
+          return;
+        }
+
         const profileData = {
           ...data,
           id: uid,

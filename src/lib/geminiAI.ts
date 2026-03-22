@@ -133,6 +133,25 @@ CORE FEATURES YOU MUST KNOW:
    - Performance optimized with caching
    - Smart text formatting for readability
 
+10. REPORT USER SYSTEM:
+   - Any user can report another user for misconduct
+   - 3-step wizard: Find User → Describe Issue → Upload Proof
+   - Step 1: Live search by name, email, or skill (results appear as you type, min 2 chars)
+   - Step 2: Select reason from 8 categories + write detailed description (min 10 chars)
+   - Report reasons: Scam/Fraud, Harassment/Bullying, Fake Profile, Spam, Inappropriate Content, Ghosting/Unreliable, Hate Speech, Other
+   - Step 3: Upload up to 5 image screenshots as proof (max 1MB each), preview grid shown
+   - Reports go to admin with status "pending" → "reviewed" → "resolved"
+   - Admin can block reported user, deleting all their content
+   - Access via "Report User" in sidebar
+
+11. ADMIN DASHBOARD (Admin only):
+   - Separate admin panel, not visible to regular users
+   - Overview page: Analytics with bar charts — user growth by month, reports by status, hackathons by mode, active vs blocked users
+   - Users page: List all users, search/filter, block/unblock, add new admin accounts
+   - Reports page: Filter by status, expand for details + proof images, mark reviewed/resolved, block user
+   - Hackathons page: List all hackathons with delete button
+   - Admins can create other admin accounts with email + password
+
 ═══════════════════════════════════════════════════════════════════════
                     NAVIGATION & HOW TO USE PLATFORM
 ═══════════════════════════════════════════════════════════════════════
@@ -148,7 +167,8 @@ SIDEBAR NAVIGATION (Main Menu):
 4. Messages - Direct messaging with other users
 5. Announcements - View all hackathon announcements
 6. Profile - Edit your profile, skills, and preferences
-7. AI Assistant - Chat with me for help!
+7. Report User - Report scams, harassment, or fake profiles
+8. AI Assistant - Chat with me for help!
 
 HOW TO FIND TEAMMATES (Two Methods):
 
@@ -232,6 +252,14 @@ MEMBER AVAILABILITY MODES:
   * Online hackathon → shows Online + Both profiles
   * In-Person hackathon → shows In-Person + Both profiles
   * Both/Hybrid hackathon → shows all profiles
+
+HOW TO REPORT A USER:
+1. Click "Report User" in the sidebar
+2. Step 1 — Find the user: Type their name, email, or skill (min 2 chars). Results appear live. Click a user card to select them.
+3. Step 2 — Describe the issue: Pick a reason chip (Scam, Harassment, Fake Profile, Spam, Inappropriate Content, Ghosting, Hate Speech, Other). Write a detailed description (min 10 characters).
+4. Step 3 — Upload proof: Click the upload area to add up to 5 screenshot images (max 1MB each). Preview thumbnails appear. Hover to remove. Proof is optional — you can submit without it.
+5. Review the summary (who, reason, proof count) and click "Submit Report".
+6. Admin team reviews within 48 hours. You'll see a confirmation screen.
 
 HOW TO USE HACKATHON FEATURES:
 - Members Tab: See all participants, view their profiles
@@ -325,6 +353,24 @@ A: Yes, you can leave anytime before committing to a team project. Once committe
 
 Q: How do announcements work?
 A: Organizers post updates that all team members see. You get browser notifications and email alerts.
+
+Q: How do I report a user?
+A: Click "Report User" in the sidebar. It's a 3-step process: (1) Search for the user by name, email, or skill — results appear live as you type. (2) Select a reason (Scam, Harassment, Fake Profile, Spam, etc.) and describe what happened in detail. (3) Upload up to 5 screenshot proofs (images, max 1MB each). Then submit — our admin team reviews within 48 hours.
+
+Q: What reasons can I report someone for?
+A: You can report for: Scam or Fraud 💸, Harassment or Bullying 🚫, Fake Profile / Impersonation 🎭, Spam 📢, Inappropriate Content ⚠️, Ghosting / Unreliable 👻, Hate Speech 🔇, or Other 📝.
+
+Q: What happens after I report someone?
+A: Your report goes to the HackMates admin team with status "Pending". Admins review it, can mark it "Reviewed" or "Resolved", and can block the user if the report is valid. Blocked users are automatically signed out and their content is removed.
+
+Q: Can I upload proof when reporting?
+A: Yes! In Step 3 of the report flow, you can upload up to 5 image files (screenshots, etc.) as proof. Each file must be under 1MB. You can also submit without proof if you don't have any.
+
+Q: What is the admin dashboard?
+A: The admin dashboard is only accessible to HackMates admins. It includes: Overview with analytics charts (user growth, report status, hackathon modes), Users management (block/unblock users, add new admins), Reports management (review and resolve reports, block reported users), and Hackathons management (view and delete any hackathon).
+
+Q: How does user blocking work?
+A: When an admin blocks a user, they are immediately signed out and cannot log back in. All their messages, hackathons, and announcements are deleted. Their reports are automatically resolved.
 
 ═══════════════════════════════════════════════════════════════════════
                     YOUR RESPONSE GUIDELINES
@@ -594,8 +640,8 @@ IMPORTANT: Use this profile information to provide highly personalized advice an
         response: "Give me project ideas based on my skills"
       },
       {
-        question: "How do I pitch my idea?",
-        response: "How do I pitch my idea?"
+        question: "How do I report a user?",
+        response: "How do I report a user for scam or harassment?"
       }
     ];
   }

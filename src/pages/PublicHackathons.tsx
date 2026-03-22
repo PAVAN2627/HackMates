@@ -74,7 +74,7 @@ export default function PublicHackathons() {
                 <img 
                   src="/assets/hackmatesroundlogo.png" 
                   alt="HackMates Logo" 
-                  className="h-6 w-6 md:h-8 md:w-8 rounded-full"
+                  className="h-6 w-10 md:h-8 md:w-14 rounded-lg object-contain"
                 />
                 <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                   HackMates

@@ -34,11 +34,12 @@ export function AIAssistant({ isOpen, onToggle, onClose }: AIAssistantProps) {
 • Personalized project ideas based on your skills
 • Finding teammates with complementary skills
 • Technical guidance for your projects
+• How to report a user (scam, harassment, etc.)
 • Pitching & presentation tips
-• Time management strategies
+• Any platform feature — teams, messages, announcements
 
 What would you like to know?`
-          : "👋 Hi! I'm your HackMates AI Assistant! I'm here to help you succeed in hackathons. Ask me about team formation, project ideas, technical guidance, or anything hackathon-related!",
+          : "👋 Hi! I'm your HackMates AI Assistant! I'm here to help you succeed in hackathons. Ask me about team formation, project ideas, how to report a user, technical guidance, or anything about the HackMates platform!",
         timestamp: new Date()
       };
       setMessages([welcomeMessage]);

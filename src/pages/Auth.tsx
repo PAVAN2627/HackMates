@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Loading } from '@/components/Loading';
 import { GoogleLoginTroubleshooting } from '@/components/GoogleLoginTroubleshooting';
 import { useAuth } from '@/contexts/AuthContext';
+import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -42,7 +43,7 @@ const signupSchema = loginSchema.extend({
 });
 
 export default function Auth() {
-  const { user, loading, signIn, signInWithGoogle, error: authError } = useAuth();
+  const { user, loading, signIn, signInWithGoogle, error: authError, profile } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -117,7 +118,7 @@ export default function Auth() {
   // If user is logged in, redirect to hackathons (or pending redirect destination)
   if (user) {
     const pendingRedirect = sessionStorage.getItem('pendingRedirect');
-    const destination = pendingRedirect || '/hackathons';
+    const destination = pendingRedirect || (profile?.isAdmin ? '/admin' : '/hackathons');
     if (pendingRedirect) {
       sessionStorage.removeItem('pendingRedirect');
       sessionStorage.removeItem('googleAuthRedirect');
@@ -231,7 +232,19 @@ export default function Auth() {
 
         await signIn(formData.email, formData.password);
         toast.success('Welcome back!');
-        navigate('/hackathons');
+        // Check cached profile for admin flag (set during loadUserProfile)
+        // Small delay to let profile load
+        setTimeout(() => {
+          const cached = localStorage.getItem(`profile_cache_${auth.currentUser?.uid}`);
+          if (cached) {
+            try {
+              const p = JSON.parse(cached);
+              navigate(p.isAdmin ? '/admin' : '/hackathons');
+              return;
+            } catch {}
+          }
+          navigate('/hackathons');
+        }, 800);
       } else {
         // Redirect to email signup form
         sessionStorage.setItem('signupMethod', 'email');
@@ -258,7 +271,7 @@ export default function Auth() {
             <img 
               src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
-              className="h-14 w-14 rounded-full"
+              className="h-14 w-24 rounded-xl object-contain"
             />
             <div>
               <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">HackMates</span>
@@ -282,7 +295,7 @@ export default function Auth() {
             <img 
               src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
-              className="h-10 w-10 rounded-full"
+              className="h-10 w-16 rounded-lg object-contain"
             />
             <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</span>
           </Link>
