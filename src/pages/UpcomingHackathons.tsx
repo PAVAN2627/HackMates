@@ -22,6 +22,8 @@ interface UpcomingHackathon {
   imageUrl?: string;
   createdAt: Date;
   creatorId: string;
+  mode?: 'online' | 'offline' | 'hybrid';
+  city?: string;
 }
 
 export default function UpcomingHackathons() {
@@ -39,10 +41,17 @@ export default function UpcomingHackathons() {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [venue, setVenue] = useState('');
+  const [city, setCity] = useState('');
+  const [mode, setMode] = useState<'online' | 'offline' | 'hybrid'>('online');
   const [contactEmail, setContactEmail] = useState('');
   const [link, setLink] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
+
+  // Filter State
+  const [filterMode, setFilterMode] = useState<'all' | 'online' | 'offline' | 'hybrid'>('all');
+  const [filterCity, setFilterCity] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const resetForm = () => {
     setEditId(null);
@@ -51,6 +60,8 @@ export default function UpcomingHackathons() {
     setDate('');
     setTime('');
     setVenue('');
+    setCity('');
+    setMode('online');
     setContactEmail('');
     setLink('');
     setImageFile(null);
@@ -112,6 +123,8 @@ export default function UpcomingHackathons() {
     setDate(ad.date);
     setTime(ad.time);
     setVenue(ad.venue);
+    setCity(ad.city || '');
+    setMode(ad.mode || 'online');
     setContactEmail(ad.contactEmail);
     setLink(ad.link || '');
     setPreviewUrl(ad.imageUrl || '');
@@ -139,6 +152,8 @@ export default function UpcomingHackathons() {
         date,
         time,
         venue,
+        city,
+        mode,
         contactEmail,
         link,
         imageUrl: previewUrl,
@@ -171,6 +186,13 @@ export default function UpcomingHackathons() {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+
+  const filteredAds = ads.filter(ad => {
+    if (filterMode !== 'all' && ad.mode !== filterMode) return false;
+    if (filterCity && !ad.city?.toLowerCase().includes(filterCity.toLowerCase())) return false;
+    if (searchQuery && !ad.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto p-4 md:p-6">
@@ -218,8 +240,33 @@ export default function UpcomingHackathons() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Venue (or Mode) *</label>
-                <Input required value={venue} onChange={e => setVenue(e.target.value)} placeholder="e.g. IIT Delhi or Online" />
+                <label className="text-sm font-medium">Mode *</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['online', 'offline', 'hybrid'] as const).map(m => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setMode(m)}
+                      className={`px-3 py-2 rounded-lg border-2 transition-all text-center capitalize text-sm ${
+                        mode === m
+                          ? 'bg-primary border-primary text-primary-foreground'
+                          : 'bg-background border-border hover:border-primary/50'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Venue *</label>
+                  <Input required value={venue} onChange={e => setVenue(e.target.value)} placeholder="e.g. IIT Delhi or Online Platform" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">City *</label>
+                  <Input required value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. New Delhi (or N/A for online)" />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Contact Email *</label>
@@ -279,21 +326,44 @@ export default function UpcomingHackathons() {
         </Dialog>
       </div>
 
+      {/* Filters */}
+      <div className="bg-card p-4 rounded-xl border border-border mt-6 flex flex-col md:flex-row gap-4 items-center">
+        <div className="flex-1 w-full">
+          <Input placeholder="Search hackathons..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full" />
+        </div>
+        <div className="flex-1 w-full">
+          <Input placeholder="Filter by city..." value={filterCity} onChange={e => setFilterCity(e.target.value)} className="w-full" />
+        </div>
+        <div className="flex-1 w-full flex gap-2">
+          {(['all', 'online', 'offline', 'hybrid'] as const).map(option => (
+            <Button
+              key={option}
+              variant={filterMode === option ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterMode(option)}
+              className="capitalize flex-1"
+            >
+              {option}
+            </Button>
+          ))}
+        </div>
+      </div>
+
       {loading ? (
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="glass rounded-xl h-64 animate-pulse bg-muted/50"></div>
           ))}
         </div>
-      ) : ads.length === 0 ? (
-        <div className="glass rounded-xl p-12 text-center">
+      ) : filteredAds.length === 0 ? (
+        <div className="glass rounded-xl p-12 text-center mt-6">
           <Calendar className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
           <h3 className="text-xl font-semibold mb-2">No Upcoming Hackathons</h3>
           <p className="text-muted-foreground">Be the first to post an upcoming hackathon!</p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-6">
-          {ads.map((ad) => (
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          {filteredAds.map((ad) => (
             <div key={ad.id} className="glass rounded-xl overflow-hidden hover:shadow-lg transition-all border border-muted/20">
               {ad.imageUrl && (
                 <div className="w-full h-48 bg-muted relative">
@@ -308,7 +378,10 @@ export default function UpcomingHackathons() {
                     <Calendar className="w-4 h-4" /> <span>{ad.date} at {ad.time}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" /> <span>{ad.venue}</span>
+                    <MapPin className="w-4 h-4" /> <span>{ad.venue}{ad.city && ad.city.trim() !== 'N/A' ? `, ${ad.city}` : ''}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-xs bg-primary/10 text-primary px-2 py-1 rounded capitalize">{ad.mode || 'classic'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-xs bg-muted px-2 py-1 rounded">Contact:</span> <span>{ad.contactEmail}</span>

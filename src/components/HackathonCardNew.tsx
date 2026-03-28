@@ -30,27 +30,35 @@ export function HackathonCard({
   };
 
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold">{hackathon.title}</h3>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor[hackathon.status]}`}>
+    <Card className="hover:shadow-lg transition-shadow overflow-hidden flex flex-col h-full">
+      {hackathon.image && (
+        <div className="w-full h-48 bg-muted relative flex-shrink-0">
+          <img 
+            src={hackathon.image} 
+            alt={hackathon.title}
+            className="w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).src = '/assets/hackmatesroundlogo.png'; }}
+          />
+          <div className="absolute top-4 right-4 flex gap-2">
+            <span className={`text-xs px-2 py-1 rounded-full font-bold shadow-sm ${
+              hackathon.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+            }`}>
               {hackathon.status === 'open' ? 'Open' : 'Closed'}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground">{hackathon.creatorName}</p>
         </div>
-        {hackathon.image && (
-          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-            <img 
-              src={hackathon.image} 
-              alt={hackathon.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-      </div>
+      )}
+
+      <div className="p-6 flex-1 flex flex-col">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold mb-1 text-primary">{hackathon.title}</h3>
+          {!hackathon.image && (
+            <span className={`inline-block text-xs px-2 py-1 rounded-full font-medium mb-2 ${statusColor[hackathon.status]}`}>
+              {hackathon.status === 'open' ? 'Open' : 'Closed'}
+            </span>
+          )}
+          <p className="text-sm text-muted-foreground font-medium">By {hackathon.creatorName}</p>
+        </div>
 
       <div className="text-sm text-muted-foreground mb-4 line-clamp-2 whitespace-pre-wrap">{formatTextForDisplay(hackathon.description)}</div>
 
@@ -168,6 +176,7 @@ export function HackathonCard({
             </Button>
           </>
         )}
+      </div>
       </div>
     </Card>
   );
