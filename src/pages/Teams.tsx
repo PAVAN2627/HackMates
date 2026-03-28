@@ -10,7 +10,7 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfiles } from '@/hooks/useProfiles';
 import { db, COLLECTIONS } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc, Timestamp, query, where } from 'firebase/firestore';
 import { sendTeamAdditionEmail, sendTeamRemovalEmail } from '@/lib/emailService';
 import { toast } from 'sonner';
 import { Hackathon } from '@/types';
@@ -97,24 +97,35 @@ export default function Teams() {
       });
 
       // 2. Off-platform teams
-      const offSnap = await getDocs(collection(db, 'offPlatformTeams'));
-      offSnap.forEach(d => {
+      // Must use where clauses to comply with Firestore security rules, otherwise it fails with missing permissions
+      const q1 = query(collection(db, 'offPlatformTeams'), where('leaderId', '==', user.uid));
+      const q2 = query(collection(db, 'offPlatformTeams'), where('memberIds', 'array-contains', user.uid));
+      
+      const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      
+      const seenOffPlatform = new Set<string>();
+      
+      const processOffPlatformDoc = (d: any) => {
+        if (seenOffPlatform.has(d.id)) return;
+        seenOffPlatform.add(d.id);
         const t = d.data() as OffPlatformTeam;
-        if (t.memberIds?.includes(user.uid) || t.leaderId === user.uid) {
-          loaded.push({
-            id: d.id,
-            name: t.name,
-            leaderId: t.leaderId,
-            memberIds: t.memberIds || [],
-            hackathonId: '',
-            hackathonName: t.hackathonName,
-            isOffPlatform: true,
-          });
-        }
-      });
+        loaded.push({
+          id: d.id,
+          name: t.name,
+          leaderId: t.leaderId,
+          memberIds: t.memberIds || [],
+          hackathonId: '',
+          hackathonName: t.hackathonName,
+          isOffPlatform: true,
+        });
+      };
+
+      snap1.forEach(processOffPlatformDoc);
+      snap2.forEach(processOffPlatformDoc);
 
       setTeams(loaded);
-    } catch {
+    } catch (err) {
+      console.error('Error loading teams:', err);
       toast.error('Failed to load teams');
     } finally {
       setLoading(false);

@@ -111,8 +111,8 @@ export default function CreateHackathon() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error('Image size should be less than 5MB');
+      if (file.size > 750 * 1024) { // 750KB limit because base64 strings in Firestore have 1MB document limit
+        toast.error('Image size should be less than 750KB');
         return;
       }
       
@@ -249,7 +249,7 @@ export default function CreateHackathon() {
                       <div className="border-2 border-dashed border-border rounded-lg p-4 md:p-6 text-center hover:border-primary/50 transition-colors">
                         <Upload className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-2 text-muted-foreground" />
                         <p className="text-xs md:text-sm text-muted-foreground mb-2">Upload hackathon poster</p>
-                        <p className="text-xs text-muted-foreground mb-3 md:mb-4">PNG, JPG up to 5MB</p>
+                        <p className="text-xs text-muted-foreground mb-3 md:mb-4">PNG, JPG up to 750KB</p>
                         <input
                           type="file"
                           accept="image/*"

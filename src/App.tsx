@@ -18,6 +18,7 @@ import Register from "./pages/Register";
 import PublicHackathons from "./pages/PublicHackathons";
 import Dashboard from "./pages/Dashboard";
 import Hackathons from "./pages/Hackathons";
+import UpcomingHackathons from "./pages/UpcomingHackathons";
 import HackathonDetails from "./pages/HackathonDetails";
 import CreateHackathon from "./pages/CreateHackathon";
 import EditHackathon from "./pages/EditHackathon";
@@ -63,6 +64,7 @@ const App = () => (
               <Route element={<DashboardLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/hackathons" element={<Hackathons />} />
+                <Route path="/upcoming" element={<UpcomingHackathons />} />
                 <Route path="/hackathons/:id" element={<HackathonDetails />} />
                 <Route path="/hackathons/:id/edit" element={<EditHackathon />} />
                 <Route path="/create-hackathon" element={<CreateHackathon />} />

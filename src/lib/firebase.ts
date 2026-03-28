@@ -47,5 +47,6 @@ export const COLLECTIONS = {
   ANNOUNCEMENTS: 'announcements',
   TEAM_FEEDBACKS: 'teamFeedbacks',
   NOTIFICATIONS: 'notifications',
-  TEAM_CHAT: 'teamChat'
+  TEAM_CHAT: 'teamChat',
+  UPCOMING_HACKATHONS: 'upcomingHackathons'
 } as const;

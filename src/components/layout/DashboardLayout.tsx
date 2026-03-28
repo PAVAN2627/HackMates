@@ -38,7 +38,7 @@ export function DashboardLayout() {
       <Sidebar />
       <div className="md:pl-64 transition-all duration-300">
         {!shouldHideHeader && <Header />}
-        <main className={`${shouldHideHeader ? 'relative h-screen overflow-hidden' : 'p-4 md:p-6 pb-20 md:pb-6'}`}>
+        <main className={`${shouldHideHeader ? 'relative h-screen overflow-hidden' : 'p-4 md:p-6 pb-6 md:pb-6'}`}>
           <Outlet />
         </main>
       </div>

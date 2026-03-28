@@ -31,7 +31,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 backdrop-blur-lg px-4 md:px-6">
       {/* Logo/Brand - Visible on Mobile */}
-      <div className="flex items-center gap-2 md:hidden">
+      <div className="flex items-center gap-2 md:hidden ml-14">
         <img 
           src="/assets/hackmatesroundlogo.png" 
           alt="HackMates Logo" 

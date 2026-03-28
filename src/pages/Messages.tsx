@@ -146,7 +146,7 @@ export default function MessagesPage() {
         {/* Conversations List */}
         <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-border bg-card flex-col min-h-0`}>
           {/* Header */}
-          <div className="p-4 border-b border-border">
+          <div className="p-4 pl-16 md:pl-4 border-b border-border">
             <h2 className="text-xl font-bold">Messages</h2>
             <p className="text-sm text-muted-foreground">Direct conversations</p>
           </div>
