@@ -239,7 +239,7 @@ export default function MessagesPage() {
                               {conv.read ? (
                                 <CheckCheck className="w-4 h-4 text-blue-500" />
                               ) : (
-                                <CheckCheck className="w-4 h-4 text-muted-foreground" />
+                                <Check className="w-4 h-4 text-muted-foreground" />
                               )}
                             </div>
                           )}
@@ -449,7 +449,7 @@ export default function MessagesPage() {
                               {msg.read ? (
                                 <CheckCheck className="w-3 h-3 text-blue-500" />
                               ) : (
-                                <CheckCheck className="w-3 h-3 text-muted-foreground" />
+                                <Check className="w-3 h-3 text-muted-foreground" />
                               )}
                             </div>
                           )}
