@@ -970,6 +970,25 @@ export default function Profile() {
                     </div>
                   </div>
                 )}
+
+                {/* Account Settings / Danger Zone on Main Profile */}
+                {isOwnProfile && (
+                  <div className="mt-8 pt-6 border-t border-destructive/20 bg-destructive/5 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-destructive flex items-center gap-2 mb-2">
+                      ⚠️ Danger Zone
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Once you delete your account, there is no going back. This action will permanently delete your profile, messages, and all hackathons or teams you created.
+                    </p>
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      Delete Account
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -993,22 +1012,6 @@ export default function Profile() {
                     Cancel
                   </Button>
                 </div>
-                
-                {isOwnProfile && (
-                  <div className="border-t pt-6 mt-6">
-                    <h3 className="text-lg font-semibold text-destructive mb-2">Danger Zone</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Once you delete your account, there is no going back. This action will permanently delete your profile, messages, and all hackathons or teams you created.
-                    </p>
-                    <Button 
-                      type="button" 
-                      variant="destructive" 
-                      onClick={() => setDeleteDialogOpen(true)}
-                    >
-                      Delete Account
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </div>

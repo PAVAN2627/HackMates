@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Trophy, Rocket, MessageCircle, Shield, Award, User, Zap, Heart, Target, CheckCircle, Linkedin, Mail, Globe } from 'lucide-react';
+import { ArrowRight, Trophy, Rocket, MessageCircle, Shield, Award, User, Zap, Heart, Target, CheckCircle, Linkedin, Mail, Globe, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TypewriterText } from '@/components/TypewriterText';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface IndexPageContentProps {
   hackathons: any[];
@@ -116,10 +117,43 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
         </div>
       </nav>
 
-      {/* Mobile Navigation - Top Bar with Logo and Theme Toggle */}
+      {/* Mobile Navigation - Top Bar with Logo and Hamburger Menu */}
       <nav className="md:hidden fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="mr-1 mt-1 -ml-2 text-slate-700 dark:text-slate-300">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[80vw] sm:w-[350px] p-0 flex flex-col bg-slate-50 dark:bg-slate-900 border-r border-border/50">
+                <div className="p-6 pb-4 border-b border-border flex items-center gap-3">
+                  <img src="/assets/hackmatesroundlogo.png" alt="HackMates" className="h-8 w-12 object-contain" />
+                  <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</span>
+                </div>
+                <div className="flex-1 overflow-auto py-4 px-3 flex flex-col gap-2">
+                  <Button variant="ghost" className="justify-start text-base py-6" onClick={handleExploreHackathons}>
+                    <Trophy className="mr-4 h-5 w-5 text-purple-500" /> Explore Hackathons
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-base py-6" onClick={handleJoinHackathon}>
+                    <User className="mr-4 h-5 w-5 text-blue-500" /> Sign In / Join
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-base py-6" onClick={() => document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                    <Zap className="mr-4 h-5 w-5 text-yellow-500" /> Platform Features
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-base py-6" onClick={() => document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                    <Heart className="mr-4 h-5 w-5 text-red-500" /> About Us
+                  </Button>
+                </div>
+                <div className="p-4 border-t border-border mt-auto">
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white" onClick={handleGetStarted}>
+                    Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+            
             <img 
               src="/assets/hackmatesroundlogo.png" 
               alt="HackMates Logo" 
@@ -130,48 +164,6 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             </span>
           </div>
           <ThemeToggle />
-        </div>
-      </nav>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
-        <div className="flex items-center justify-around px-2 py-3">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-600 hover:text-purple-600"
-            onClick={handleExploreHackathons}
-          >
-            <Trophy className="h-5 w-5" />
-            <span className="text-xs">Explore</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-600 hover:text-purple-600"
-            onClick={handleJoinHackathon}
-          >
-            <User className="h-5 w-5" />
-            <span className="text-xs">Join</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-600 hover:text-purple-600"
-            onClick={() => document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            <Zap className="h-5 w-5" />
-            <span className="text-xs">Features</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-600 hover:text-purple-600"
-            onClick={() => document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            <Heart className="h-5 w-5" />
-            <span className="text-xs">About</span>
-          </Button>
         </div>
       </nav>
 
