@@ -9,7 +9,8 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User as FirebaseUser,
-  getRedirectResult
+  getRedirectResult,
+  sendEmailVerification
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { UserProfile } from '@/types';
@@ -259,6 +260,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         createdAt: profileToSave.createdAt instanceof Timestamp ? profileToSave.createdAt.toDate() : new Date(),
       };
       localStorage.setItem(`profile_cache_${userCredential.user.uid}`, JSON.stringify(cachedProfile));
+      
+      // Send email verification link
+      try {
+        await sendEmailVerification(userCredential.user);
+        console.log('Verification email sent to', email);
+      } catch (verificationError) {
+        console.error('Failed to send verification email:', verificationError);
+      }
       
       // Update the context profile state immediately for instant UI update
       setProfile(cachedProfile as UserProfile);

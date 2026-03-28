@@ -290,17 +290,23 @@ export default function Auth() {
       {/* Right side - Auth form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          {/* Mobile logo */}
-          <Link to="/" className="flex lg:hidden items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity">
-            <img 
-              src="/assets/hackmatesroundlogo.png" 
-              alt="HackMates Logo" 
-              className="h-10 w-16 rounded-lg object-contain"
-            />
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</span>
-          </Link>
+          {/* Mobile logo and back button */}
+          <div className="flex lg:hidden items-center justify-between mb-8">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <img 
+                src="/assets/hackmatesroundlogo.png" 
+                alt="HackMates Logo" 
+                className="h-8 w-12 rounded-lg object-contain"
+              />
+              <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</span>
+            </Link>
+            <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowRight className="h-3 w-3 rotate-180" />
+              <span>Back</span>
+            </Link>
+          </div>
 
-          {/* Back to home link */}
+          {/* Desktop Back to home link */}
           <Link to="/" className="hidden lg:flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors">
             <ArrowRight className="h-4 w-4 rotate-180" />
             <span>Back to Home</span>
