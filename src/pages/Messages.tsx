@@ -83,7 +83,6 @@ export default function MessagesPage() {
     try {
       await sendMessage(selectedConversation, messageText, profile.name, profile.avatar);
       setMessageText('');
-      toast.success('Message sent!');
     } catch (error: any) {
       toast.error(error.message || 'Failed to send message');
     } finally {
