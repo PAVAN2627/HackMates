@@ -62,8 +62,10 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
       let components = 0;
       
       // 1. Skills Match (40% weight)
+      // Case-insensitive skill matching
+      const hackSkillsLower = hasRequiredSkills ? hackathon.requiredSkills!.map(s => s.toLowerCase().trim()) : [];
       const matchingSkills = hasRequiredSkills 
-        ? profile.skills.filter(skill => hackathon.requiredSkills?.includes(skill))
+        ? profile.skills.filter(skill => hackSkillsLower.includes(skill.toLowerCase().trim()))
         : [];
       const skillsScore = hasRequiredSkills && hackathon.requiredSkills!.length > 0
         ? (matchingSkills.length / hackathon.requiredSkills!.length) * 100
@@ -75,8 +77,10 @@ export function RecommendedProfiles({ hackathon, onProfileClick, onSendMessage }
       }
       
       // 2. Technology/Domain Match (40% weight)
+      // Case-insensitive tech matching
+      const hackTechLower = hasTechnologies ? hackathon.technologies!.map(t => t.toLowerCase().trim()) : [];
       const matchingTechnologies = hasTechnologies && profile.interests
-        ? profile.interests.filter(interest => hackathon.technologies?.includes(interest))
+        ? profile.interests.filter(interest => hackTechLower.includes(interest.toLowerCase().trim()))
         : [];
       const techScore = hasTechnologies && hackathon.technologies!.length > 0 && profile.interests
         ? (matchingTechnologies.length / hackathon.technologies!.length) * 100
