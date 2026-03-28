@@ -64,7 +64,7 @@ export const getWelcomeEmailHTML = (userName: string, userEmail: string, userPas
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 32px 0;">
                 <tr>
                   <td align="center">
-                    <a href="https://hackmates-mu.vercel.app/hackathons" style="display: inline-block; text-decoration: none; color: #ffffff; background: linear-gradient(135deg, #9333ea 0%, #2563eb 100%); padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    <a href="https://thehackmates.xyz/hackathons" style="display: inline-block; text-decoration: none; color: #ffffff; background: linear-gradient(135deg, #9333ea 0%, #2563eb 100%); padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                       🚀 Explore Hackathons Now
                     </a>
                   </td>
@@ -159,7 +159,7 @@ export const getWelcomeEmailHTMLGoogle = (userName: string, userEmail: string): 
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 32px 0;">
                 <tr>
                   <td align="center">
-                    <a href="https://hackmates-mu.vercel.app/hackathons" style="display: inline-block; text-decoration: none; color: #ffffff; background: linear-gradient(135deg, #9333ea 0%, #2563eb 100%); padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    <a href="https://thehackmates.xyz/hackathons" style="display: inline-block; text-decoration: none; color: #ffffff; background: linear-gradient(135deg, #9333ea 0%, #2563eb 100%); padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                       🚀 Explore Hackathons Now
                     </a>
                   </td>

@@ -87,7 +87,7 @@ export const sendTeamAdditionEmail = async (
   hackathonId: string
 ): Promise<{ success: boolean }> => {
   try {
-    const hackathonUrl = `https://hackmates-mu.vercel.app/hackathons/${hackathonId}`;
+    const hackathonUrl = `https://thehackmates.xyz/hackathons/${hackathonId}`;
     const htmlMessage = getTeamAdditionEmailHTML(
       userName,
       userEmail,
@@ -131,7 +131,7 @@ export const sendAnnouncementEmail = async (
   hackathonId: string
 ): Promise<{ success: boolean }> => {
   try {
-    const hackathonUrl = `https://hackmates-mu.vercel.app/hackathons/${hackathonId}`;
+    const hackathonUrl = `https://thehackmates.xyz/hackathons/${hackathonId}`;
     const htmlMessage = getAnnouncementEmailHTML(
       userName,
       userEmail,
@@ -176,7 +176,7 @@ export const sendTeamRemovalEmail = async (
 ): Promise<{ success: boolean }> => {
   try {
     const hackathonUrl = hackathonId
-      ? `https://hackmates-mu.vercel.app/hackathons/${hackathonId}`
+      ? `https://thehackmates.xyz/hackathons/${hackathonId}`
       : '';
     const html = getTeamRemovalEmailHTML(
       userName, userEmail, hackathonTitle, teamName, removedByName, hackathonUrl
