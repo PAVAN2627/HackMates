@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { db, COLLECTIONS } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Calendar, Plus, MapPin, ExternalLink, Image as ImageIcon, Upload, X } from 'lucide-react';
+import { Calendar, Plus, MapPin, ExternalLink, Image as ImageIcon, Upload, X, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UpcomingHackathon {
@@ -31,6 +31,8 @@ export default function UpcomingHackathons() {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   
+  const [editId, setEditId] = useState<string | null>(null);
+  
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -42,18 +44,36 @@ export default function UpcomingHackathons() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
 
+  const resetForm = () => {
+    setEditId(null);
+    setTitle('');
+    setDescription('');
+    setDate('');
+    setTime('');
+    setVenue('');
+    setContactEmail('');
+    setLink('');
+    setImageFile(null);
+    setPreviewUrl('');
+  };
+
   useEffect(() => {
     if (!authLoading && user) {
       const q = query(collection(db, COLLECTIONS.UPCOMING_HACKATHONS), orderBy('createdAt', 'desc'));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const adsData: UpcomingHackathon[] = [];
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          adsData.push({
-            id: docSnap.id,
-            ...data,
-            createdAt: data.createdAt?.toDate?.() || new Date(),
-          } as UpcomingHackathon);
+          // Filter logic: show only if it's in the future OR the user created it
+          if (data.date >= today || data.creatorId === user.uid) {
+            adsData.push({
+              id: docSnap.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.() || new Date(),
+            } as UpcomingHackathon);
+          }
         });
         setAds(adsData);
         setLoading(false);
@@ -85,12 +105,35 @@ export default function UpcomingHackathons() {
     setPreviewUrl('');
   };
 
+  const handleEdit = (ad: UpcomingHackathon) => {
+    setEditId(ad.id);
+    setTitle(ad.title);
+    setDescription(ad.description);
+    setDate(ad.date);
+    setTime(ad.time);
+    setVenue(ad.venue);
+    setContactEmail(ad.contactEmail);
+    setLink(ad.link || '');
+    setPreviewUrl(ad.imageUrl || '');
+    setOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this hackathon advertisement?')) return;
+    try {
+      await deleteDoc(doc(db, COLLECTIONS.UPCOMING_HACKATHONS, id));
+      toast.success('Advertisement deleted successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete advertisement');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSubmitting(true);
     try {
-      await addDoc(collection(db, COLLECTIONS.UPCOMING_HACKATHONS), {
+      const dataToSave = {
         title,
         description,
         date,
@@ -98,24 +141,25 @@ export default function UpcomingHackathons() {
         venue,
         contactEmail,
         link,
-        imageUrl: previewUrl, // Using base64 string directly like CreateHackathon
+        imageUrl: previewUrl,
         creatorId: user.uid,
-        createdAt: Timestamp.now()
-      });
-      toast.success('Upcoming hackathon posted successfully!');
+      };
+
+      if (editId) {
+        await updateDoc(doc(db, COLLECTIONS.UPCOMING_HACKATHONS, editId), dataToSave);
+        toast.success('Hackathon updated successfully!');
+      } else {
+        await addDoc(collection(db, COLLECTIONS.UPCOMING_HACKATHONS), {
+          ...dataToSave,
+          createdAt: Timestamp.now()
+        });
+        toast.success('Upcoming hackathon posted successfully!');
+      }
+      
       setOpen(false);
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setDate('');
-      setTime('');
-      setVenue('');
-      setContactEmail('');
-      setLink('');
-      setImageFile(null);
-      setPreviewUrl('');
+      resetForm();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to post upcoming hackathon');
+      toast.error(error.message || 'Failed to save hackathon');
     } finally {
       setSubmitting(false);
     }
@@ -140,16 +184,19 @@ export default function UpcomingHackathons() {
             External hackathons advertised by the community
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(isOpen) => {
+          setOpen(isOpen);
+          if (!isOpen) resetForm();
+        }}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button className="flex items-center gap-2" onClick={resetForm}>
               <Plus className="h-4 w-4" />
               Post Advertisement
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Post Next Hackathon</DialogTitle>
+              <DialogTitle>{editId ? 'Edit Hackathon' : 'Post Next Hackathon'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 py-4">
               <div className="space-y-2">
@@ -225,7 +272,7 @@ export default function UpcomingHackathons() {
                 </div>
               </div>
               <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? 'Posting...' : 'Post Advertisement'}
+                {submitting ? 'Saving...' : editId ? 'Save Changes' : 'Post Advertisement'}
               </Button>
             </form>
           </DialogContent>
@@ -271,6 +318,18 @@ export default function UpcomingHackathons() {
                   <a href={ad.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline text-sm font-medium">
                     View & Register <ExternalLink className="w-4 h-4" />
                   </a>
+                )}
+
+                {/* Edit & Delete Controls for Creator */}
+                {ad.creatorId === user.uid && (
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(ad)} className="flex-1">
+                      <Edit className="w-4 h-4 mr-2" /> Edit
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(ad.id)} className="flex-1">
+                      <Trash2 className="w-4 h-4 mr-2" /> Delete
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>

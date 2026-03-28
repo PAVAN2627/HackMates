@@ -16,8 +16,10 @@ import { calculateSynergyScore } from '@/lib/synergyAlgorithm';
 import { useTeamFeedback } from '@/hooks/useTeamFeedback';
 import { useGitHubVerification } from '@/hooks/useGitHubVerification';
 import { isValidGitHubUsername } from '@/lib/githubVerification';
-import { db, COLLECTIONS } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db, COLLECTIONS, auth } from '@/lib/firebase';
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { deleteUser } from 'firebase/auth';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { UserProfile } from '@/types';
 import { toast } from 'sonner';
 
@@ -50,6 +52,9 @@ export default function Profile() {
     }
   });
   const [avatarPreview, setAvatarPreview] = useState<string>('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingParams, setDeletingParams] = useState(false);
   
   // Determine if viewing own profile
   const isOwnProfile = !userId || userId === currentUser?.uid;
@@ -402,6 +407,61 @@ export default function Profile() {
         githubUsername: result.activity!.username,
         githubActivity: result.activity!
       } : null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE PROFILE') {
+      toast.error('Please type EXACTLY "DELETE PROFILE" to confirm.');
+      return;
+    }
+    if (!currentUser) return;
+    
+    setDeletingParams(true);
+    try {
+      // 1. Delete all user's direct messages (where they are sender)
+      const dmQuery = query(collection(db, 'directMessages'), where('senderId', '==', currentUser.uid));
+      const dmSnaps = await getDocs(dmQuery);
+      await Promise.all(dmSnaps.docs.map(d => deleteDoc(doc(db, 'directMessages', d.id))));
+
+      // 2. Delete all user announcements
+      const annQuery = query(collection(db, 'announcements'), where('authorId', '==', currentUser.uid));
+      const annSnaps = await getDocs(annQuery);
+      await Promise.all(annSnaps.docs.map(d => deleteDoc(doc(db, 'announcements', d.id))));
+
+      // 3. Delete hackathons created by user
+      const hackQuery = query(collection(db, 'hackathons'), where('creatorId', '==', currentUser.uid));
+      const hackSnaps = await getDocs(hackQuery);
+      await Promise.all(hackSnaps.docs.map(d => deleteDoc(doc(db, 'hackathons', d.id))));
+
+      // 4. Delete upcoming hackathons created by user
+      const upHackQuery = query(collection(db, 'upcomingHackathons'), where('creatorId', '==', currentUser.uid));
+      const upHackSnaps = await getDocs(upHackQuery);
+      await Promise.all(upHackSnaps.docs.map(d => deleteDoc(doc(db, 'upcomingHackathons', d.id))));
+
+      // 5. Delete offPlatformTeams led by user
+      const offTeamQuery = query(collection(db, 'offPlatformTeams'), where('leaderId', '==', currentUser.uid));
+      const offTeamSnaps = await getDocs(offTeamQuery);
+      await Promise.all(offTeamSnaps.docs.map(d => deleteDoc(doc(db, 'offPlatformTeams', d.id))));
+
+      // 6. Delete User Profile Document
+      await deleteDoc(doc(db, COLLECTIONS.USERS, currentUser.uid));
+
+      // 7. Finally Delete Authentication User
+      await deleteUser(auth.currentUser!);
+
+      toast.success('Your account has been completely deleted.');
+      // Note: The AuthContext onAuthStateChanged will detect the user deletion and log them out
+    } catch (error: any) {
+      console.error('Failed to delete account:', error);
+      if (error.code === 'auth/requires-recent-login') {
+        toast.error('Please log out and log back in, then try deleting again for security purposes.');
+      } else {
+        toast.error('Failed to completely delete account.');
+      }
+    } finally {
+      setDeletingParams(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -914,28 +974,91 @@ export default function Profile() {
             )}
 
             {isEditing && (
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleSave();
-                  }} 
-                  disabled={saving} 
-                  className="gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
-                <Button onClick={() => setIsEditing(false)} variant="outline" disabled={saving}>
-                  Cancel
-                </Button>
+              <div className="space-y-6 pt-4">
+                <div className="flex gap-2">
+                  <Button 
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSave();
+                    }} 
+                    disabled={saving} 
+                    className="gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button onClick={() => setIsEditing(false)} variant="outline" disabled={saving}>
+                    Cancel
+                  </Button>
+                </div>
+                
+                {isOwnProfile && (
+                  <div className="border-t pt-6 mt-6">
+                    <h3 className="text-lg font-semibold text-destructive mb-2">Danger Zone</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Once you delete your account, there is no going back. This action will permanently delete your profile, messages, and all hackathons or teams you created.
+                    </p>
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      Delete Account
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              ⚠️ Delete Account Configuration
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-foreground">
+              Are you absolutely sure? This action <strong>cannot</strong> be undone. Follow instructions below:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <p className="text-sm">
+              All of your hackathons, messages, teams, and your profile will be permanently erased.
+            </p>
+            <Label htmlFor="delete-confirm" className="text-sm font-bold">
+              Please type <span className="text-destructive italic font-mono">DELETE PROFILE</span> to confirm.
+            </Label>
+            <Input
+              id="delete-confirm"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE PROFILE"
+              autoComplete="off"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setDeleteDialogOpen(false);
+              setDeleteConfirmText('');
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              type="button"
+              variant="destructive" 
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmText !== 'DELETE PROFILE' || deletingParams}
+            >
+              {deletingParams ? 'Deleting Everything...' : 'Delete My Account'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
