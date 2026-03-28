@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 export default function MessagesPage() {
   const { user, profile } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { messages, sendMessage, markAsRead, markConversationAsRead, getConversation, getConversationList, loading: messagesLoading, deleteMessage, editMessage } = useDirectMessages();
   const { getProfileById, loading: profilesLoading } = useProfiles();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -43,6 +43,8 @@ export default function MessagesPage() {
     const withUserId = searchParams.get('with');
     if (withUserId && withUserId !== selectedConversation) {
       setSelectedConversation(withUserId);
+    } else if (!withUserId && selectedConversation) {
+      setSelectedConversation(null);
     }
   }, [searchParams, selectedConversation]);
 
@@ -173,7 +175,7 @@ export default function MessagesPage() {
                 return (
                   <button
                     key={otherUserId}
-                    onClick={() => setSelectedConversation(otherUserId)}
+                    onClick={() => setSearchParams({ with: otherUserId })}
                     className={`conversation-item w-full p-4 border-b border-border text-left hover:bg-accent transition-colors ${
                       selectedConversation === otherUserId ? 'selected' : ''
                     } ${unreadCount > 0 ? 'unread' : ''}`}
@@ -235,9 +237,9 @@ export default function MessagesPage() {
                           {conv.senderId === user.uid && (
                             <div className="flex-shrink-0 ml-2">
                               {conv.read ? (
-                                <CheckCheck className="w-4 h-4 text-primary" />
+                                <CheckCheck className="w-4 h-4 text-blue-500" />
                               ) : (
-                                <Check className="w-4 h-4 text-muted-foreground" />
+                                <CheckCheck className="w-4 h-4 text-muted-foreground" />
                               )}
                             </div>
                           )}
@@ -267,7 +269,7 @@ export default function MessagesPage() {
                   variant="ghost"
                   size="sm"
                   className="md:hidden p-2"
-                  onClick={() => setSelectedConversation(null)}
+                  onClick={() => setSearchParams({})}
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -445,9 +447,9 @@ export default function MessagesPage() {
                           {isCurrentUser && (
                             <div className="flex items-center">
                               {msg.read ? (
-                                <CheckCheck className="w-3 h-3 text-primary" />
+                                <CheckCheck className="w-3 h-3 text-blue-500" />
                               ) : (
-                                <Check className="w-3 h-3 text-muted-foreground" />
+                                <CheckCheck className="w-3 h-3 text-muted-foreground" />
                               )}
                             </div>
                           )}
