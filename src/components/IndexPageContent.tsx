@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Trophy, Rocket, MessageCircle, Shield, Award, User, Zap, Heart, Target, CheckCircle, Linkedin, Mail, Globe, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,16 +12,20 @@ interface IndexPageContentProps {
 
 export function IndexPageContent({ hackathons }: IndexPageContentProps) {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleExploreHackathons = () => {
+    setMobileMenuOpen(false);
     navigate('/explore');
   };
 
   const handleGetStarted = () => {
+    setMobileMenuOpen(false);
     navigate('/auth');
   };
 
   const handleJoinHackathon = () => {
+    setMobileMenuOpen(false);
     navigate('/auth');
   };
 
@@ -121,7 +126,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
       <nav className="md:hidden fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <Sheet>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="mr-1 mt-1 -ml-2 text-slate-700 dark:text-slate-300">
                   <Menu className="h-6 w-6" />
@@ -139,10 +144,10 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                   <Button variant="ghost" className="justify-start text-base py-6" onClick={handleJoinHackathon}>
                     <User className="mr-4 h-5 w-5 text-blue-500" /> Sign In / Join
                   </Button>
-                  <Button variant="ghost" className="justify-start text-base py-6" onClick={() => document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                  <Button variant="ghost" className="justify-start text-base py-6" onClick={() => { setMobileMenuOpen(false); document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' }); }}>
                     <Zap className="mr-4 h-5 w-5 text-yellow-500" /> Platform Features
                   </Button>
-                  <Button variant="ghost" className="justify-start text-base py-6" onClick={() => document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                  <Button variant="ghost" className="justify-start text-base py-6" onClick={() => { setMobileMenuOpen(false); document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' }); }}>
                     <Heart className="mr-4 h-5 w-5 text-red-500" /> About Us
                   </Button>
                 </div>
