@@ -124,11 +124,11 @@ export default function Profile() {
           availableFor: currentProfile.availableFor || 'both',
           gender: currentProfile.gender || 'prefer-not-to-say',
           avatar: currentProfile.avatar || '',
-          workStyle: currentProfile.workStyle || {
-            goal: 'learn',
-            timePreference: 'flexible',
-            commitment: 'part-time',
-            hoursAvailable: 20
+          workStyle: {
+            goal: (currentProfile.workStyle?.goal as 'win' | 'learn') || 'learn',
+            timePreference: (currentProfile.workStyle?.timePreference as 'night-owl' | 'early-bird' | 'flexible') || 'flexible',
+            commitment: (currentProfile.workStyle?.commitment as 'full-time' | 'part-time' | 'casual') || 'part-time',
+            hoursAvailable: currentProfile.workStyle?.hoursAvailable || 20
           }
         });
         setAvatarPreview(currentProfile.avatar || '');
@@ -142,7 +142,7 @@ export default function Profile() {
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Profile load timeout')), 5000)
         )
-      ]) as any;
+      ]) as unknown as import('firebase/firestore').DocumentSnapshot;
       
       if (profileDoc.exists()) {
         const profileData = profileDoc.data();
@@ -167,11 +167,11 @@ export default function Profile() {
           availableFor: fullProfile.availableFor || 'both',
           gender: fullProfile.gender || 'prefer-not-to-say',
           avatar: fullProfile.avatar || '',
-          workStyle: fullProfile.workStyle || {
-            goal: 'learn',
-            timePreference: 'flexible',
-            commitment: 'part-time',
-            hoursAvailable: 20
+          workStyle: {
+            goal: (fullProfile.workStyle?.goal as 'win' | 'learn') || 'learn',
+            timePreference: (fullProfile.workStyle?.timePreference as 'night-owl' | 'early-bird' | 'flexible') || 'flexible',
+            commitment: (fullProfile.workStyle?.commitment as 'full-time' | 'part-time' | 'casual') || 'part-time',
+            hoursAvailable: fullProfile.workStyle?.hoursAvailable || 20
           }
         });
         setAvatarPreview(fullProfile.avatar || '');
@@ -219,7 +219,7 @@ export default function Profile() {
       }
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
       // Retry after delay
       setTimeout(() => {
         syncToFirebase(data, retryCount + 1);
@@ -290,8 +290,9 @@ export default function Profile() {
         localStorage.setItem(`profile_backup_${currentUser.uid}`, JSON.stringify(updateData));
       });
       
-    } catch (error: any) {
-      toast.error(`Save failed: ${error.message || 'Unknown error'}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Save failed: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
@@ -452,9 +453,9 @@ export default function Profile() {
 
       toast.success('Your account has been completely deleted.');
       // Note: The AuthContext onAuthStateChanged will detect the user deletion and log them out
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to delete account:', error);
-      if (error.code === 'auth/requires-recent-login') {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/requires-recent-login') {
         toast.error('Please log out and log back in, then try deleting again for security purposes.');
       } else {
         toast.error('Failed to completely delete account.');
@@ -546,7 +547,7 @@ export default function Profile() {
               <AvatarUpload
                 currentAvatar={profile.avatar || null}
                 userName={profile.name}
-                userGender={profile.gender as any}
+                userGender={profile.gender as 'male' | 'female' | 'non-binary' | 'prefer-not-to-say' | undefined}
                 size="lg"
                 editable={false}
               />
@@ -594,7 +595,7 @@ export default function Profile() {
                     <select
                       id="experience"
                       value={formData.experience}
-                      onChange={(e) => setFormData({ ...formData, experience: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, experience: e.target.value as 'Beginner' | 'Intermediate' | 'Advanced' })}
                       className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm"
                     >
                       <option value="Beginner">Beginner</option>
@@ -607,7 +608,7 @@ export default function Profile() {
                     <select
                       id="availableFor"
                       value={formData.availableFor}
-                      onChange={(e) => setFormData({ ...formData, availableFor: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, availableFor: e.target.value as 'online' | 'in-person' | 'both' })}
                       className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm"
                     >
                       <option value="online">Online Only</option>

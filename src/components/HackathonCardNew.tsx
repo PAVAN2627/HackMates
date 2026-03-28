@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Clock, Tag, MessageCircle, X, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Clock, MessageCircle, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Hackathon } from '@/types';
@@ -24,8 +24,10 @@ export function HackathonCard({
   isCreator = false,
   joined = false,
 }: HackathonCardProps) {
-  const statusColor = {
+  const statusColor: Record<string, string> = {
     open: 'bg-green-100 text-green-800',
+    'in-progress': 'bg-blue-100 text-blue-800',
+    completed: 'bg-purple-100 text-purple-800',
     closed: 'bg-gray-100 text-gray-800',
   };
 
@@ -41,9 +43,9 @@ export function HackathonCard({
           />
           <div className="absolute top-4 right-4 flex gap-2">
             <span className={`text-xs px-2 py-1 rounded-full font-bold shadow-sm ${
-              hackathon.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              statusColor[hackathon.status] || 'bg-gray-100 text-gray-800'
             }`}>
-              {hackathon.status === 'open' ? 'Open' : 'Closed'}
+              {hackathon.status === 'in-progress' ? 'In Progress' : hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
             </span>
           </div>
         </div>
@@ -53,8 +55,8 @@ export function HackathonCard({
         <div className="mb-4">
           <h3 className="text-xl font-bold mb-1 text-primary">{hackathon.title}</h3>
           {!hackathon.image && (
-            <span className={`inline-block text-xs px-2 py-1 rounded-full font-medium mb-2 ${statusColor[hackathon.status]}`}>
-              {hackathon.status === 'open' ? 'Open' : 'Closed'}
+            <span className={`inline-block text-xs px-2 py-1 rounded-full font-medium mb-2 ${statusColor[hackathon.status] || 'bg-gray-100 text-gray-800'}`}>
+              {hackathon.status === 'in-progress' ? 'In Progress' : hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
             </span>
           )}
           <p className="text-sm text-muted-foreground font-medium">By {hackathon.creatorName}</p>
@@ -145,14 +147,14 @@ export function HackathonCard({
           </Button>
         )}
 
-        {hackathon.status === 'closed' && !isCreator && (
+        {hackathon.status !== 'open' && !isCreator && (
           <Button
             variant="outline"
             size="sm"
             className="flex-1"
             disabled
           >
-            Closed
+            {hackathon.status === 'in-progress' ? 'In Progress' : hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
           </Button>
         )}
 
