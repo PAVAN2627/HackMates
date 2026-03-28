@@ -41,6 +41,17 @@ export function MessageContextMenu({
   }, [isEditing]);
 
   useEffect(() => {
+    if (isOpen) {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
+      // Reset edit state when successfully opening for a message
+      setIsEditing(false);
+      setEditContent(messageContent);
+    }
+  }, [isOpen, messageContent]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
@@ -94,21 +105,13 @@ export function MessageContextMenu({
   const handleEditCancel = () => {
     setIsEditing(false);
     setEditContent(messageContent);
+    onClose();
   };
 
   const handleDelete = () => {
     setConfirmDeleteOpen(true);
     onClose();
   };
-
-  // Add haptic feedback for mobile
-  const triggerHapticFeedback = () => {
-    if ('vibrate' in navigator) {
-      navigator.vibrate(50); // Short vibration
-    }
-  };
-
-  if (!isOpen) return null;
 
   // Calculate menu position to keep it within viewport
   const menuStyle = {
@@ -117,11 +120,6 @@ export function MessageContextMenu({
     top: Math.min(Math.max(position.y - 50, 10), window.innerHeight - 200), // Position above touch point
     zIndex: 9999, // Higher z-index to ensure it appears above everything
   };
-
-  // Trigger haptic feedback when menu opens
-  if (isOpen) {
-    triggerHapticFeedback();
-  }
 
   const menuContent = (
     <div
@@ -203,7 +201,7 @@ export function MessageContextMenu({
 
   return (
     <>
-      {createPortal(menuContent, document.body)}
+      {isOpen && createPortal(menuContent, document.body)}
       <ConfirmDialog
         open={confirmDeleteOpen}
         title="Delete Message"

@@ -36,7 +36,10 @@ service cloud.firestore {
         resource.data.recipientId == request.auth.uid
       );
       allow create: if request.auth != null && request.auth.uid == request.resource.data.senderId;
-      allow update: if request.auth != null && resource.data.senderId == request.auth.uid;
+      allow update: if request.auth != null && (
+        resource.data.senderId == request.auth.uid ||
+        resource.data.recipientId == request.auth.uid
+      );
       allow delete: if request.auth != null && resource.data.senderId == request.auth.uid;
     }
 
@@ -89,6 +92,14 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == request.resource.data.leaderId;
       allow update: if request.auth != null && resource.data.leaderId == request.auth.uid;
       allow delete: if request.auth != null && resource.data.leaderId == request.auth.uid;
+    }
+
+    // ── Read Announcements ─────────────────────────────────────────────────
+    match /readAnnouncements/{docId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
     // ── Reports ────────────────────────────────────────────────────────────
