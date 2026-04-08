@@ -10,6 +10,7 @@ import { HackathonCard } from '@/components/HackathonCardNew';
 import { db, COLLECTIONS } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { toast } from 'sonner';
+import { PostUpcomingDialog } from '@/components/PostUpcomingDialog';
 
 interface UpcomingAd {
   id: string;
@@ -35,6 +36,8 @@ export default function Dashboard() {
 
   const [myUpcoming, setMyUpcoming] = useState<UpcomingAd[]>([]);
   const [upcomingLoading, setUpcomingLoading] = useState(true);
+  const [postOpen, setPostOpen] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -163,7 +166,7 @@ export default function Dashboard() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold">My Upcoming Ads</h2>
-            <Button variant="outline" size="sm" onClick={() => navigate('/upcoming')} className="gap-1.5">
+            <Button variant="outline" size="sm" onClick={() => { setEditData(null); setPostOpen(true); }} className="gap-1.5">
               <Plus className="h-3.5 w-3.5" /> Post New
             </Button>
           </div>
