@@ -146,8 +146,7 @@ export function PostUpcomingDialog({ open, onOpenChange, editData, onSaved }: Pr
                 <button key={t} type="button" onClick={() => toggleTheme(t)}
                   className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
                     themes.includes(t)
-                      ? 'bg-blue-700 border-blue-700 text-white'
-                      : 'bg-background border-border hover:border-blue-500 text-foreground'
+                      ? 'bg-blue-700 border-blue-700 text-white'                      : 'bg-background border-border hover:border-blue-500 text-foreground'
                   }`}>
                   {t}
                 </button>

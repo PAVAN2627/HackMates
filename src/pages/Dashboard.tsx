@@ -206,7 +206,7 @@ export default function Dashboard() {
                     {getThemes(ad).length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {getThemes(ad).slice(0, 3).map(t => (
-                          <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-blue-700 text-white flex items-center gap-1">
+                          <span key={t} className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 font-medium" style={{ backgroundColor: '#1d4ed8', color: '#fff' }}>
                             <Tag className="h-2.5 w-2.5" />{t}
                           </span>
                         ))}

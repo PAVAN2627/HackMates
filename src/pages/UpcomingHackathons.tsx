@@ -189,7 +189,7 @@ export default function UpcomingHackathons() {
                   <div className="flex gap-1.5 flex-wrap">
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">{ad.mode || 'online'}</span>
                     {getThemes(ad).slice(0, 2).map(t => (
-                      <span key={t} className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-700 text-white">{t}</span>
+                      <span key={t} className="text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1" style={{ backgroundColor: '#1d4ed8', color: '#fff' }}>{t}</span>
                     ))}
                     {getThemes(ad).length > 2 && (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">+{getThemes(ad).length - 2}</span>
@@ -254,7 +254,7 @@ export default function UpcomingHackathons() {
                   <div className="flex gap-2 flex-wrap">
                     <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary capitalize">{selectedAd.mode || 'online'}</span>
                     {getThemes(selectedAd).map(t => (
-                      <span key={t} className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-700 text-white flex items-center gap-1">
+                      <span key={t} className="text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: '#1d4ed8', color: '#fff' }}>
                         <Tag className="h-3 w-3" />{t}
                       </span>
                     ))}
