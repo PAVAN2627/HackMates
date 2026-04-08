@@ -11,10 +11,13 @@ import { Calendar, Plus, MapPin, ExternalLink, Upload, X, Trash2, Edit, Clock, M
 import { toast } from 'sonner';
 
 const HACKATHON_THEMES = [
-  'AI / Machine Learning', 'Web Development', 'Mobile Apps', 'Blockchain / Web3',
-  'IoT / Hardware', 'Cybersecurity', 'Data Science', 'Cloud Computing',
-  'HealthTech', 'FinTech', 'EdTech', 'AgriTech', 'CleanTech / Sustainability',
-  'Social Impact', 'Game Development', 'AR / VR', 'Open Innovation', 'Other',
+  'AI / Machine Learning', 'Web Development', 'Mobile Apps',
+  'Blockchain / Web3', 'IoT / Hardware', 'Cybersecurity',
+  'Data Science', 'Cloud Computing', 'HealthTech', 'FinTech',
+  'EdTech', 'AgriTech', 'CleanTech / Sustainability', 'Social Impact',
+  'Game Development', 'AR / VR', 'Open Innovation',
+  'UI/UX Design', 'DevOps', 'Robotics', 'Space Tech',
+  'Smart Cities', 'LegalTech', 'HRTech', 'RetailTech', 'Other',
 ];
 
 interface UpcomingHackathon {
@@ -31,7 +34,8 @@ interface UpcomingHackathon {
   creatorId: string;
   mode?: 'online' | 'offline' | 'hybrid';
   city?: string;
-  theme?: string;
+  theme?: string | string[];
+  themes?: string[];
 }
 
 export default function UpcomingHackathons() {
@@ -50,7 +54,7 @@ export default function UpcomingHackathons() {
   const [venue, setVenue] = useState('');
   const [city, setCity] = useState('');
   const [mode, setMode] = useState<'online' | 'offline' | 'hybrid'>('online');
-  const [theme, setTheme] = useState('');
+  const [themes, setThemes] = useState<string[]>([]);
   const [contactEmail, setContactEmail] = useState('');
   const [link, setLink] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
@@ -67,7 +71,7 @@ export default function UpcomingHackathons() {
 
   const resetForm = () => {
     setEditId(null); setTitle(''); setDescription(''); setDate(''); setTime('');
-    setVenue(''); setCity(''); setMode('online'); setTheme('');
+    setVenue(''); setCity(''); setMode('online'); setThemes([]);
     setContactEmail(''); setLink(''); setPreviewUrl('');
   };
 
@@ -102,7 +106,7 @@ export default function UpcomingHackathons() {
   const handleEdit = (ad: UpcomingHackathon) => {
     setEditId(ad.id); setTitle(ad.title); setDescription(ad.description);
     setDate(ad.date); setTime(ad.time); setVenue(ad.venue); setCity(ad.city || '');
-    setMode(ad.mode || 'online'); setTheme(ad.theme || '');
+    setMode(ad.mode || 'online'); setThemes(Array.isArray(ad.theme) ? ad.theme : ad.theme ? [ad.theme] : []);
     setContactEmail(ad.contactEmail); setLink(ad.link || ''); setPreviewUrl(ad.imageUrl || '');
     setOpen(true);
   };
@@ -120,7 +124,7 @@ export default function UpcomingHackathons() {
     if (!user) return;
     setSubmitting(true);
     try {
-      const dataToSave = { title, description, date, time, venue, city, mode, theme, contactEmail, link, imageUrl: previewUrl, creatorId: user.uid };
+      const dataToSave = { title, description, date, time, venue, city, mode, themes, contactEmail, link, imageUrl: previewUrl, creatorId: user.uid };
       if (editId) {
         await updateDoc(doc(db, COLLECTIONS.UPCOMING_HACKATHONS, editId), dataToSave);
         toast.success('Updated!');
@@ -136,9 +140,16 @@ export default function UpcomingHackathons() {
   if (authLoading) return <div className="flex items-center justify-center min-h-[50vh]"><div className="animate-pulse text-primary">Loading...</div></div>;
   if (!user) return <Navigate to="/auth" replace />;
 
+  const getThemes = (ad: UpcomingHackathon): string[] => {
+    if (Array.isArray(ad.themes)) return ad.themes as string[];
+    if (Array.isArray(ad.theme)) return ad.theme;
+    if (typeof ad.theme === 'string' && ad.theme) return [ad.theme];
+    return [];
+  };
+
   const filteredAds = ads.filter(ad => {
     if (filterMode !== 'all' && ad.mode !== filterMode) return false;
-    if (filterTheme && ad.theme !== filterTheme) return false;
+    if (filterTheme && !getThemes(ad).includes(filterTheme)) return false;
     if (filterVenue && !ad.venue?.toLowerCase().includes(filterVenue.toLowerCase()) && !ad.city?.toLowerCase().includes(filterVenue.toLowerCase())) return false;
     if (searchQuery && !ad.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
@@ -213,16 +224,26 @@ export default function UpcomingHackathons() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Theme / Domain *</label>
-                <select
-                  required
-                  value={theme}
-                  onChange={e => setTheme(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm"
-                >
-                  <option value="">Select a theme...</option>
-                  {HACKATHON_THEMES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                <label className="text-sm font-medium">Theme / Domain <span className="text-muted-foreground text-xs">(select multiple)</span></label>
+                <div className="flex flex-wrap gap-2 p-3 border border-input rounded-md bg-background max-h-48 overflow-y-auto">
+                  {HACKATHON_THEMES.map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setThemes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])}
+                      className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                        themes.includes(t)
+                          ? 'bg-primary border-primary text-primary-foreground'
+                          : 'bg-background border-border hover:border-primary/50 text-foreground'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                {themes.length > 0 && (
+                  <p className="text-xs text-muted-foreground">{themes.length} selected: {themes.join(', ')}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -329,7 +350,12 @@ export default function UpcomingHackathons() {
                   <h3 className="text-lg font-bold text-primary leading-tight">{ad.title}</h3>
                   <div className="flex gap-1.5 flex-wrap">
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">{ad.mode || 'online'}</span>
-                    {ad.theme && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary/20 text-secondary-foreground">{ad.theme}</span>}
+                    {getThemes(ad).slice(0, 2).map(t => (
+                      <span key={t} className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary/20 text-secondary-foreground">{t}</span>
+                    ))}
+                    {getThemes(ad).length > 2 && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">+{getThemes(ad).length - 2}</span>
+                    )}
                   </div>
                 </div>
 
@@ -390,11 +416,11 @@ export default function UpcomingHackathons() {
                   <h2 className="text-2xl font-bold text-primary leading-tight">{selectedAd.title}</h2>
                   <div className="flex gap-2 flex-wrap">
                     <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary capitalize">{selectedAd.mode || 'online'}</span>
-                    {selectedAd.theme && (
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-secondary/20 text-secondary-foreground flex items-center gap-1">
-                        <Tag className="h-3 w-3" />{selectedAd.theme}
+                    {getThemes(selectedAd).map(t => (
+                      <span key={t} className="text-xs font-semibold px-3 py-1 rounded-full bg-secondary/20 text-secondary-foreground flex items-center gap-1">
+                        <Tag className="h-3 w-3" />{t}
                       </span>
-                    )}
+                    ))}
                   </div>
                 </div>
 
