@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Calendar, Plus, MapPin, ExternalLink, Image as ImageIcon, Upload, X, Trash2, Edit } from 'lucide-react';
+import { Calendar, Plus, MapPin, ExternalLink, Image as ImageIcon, Upload, X, Trash2, Edit, Clock, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UpcomingHackathon {
@@ -53,6 +53,8 @@ export default function UpcomingHackathons() {
   const [filterCity, setFilterCity] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Detail popup
+  const [selectedAd, setSelectedAd] = useState<UpcomingHackathon | null>(null);
   const resetForm = () => {
     setEditId(null);
     setTitle('');
@@ -364,7 +366,11 @@ export default function UpcomingHackathons() {
       ) : (
         <div className="grid md:grid-cols-2 gap-6 mt-6">
           {filteredAds.map((ad) => (
-            <div key={ad.id} className="glass rounded-xl overflow-hidden hover:shadow-lg transition-all border border-muted/20">
+            <div
+              key={ad.id}
+              className="glass rounded-xl overflow-hidden hover:shadow-lg transition-all border border-muted/20 cursor-pointer"
+              onClick={() => setSelectedAd(ad)}
+            >
               {ad.imageUrl && (
                 <div className="w-full h-48 bg-muted relative">
                   <img src={ad.imageUrl} alt={ad.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/assets/hackmatesroundlogo.png'; }} />
@@ -388,14 +394,20 @@ export default function UpcomingHackathons() {
                   </div>
                 </div>
                 {ad.link && (
-                  <a href={ad.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline text-sm font-medium">
+                  <a
+                    href={ad.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-primary hover:underline text-sm font-medium"
+                    onClick={e => e.stopPropagation()}
+                  >
                     View & Register <ExternalLink className="w-4 h-4" />
                   </a>
                 )}
 
                 {/* Edit & Delete Controls for Creator */}
                 {ad.creatorId === user.uid && (
-                  <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-border" onClick={e => e.stopPropagation()}>
                     <Button variant="outline" size="sm" onClick={() => handleEdit(ad)} className="flex-1">
                       <Edit className="w-4 h-4 mr-2" /> Edit
                     </Button>
@@ -409,6 +421,106 @@ export default function UpcomingHackathons() {
           ))}
         </div>
       )}
+
+      {/* Detail Popup */}
+      <Dialog open={!!selectedAd} onOpenChange={(open) => !open && setSelectedAd(null)}>
+        <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto p-0">
+          {selectedAd && (
+            <>
+              {/* Image */}
+              {selectedAd.imageUrl && (
+                <div className="w-full max-h-72 bg-muted overflow-hidden rounded-t-lg">
+                  <img
+                    src={selectedAd.imageUrl}
+                    alt={selectedAd.title}
+                    className="w-full h-full object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/hackmatesroundlogo.png'; }}
+                  />
+                </div>
+              )}
+
+              <div className="p-6 space-y-5">
+                {/* Title + mode badge */}
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <h2 className="text-2xl font-bold text-primary leading-tight">{selectedAd.title}</h2>
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary capitalize flex-shrink-0">
+                    {selectedAd.mode || 'classic'}
+                  </span>
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{selectedAd.description}</p>
+
+                {/* Info grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 bg-muted/40 rounded-xl px-4 py-3">
+                    <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Date</p>
+                      <p className="text-sm font-medium">
+                        {new Date(`${selectedAd.date}T${selectedAd.time}`).toLocaleDateString('en-IN', {
+                          weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-muted/40 rounded-xl px-4 py-3">
+                    <Clock className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Time</p>
+                      <p className="text-sm font-medium">
+                        {new Date(`${selectedAd.date}T${selectedAd.time}`).toLocaleTimeString('en-IN', {
+                          hour: '2-digit', minute: '2-digit', hour12: true
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-muted/40 rounded-xl px-4 py-3">
+                    <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Venue</p>
+                      <p className="text-sm font-medium">
+                        {selectedAd.venue}{selectedAd.city && selectedAd.city.trim() !== 'N/A' ? `, ${selectedAd.city}` : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-muted/40 rounded-xl px-4 py-3">
+                    <Mail className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Contact</p>
+                      <p className="text-sm font-medium break-all">{selectedAd.contactEmail}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Register button */}
+                {selectedAd.link && (
+                  <a href={selectedAd.link} target="_blank" rel="noopener noreferrer" className="block">
+                    <Button className="w-full gap-2">
+                      View & Register <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </a>
+                )}
+
+                {/* Creator actions */}
+                {selectedAd.creatorId === user.uid && (
+                  <div className="flex gap-2 pt-2 border-t border-border">
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => { setSelectedAd(null); handleEdit(selectedAd); }}>
+                      <Edit className="w-4 h-4 mr-2" /> Edit
+                    </Button>
+                    <Button variant="destructive" size="sm" className="flex-1" onClick={() => { setSelectedAd(null); handleDelete(selectedAd.id); }}>
+                      <Trash2 className="w-4 h-4 mr-2" /> Delete
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
