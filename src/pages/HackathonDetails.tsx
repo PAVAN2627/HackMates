@@ -58,7 +58,7 @@ export default function HackathonDetails() {
   const { messages, loading: chatLoading, sendMessage, editMessage, deleteMessage } = useChat(id || '');
   const { getProfileById, profiles } = useProfiles();
   const { submitFeedback } = useTeamFeedback();
-  const { getUserTeam, isUserInAnyTeam, addMemberToTeam, removeMemberFromTeam, removeNonTeamMembers, leaveTeam, deleteTeam, createTeam } = useTeams();
+  const { getUserTeam, isUserInAnyTeam, addMemberToTeam, removeMemberFromTeam, removeNonTeamMembers, leaveTeam, deleteTeam, createTeam, markTeamCompleted } = useTeams();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [profileModalUser, setProfileModalUser] = useState<{ id: string; name: string } | null>(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -457,8 +457,8 @@ export default function HackathonDetails() {
                   </>
                 )}
                 
-                {/* Rate Teammates Button - Show for team members when hackathon is completed */}
-                {hackathon.status === 'completed' && userTeam && userTeam.memberIds.length > 1 && (
+                {/* Rate Teammates Button - Show for team members when hackathon is completed OR their team is completed */}
+                {(hackathon.status === 'completed' || (userTeam as any)?.status === 'completed') && userTeam && userTeam.memberIds.length > 1 && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -577,7 +577,7 @@ export default function HackathonDetails() {
       </div>
 
       {/* Feedback Reminder Banner for Completed Hackathons */}
-      {hackathon.status === 'completed' && userTeam && userTeam.memberIds.length > 1 && (
+      {(hackathon.status === 'completed' || (userTeam as any)?.status === 'completed') && userTeam && userTeam.memberIds.length > 1 && (
         <div className="bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
@@ -768,6 +768,24 @@ export default function HackathonDetails() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                        )}
+                        {/* Team leader can mark their team as completed */}
+                        {isLeaderOfThisTeam && (team as any).status !== 'completed' && hackathon.status !== 'completed' && (
+                          <Button
+                            variant="outline" size="sm"
+                            className="h-7 px-2 text-xs gap-1 border-green-400 text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                            onClick={async () => {
+                              if (!confirm('Mark this team as completed? Members will be able to rate each other.')) return;
+                              await markTeamCompleted(hackathon.id, team.id, hackathon.teams || []);
+                            }}
+                          >
+                            <Trophy className="h-3 w-3" /> Mark Complete
+                          </Button>
+                        )}
+                        {(team as any).status === 'completed' && (
+                          <Badge className="text-xs bg-green-500/20 text-green-600 border-green-400">
+                            ✓ Completed
+                          </Badge>
                         )}
                       </div>
 

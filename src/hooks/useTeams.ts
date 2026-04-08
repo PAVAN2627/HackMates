@@ -349,6 +349,29 @@ export function useTeams() {
     }
   };
 
+  const markTeamCompleted = async (
+    hackathonId: string,
+    teamId: string,
+    currentTeams: HackathonTeam[]
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      const updatedTeams = currentTeams.map(team =>
+        team.id === teamId ? { ...team, status: 'completed' } : team
+      );
+      const hackathonRef = doc(db, COLLECTIONS.HACKATHONS, hackathonId);
+      await updateDoc(hackathonRef, { teams: updatedTeams });
+      toast.success('Team marked as completed! Members can now rate each other.');
+      return true;
+    } catch (error) {
+      console.error('Error marking team completed:', error);
+      toast.error('Failed to mark team as completed');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteTeam = async (
     hackathonId: string,
     teamId: string,
@@ -387,6 +410,7 @@ export function useTeams() {
     getUserTeam,
     isUserInAnyTeam,
     updateTeam,
-    deleteTeam
+    deleteTeam,
+    markTeamCompleted,
   };
 }
