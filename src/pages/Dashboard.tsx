@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Plus, Trophy, Users, Calendar, MapPin, ExternalLink, Edit, Trash2, Tag, X } from 'lucide-react';
+import { Plus, Trophy, Users, Calendar, MapPin, ExternalLink, Edit, Trash2, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -88,6 +88,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Post/Edit upcoming dialog */}
+      <PostUpcomingDialog
+        open={postOpen}
+        onOpenChange={(o) => { setPostOpen(o); if (!o) setEditData(null); }}
+        editData={editData}
+      />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -179,7 +185,7 @@ export default function Dashboard() {
             <Card className="p-8 text-center">
               <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground mb-4">You haven't posted any upcoming hackathon ads yet.</p>
-              <Button onClick={() => navigate('/upcoming')}>Post an Upcoming Hackathon</Button>
+              <Button onClick={() => { setEditData(null); setPostOpen(true); }}>Post an Upcoming Hackathon</Button>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -200,7 +206,7 @@ export default function Dashboard() {
                     {getThemes(ad).length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {getThemes(ad).slice(0, 3).map(t => (
-                          <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary-foreground flex items-center gap-1">
+                          <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-blue-700 text-white flex items-center gap-1">
                             <Tag className="h-2.5 w-2.5" />{t}
                           </span>
                         ))}
@@ -230,7 +236,17 @@ export default function Dashboard() {
                         </a>
                       )}
                       <Button variant="outline" size="sm" className="gap-1 text-xs"
-                        onClick={() => navigate('/upcoming')}>
+                        onClick={() => {
+                          setEditData({
+                            id: ad.id, title: ad.title, description: ad.description,
+                            date: ad.date, time: ad.time, venue: ad.venue, city: ad.city || '',
+                            mode: (ad.mode as any) || 'online',
+                            themes: getThemes(ad),
+                            contactEmail: (ad as any).contactEmail || '',
+                            link: ad.link || '', imageUrl: ad.imageUrl || '',
+                          });
+                          setPostOpen(true);
+                        }}>
                         <Edit className="h-3 w-3" /> Edit
                       </Button>
                       <Button variant="outline" size="sm"
