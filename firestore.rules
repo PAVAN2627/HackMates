@@ -23,6 +23,7 @@ service cloud.firestore {
       allow update: if request.auth != null && (
         resource.data.creatorId == request.auth.uid ||
         request.auth.uid in resource.data.teamMembers ||
+        resource.data.status == 'open' ||
         isAdmin()
       );
       allow delete: if request.auth != null && (
