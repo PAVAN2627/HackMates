@@ -8,6 +8,12 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
+    function isHackathonTeamMember(hackathonId) {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/hackathons/$(hackathonId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/hackathons/$(hackathonId)).data.teamMembers;
+    }
+
     // ── Users ──────────────────────────────────────────────────────────────
     match /users/{userId} {
       allow read: if request.auth != null;
@@ -23,7 +29,6 @@ service cloud.firestore {
       allow update: if request.auth != null && (
         resource.data.creatorId == request.auth.uid ||
         request.auth.uid in resource.data.teamMembers ||
-        resource.data.status == 'open' ||
         isAdmin()
       );
       allow delete: if request.auth != null && (
@@ -52,7 +57,10 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == request.resource.data.senderId;
       allow update: if request.auth != null && (
         resource.data.senderId == request.auth.uid ||
-        resource.data.recipientId == request.auth.uid
+        (
+          resource.data.recipientId == request.auth.uid &&
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(['read', 'readAt'])
+        )
       );
       allow delete: if request.auth != null && (
         resource.data.senderId == request.auth.uid || isAdmin()
@@ -81,9 +89,15 @@ service cloud.firestore {
 
     // ── Team Chat ──────────────────────────────────────────────────────────
     match /teamChat/{messageId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.authorId;
-      allow update: if request.auth != null && resource.data.authorId == request.auth.uid;
+      allow read: if request.auth != null && (
+        isHackathonTeamMember(resource.data.hackathonId) || isAdmin()
+      );
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.authorId &&
+        isHackathonTeamMember(request.resource.data.hackathonId);
+      allow update: if request.auth != null &&
+        resource.data.authorId == request.auth.uid &&
+        isHackathonTeamMember(resource.data.hackathonId);
       allow delete: if request.auth != null && (
         resource.data.authorId == request.auth.uid || isAdmin()
       );
@@ -91,9 +105,15 @@ service cloud.firestore {
 
     // ── Hackathon Chat ─────────────────────────────────────────────────────
     match /hackathonChat/{messageId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (
+        isHackathonTeamMember(resource.data.hackathonId) || isAdmin()
+      );
+      allow create: if request.auth != null && (
+        isHackathonTeamMember(request.resource.data.hackathonId) || isAdmin()
+      );
+      allow update: if request.auth != null &&
+        resource.data.userId == request.auth.uid &&
+        isHackathonTeamMember(resource.data.hackathonId);
       allow delete: if request.auth != null && (
         resource.data.userId == request.auth.uid || isAdmin()
       );
