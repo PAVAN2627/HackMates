@@ -25,7 +25,20 @@ firebase-debug.log
 firestore-debug.log
 scripts/serviceAccountKey.json
 *.adminsdk*.json
+*firebase-adminsdk-*.json
+*serviceAccount*.json
+*service-account*.json
+*credentials*.json
 hackathon-team-formation-firebase-adminsdk-*.json
+
+# Secrets and keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+secrets/
+keys/
 
 # Editor directories and files
 .vscode/*
