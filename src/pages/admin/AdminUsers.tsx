@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { db } from '@/lib/firebase';
 import {
   collection, getDocs, doc, updateDoc, setDoc,
-  writeBatch, Timestamp, getFirestore
+  writeBatch, Timestamp
 } from 'firebase/firestore';
 import { initializeApp, deleteApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -91,10 +91,8 @@ export default function AdminUsers() {
       const cred = await createUserWithEmailAndPassword(secondaryAuth, adminForm.email.trim(), adminForm.password);
       const uid = cred.user.uid;
 
-      // Use the secondary app's Firestore instance so the write is authenticated
-      // as the new user (uid == userId satisfies the security rule)
-      const secondaryDb = getFirestore(secondaryApp);
-      await setDoc(doc(secondaryDb, 'users', uid), {
+      // Write using the main db — allowed because the current user isAdmin()
+      await setDoc(doc(db, 'users', uid), {
         uid,
         name: adminForm.name.trim(),
         email: adminForm.email.trim(),
