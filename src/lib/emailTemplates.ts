@@ -2,6 +2,120 @@
  * HTML Email Templates for HackMates
  */
 
+/**
+ * Admin account created email with credentials
+ */
+export const getAdminWelcomeEmailHTML = (userName: string, userEmail: string, userPassword: string): string => {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #7c3aed 0%, #1d4ed8 100%); padding: 40px 20px; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 10px;">🔐</div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 26px;">Admin Account Created</h1>
+              <p style="color: #c4b5fd; margin: 8px 0 0 0; font-size: 14px;">HackMates Platform Administration</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h2 style="color: #1f2937; margin-top: 0; font-size: 22px;">Hi ${userName} 👋</h2>
+
+              <p style="color: #4b5563; line-height: 1.6; margin: 16px 0;">
+                An admin account has been created for you on <strong>HackMates</strong>. You now have access to the admin dashboard where you can manage users, hackathons, and reports.
+              </p>
+
+              <!-- Credentials Box -->
+              <table width="100%" cellpadding="20" cellspacing="0" style="background: linear-gradient(135deg, #ede9fe 0%, #dbeafe 100%); border-left: 4px solid #7c3aed; border-radius: 8px; margin: 24px 0;">
+                <tr>
+                  <td>
+                    <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 18px;">🔑 Your Login Credentials</h3>
+                    <table width="100%" cellpadding="10" cellspacing="0" style="background: #ffffff; border-radius: 6px; margin-bottom: 10px;">
+                      <tr>
+                        <td>
+                          <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase;">Email</p>
+                          <p style="margin: 4px 0 0 0; color: #2563eb; font-size: 16px; font-weight: bold;">${userEmail}</p>
+                        </td>
+                      </tr>
+                    </table>
+                    <table width="100%" cellpadding="10" cellspacing="0" style="background: #ffffff; border-radius: 6px;">
+                      <tr>
+                        <td>
+                          <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase;">Password</p>
+                          <p style="margin: 4px 0 0 0;">
+                            <code style="background: #f3f4f6; padding: 6px 12px; border-radius: 4px; color: #dc2626; font-size: 16px; font-family: monospace; letter-spacing: 1px;">${userPassword}</code>
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="margin: 14px 0 0 0; font-size: 13px; color: #6b7280;">
+                      ⚠️ <em>Please save these credentials and change your password after first login.</em>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Admin Capabilities -->
+              <h3 style="color: #1f2937; margin: 24px 0 12px 0; font-size: 18px;">🛡️ Your Admin Capabilities</h3>
+              <ul style="color: #4b5563; line-height: 1.8; padding-left: 20px;">
+                <li><strong>Users</strong> — View, block, and manage all platform users</li>
+                <li><strong>Hackathons</strong> — Monitor and delete hackathon listings</li>
+                <li><strong>Reports</strong> — Review and resolve user reports</li>
+                <li><strong>Analytics</strong> — View platform statistics</li>
+              </ul>
+
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="https://thehackmates.xyz/auth" style="display: inline-block; text-decoration: none; color: #ffffff; background: linear-gradient(135deg, #7c3aed 0%, #1d4ed8 100%); padding: 14px 36px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                      🚀 Login to Admin Dashboard
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color: #4b5563; line-height: 1.6; margin: 24px 0 0 0;">
+                Welcome to the team!<br>
+                <strong style="color: #1f2937;">HackMates Platform</strong><br>
+                <span style="font-size: 13px; color: #9ca3af;">Built with ❤️ by NoobcodersIND</span>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: #f9fafb; padding: 20px 30px; border-top: 1px solid #e5e7eb; text-align: center;">
+              <p style="margin: 0; font-size: 13px; color: #6b7280;">
+                This email was sent to <strong>${userEmail}</strong> because an admin account was created for you on HackMates.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+};
+
+/**
+ * Welcome email for email/password users
+ */
 export const getWelcomeEmailHTML = (userName: string, userEmail: string, userPassword: string): string => {
   return `
 <!DOCTYPE html>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { db } from '@/lib/firebase';
-import { sendWelcomeEmail } from '@/lib/emailService';
+import { sendAdminWelcomeEmail } from '@/lib/emailService';
 import {
   collection, getDocs, doc, updateDoc, setDoc,
   writeBatch, Timestamp
@@ -106,20 +106,25 @@ export default function AdminUsers() {
         createdAt: Timestamp.now(),
       });
 
+      // Capture values before clearing the form
+      const createdName = adminForm.name.trim();
+      const createdEmail = adminForm.email.trim();
+      const createdPassword = adminForm.password;
+
       const newAdmin: any = {
         uid, id: uid,
-        name: adminForm.name.trim(),
-        email: adminForm.email.trim(),
+        name: createdName,
+        email: createdEmail,
         isAdmin: true,
         isBlocked: false,
       };
       setUsers(prev => [newAdmin, ...prev]);
       setAdminForm({ name: '', email: '', password: '' });
       setShowAddAdmin(false);
-      toast({ title: `Admin "${adminForm.name.trim()}" created successfully` });
+      toast({ title: `Admin "${createdName}" created successfully` });
 
       // Send credentials email (non-blocking)
-      sendWelcomeEmail(adminForm.email.trim(), adminForm.name.trim(), adminForm.password)
+      sendAdminWelcomeEmail(createdEmail, createdName, createdPassword)
         .catch(err => console.error('Failed to send admin welcome email:', err));
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {

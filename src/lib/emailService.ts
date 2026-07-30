@@ -3,7 +3,7 @@
  * Sends HTML emails via Google Script Web App (no rate limits!)
  */
 
-import { getWelcomeEmailHTML, getWelcomeEmailHTMLGoogle, getTeamAdditionEmailHTML, getAnnouncementEmailHTML, getTeamRemovalEmailHTML } from './emailTemplates';
+import { getWelcomeEmailHTML, getWelcomeEmailHTMLGoogle, getAdminWelcomeEmailHTML, getTeamAdditionEmailHTML, getAnnouncementEmailHTML, getTeamRemovalEmailHTML } from './emailTemplates';
 
 // Google Apps Script Web App URL from environment variables
 // Fallback to hardcoded URL if env var is not set (for production)
@@ -11,8 +11,37 @@ const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL ||
   "https://script.google.com/macros/s/AKfycbwAONpHPDDjudicL6M2tRpqErl9xG9-VHLKBBLJ9w6jXvRNh3N_if6-GTcos2as1k1Q/exec";
 
 /**
- * Send welcome email to new users with HTML template
+ * Send admin account credentials email
  */
+export const sendAdminWelcomeEmail = async (
+  userEmail: string,
+  userName: string,
+  userPassword: string
+): Promise<{ success: boolean }> => {
+  try {
+    const htmlMessage = getAdminWelcomeEmailHTML(userName, userEmail, userPassword);
+
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: userEmail,
+        name: userName,
+        subject: "🔐 HackMates Admin Account Created — Your Credentials",
+        html: htmlMessage,
+      }),
+    });
+
+    console.log('✅ Admin welcome email sent to:', userEmail);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Failed to send admin welcome email:", error);
+    return { success: false };
+  }
+};
 export const sendWelcomeEmail = async (
   userEmail: string,
   userName: string,
