@@ -183,13 +183,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profileDoc.exists()) {
         const data = profileDoc.data();
 
-        // Block check
+        // Block check — sign out immediately and clear all cached data
         if (data.isBlocked) {
+          localStorage.removeItem(`profile_cache_${uid}`);
+          localStorage.removeItem(`profile_backup_${uid}`);
           await firebaseSignOut(auth);
           setUser(null);
           setProfile(null);
           setLoading(false);
-          setError('Your account has been suspended. Contact support at @hackmates.tech.');
+          setError('Your account has been suspended. Contact support at hackmates.tech@gmail.com');
           return;
         }
 
@@ -208,16 +210,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Clear any stale backup data
         localStorage.removeItem(`profile_backup_${uid}`);
       } else {
-        // No profile in Firebase, check cache as fallback
-        const cachedProfile = localStorage.getItem(`profile_cache_${uid}`);
-        if (cachedProfile) {
-          try {
-            const cached = JSON.parse(cachedProfile);
-            setProfile(cached);
-          } catch (e) {
-            localStorage.removeItem(`profile_cache_${uid}`);
-          }
-        }
+        // No profile in Firebase — clear any stale cache and don't load it
+        localStorage.removeItem(`profile_cache_${uid}`);
+        localStorage.removeItem(`profile_backup_${uid}`);
       }
     } catch (profileError) {
       console.error('Error fetching profile:', profileError);
@@ -455,7 +450,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      // Immediately check if the user is blocked before proceeding
+      const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, userCredential.user.uid));
+      if (profileDoc.exists() && profileDoc.data().isBlocked) {
+        // Sign them back out right away
+        await firebaseSignOut(auth);
+        throw new Error('Your account has been suspended. Contact support at hackmates.tech@gmail.com');
+      }
     } catch (error: any) {
       // Handle specific Firebase auth errors
       if (error.code === 'auth/user-not-found') {
@@ -536,6 +539,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         console.log('Existing user signed in successfully');
+
+        // Block check for Google sign-in
+        if (profileDoc.data()?.isBlocked) {
+          localStorage.removeItem(`profile_cache_${user.uid}`);
+          await firebaseSignOut(auth);
+          throw new Error('Your account has been suspended. Contact support at hackmates.tech@gmail.com');
+        }
+
         // Existing user - they're already signed in, profile will load automatically
       } catch (popupError: any) {
         if (popupError.message === 'REDIRECT_TO_REGISTER') {
