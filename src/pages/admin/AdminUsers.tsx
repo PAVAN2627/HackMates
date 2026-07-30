@@ -35,23 +35,33 @@ export default function AdminUsers() {
 
   const blockUser = async (target: UserProfile) => {
     if (!confirm(`Block ${target.name}? This will delete their content.`)) return;
-    const batch = writeBatch(db);
-    batch.update(doc(db, 'users', target.uid), { isBlocked: true, blockedAt: Timestamp.now() });
+    try {
+      const batch = writeBatch(db);
 
-    const [dmSnap, tcSnap, annSnap, hackSnap] = await Promise.all([
-      getDocs(collection(db, 'directMessages')),
-      getDocs(collection(db, 'teamChat')),
-      getDocs(collection(db, 'announcements')),
-      getDocs(collection(db, 'hackathons')),
-    ]);
-    dmSnap.docs.filter(d => d.data().senderId === target.uid).forEach(d => batch.delete(d.ref));
-    tcSnap.docs.filter(d => d.data().authorId === target.uid).forEach(d => batch.delete(d.ref));
-    annSnap.docs.filter(d => d.data().authorId === target.uid).forEach(d => batch.delete(d.ref));
-    hackSnap.docs.filter(d => d.data().creatorId === target.uid).forEach(d => batch.delete(d.ref));
+      // Mark user as blocked
+      batch.update(doc(db, 'users', target.uid), { isBlocked: true, blockedAt: Timestamp.now() });
 
-    await batch.commit();
-    setUsers(prev => prev.map(u => u.uid === target.uid ? { ...u, isBlocked: true } as any : u));
-    toast({ title: `${target.name} blocked` });
+      // Delete all their content (admin has read+delete permission on all these)
+      const [hackSnap, annSnap, dmSnap, tcSnap] = await Promise.all([
+        getDocs(collection(db, 'hackathons')),
+        getDocs(collection(db, 'announcements')),
+        getDocs(collection(db, 'directMessages')),
+        getDocs(collection(db, 'teamChat')),
+      ]);
+
+      hackSnap.docs.filter(d => d.data().creatorId === target.uid).forEach(d => batch.delete(d.ref));
+      annSnap.docs.filter(d => d.data().authorId === target.uid).forEach(d => batch.delete(d.ref));
+      dmSnap.docs.filter(d => d.data().senderId === target.uid).forEach(d => batch.delete(d.ref));
+      tcSnap.docs.filter(d => d.data().authorId === target.uid).forEach(d => batch.delete(d.ref));
+
+      await batch.commit();
+
+      setUsers(prev => prev.map(u => u.uid === target.uid ? { ...u, isBlocked: true } as any : u));
+      toast({ title: `${target.name} blocked and content removed` });
+    } catch (err: any) {
+      console.error('Block user error:', err);
+      toast({ title: 'Failed to block user', variant: 'destructive' });
+    }
   };
 
   const unblockUser = async (target: UserProfile) => {

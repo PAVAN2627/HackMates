@@ -96,34 +96,20 @@ export default function AdminDashboard() {
     try {
       const batch = writeBatch(db);
 
-      // Mark user as blocked
       batch.update(doc(db, 'users', targetUser.uid), { isBlocked: true, blockedAt: Timestamp.now() });
 
-      // Delete their hackathons
-      const hackSnap = await getDocs(query(collection(db, 'hackathons')));
-      hackSnap.docs
-        .filter(d => d.data().creatorId === targetUser.uid)
-        .forEach(d => batch.delete(d.ref));
+      const [hackSnap, annSnap, dmSnap, tcSnap] = await Promise.all([
+        getDocs(collection(db, 'hackathons')),
+        getDocs(collection(db, 'announcements')),
+        getDocs(collection(db, 'directMessages')),
+        getDocs(collection(db, 'teamChat')),
+      ]);
 
-      // Delete their direct messages
-      const dmSnap = await getDocs(collection(db, 'directMessages'));
-      dmSnap.docs
-        .filter(d => d.data().senderId === targetUser.uid)
-        .forEach(d => batch.delete(d.ref));
+      hackSnap.docs.filter(d => d.data().creatorId === targetUser.uid).forEach(d => batch.delete(d.ref));
+      annSnap.docs.filter(d => d.data().authorId === targetUser.uid).forEach(d => batch.delete(d.ref));
+      dmSnap.docs.filter(d => d.data().senderId === targetUser.uid).forEach(d => batch.delete(d.ref));
+      tcSnap.docs.filter(d => d.data().authorId === targetUser.uid).forEach(d => batch.delete(d.ref));
 
-      // Delete their team chat messages
-      const tcSnap = await getDocs(collection(db, 'teamChat'));
-      tcSnap.docs
-        .filter(d => d.data().authorId === targetUser.uid)
-        .forEach(d => batch.delete(d.ref));
-
-      // Delete their announcements
-      const annSnap = await getDocs(collection(db, 'announcements'));
-      annSnap.docs
-        .filter(d => d.data().authorId === targetUser.uid)
-        .forEach(d => batch.delete(d.ref));
-
-      // Mark all their reports as resolved
       reports
         .filter(r => r.reportedUserId === targetUser.uid)
         .forEach(r => batch.update(doc(db, 'reports', r.id), { status: 'resolved' }));
@@ -136,6 +122,7 @@ export default function AdminDashboard() {
       ));
       toast({ title: `${targetUser.name} has been blocked and their data removed.` });
     } catch (e) {
+      console.error('Block user error:', e);
       toast({ title: 'Failed to block user', variant: 'destructive' });
     }
   };
