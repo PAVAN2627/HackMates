@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Loading } from '@/components/Loading';
 import { GoogleLoginTroubleshooting } from '@/components/GoogleLoginTroubleshooting';
 import { useAuth } from '@/contexts/AuthContext';
-import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -116,8 +115,13 @@ export default function Auth() {
     return <Loading />;
   }
 
-  // If user is logged in, redirect to hackathons (or pending redirect destination)
+  // If user is logged in, redirect based on profile
+  // Wait for profile to load before deciding where to redirect to avoid flash
   if (user) {
+    // Profile is still loading — show a loading screen instead of flashing the wrong page
+    if (!profile) {
+      return <Loading />;
+    }
     const pendingRedirect = sessionStorage.getItem('pendingRedirect');
     const destination = pendingRedirect || (profile?.isAdmin ? '/admin' : '/hackathons');
     if (pendingRedirect) {
@@ -233,19 +237,7 @@ export default function Auth() {
 
         await signIn(formData.email, formData.password);
         toast.success('Welcome back!');
-        // Check cached profile for admin flag (set during loadUserProfile)
-        // Small delay to let profile load
-        setTimeout(() => {
-          const cached = localStorage.getItem(`profile_cache_${auth.currentUser?.uid}`);
-          if (cached) {
-            try {
-              const p = JSON.parse(cached);
-              navigate(p.isAdmin ? '/admin' : '/hackathons');
-              return;
-            } catch {}
-          }
-          navigate('/hackathons');
-        }, 800);
+        // Redirect is handled by the user+profile check above — no need to navigate here
       } else {
         // Redirect to email signup form
         sessionStorage.setItem('signupMethod', 'email');

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { db } from '@/lib/firebase';
+import { sendWelcomeEmail } from '@/lib/emailService';
 import {
   collection, getDocs, doc, updateDoc, setDoc,
   writeBatch, Timestamp
@@ -116,6 +117,10 @@ export default function AdminUsers() {
       setAdminForm({ name: '', email: '', password: '' });
       setShowAddAdmin(false);
       toast({ title: `Admin "${adminForm.name.trim()}" created successfully` });
+
+      // Send credentials email (non-blocking)
+      sendWelcomeEmail(adminForm.email.trim(), adminForm.name.trim(), adminForm.password)
+        .catch(err => console.error('Failed to send admin welcome email:', err));
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
         setFormError('This email is already registered.');
