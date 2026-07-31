@@ -19,7 +19,6 @@
 - [✨ Key Features](#-key-features)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [🚀 Quick Start](#-quick-start)
-- [📱 Screenshots](#-screenshots)
 - [🔧 Installation](#-installation)
 - [⚙️ Configuration](#️-configuration)
 - [🌐 Deployment](#-deployment)
@@ -36,114 +35,246 @@
 ### 🎯 Mission
 To democratize innovation by connecting passionate developers, designers, and creators across India's vibrant tech ecosystem.
 
-### 👁️Vision  
+### 👁️ Vision
 To become the go-to platform where India's next breakthrough innovations are born through meaningful collaborations and hackathon experiences.
 
 ---
 
 ## ✨ Key Features
 
-### 🤖 **AI-Powered Assistant**
-- **Personalized Guidance**: Gemini AI-powered assistant for hackathon success
-- **Smart Recommendations**: Project ideas based on your skills and experience
-- **Technical Support**: Real-time coding help and problem-solving
-- **Pitch Coaching**: Tips for presentations and team pitches
-- **Context-Aware**: Understands your profile and provides tailored advice
+### 🔐 **Authentication & Onboarding**
+- **Email/Password Login** — Zod-validated sign-in with show/hide password toggle
+- **Google OAuth** — One-click Google sign-in with mobile redirect fallback
+- **Multi-step Registration** — Comprehensive onboarding: name, college, location, bio, skills (40+ options), interests, experience, availability, gender, and work style
+- **Work Style Setup** — Goal (win/learn), time preference (night-owl/early-bird/flexible), commitment (full-time/part-time/casual), hours/week slider
+- **Avatar Upload** — Custom photo upload with file validation (≤1MB) or gender-based default avatars
+- **Account Deletion** — Full cascade delete including DMs, announcements, hackathons, teams, and Firebase Auth record
 
-### 🛡️ **Reliability & Trust System**
-- **Reliability Badges**: 4-tier system (Newbie → Reliable → Finisher → Legend)
-- **Team Feedback**: Rate teammates after hackathons to build trust
-- **Trust Scores**: 0-100 scoring based on completion rate and ratings
-- **Ghost Detection**: Identify unreliable team members before joining
-- **Achievement Badges**: Special recognition for consistent performers
-- **Transparent History**: View past hackathon participation and ratings
+---
 
-### ⚡ **Synergy Matching Algorithm**
-- **Work Style Compatibility**: Match based on goals (win vs learn)
-- **Schedule Alignment**: Find teammates with compatible time preferences
-- **Commitment Matching**: Align full-time, part-time, or casual availability
-- **Skill Complementarity**: Smart pairing of complementary skill sets
-- **Overall Synergy Score**: 0-100% compatibility rating
-- **Detailed Breakdown**: See exactly why you match (or don't)
+### 🏠 **Landing Page & Public Explore**
+- **Public Landing Page** — Marketing page with live hackathon previews, features, FAQ, and calls-to-action; no login required
+- **Public Hackathon Explore (`/explore`)** — Browse all live hackathons without an account; filter by mode, status, and skills
+- **Connection Status Detection** — Alerts for offline or slow network connections with a 20-second timeout indicator
+
+---
+
+### 📊 **Dashboard**
+- **Stats Overview** — Cards showing My Hackathons, Joined Hackathons, Upcoming Ads posted, and Total Users on the platform
+- **My Hackathons Grid** — Quick view of hackathons you created and joined
+- **My Upcoming Ads** — Manage your community hackathon advertisements inline (edit/delete)
+- **Quick Actions** — Direct links to Browse Hackathons, Find Members, and Post Upcoming Ads
+
+---
 
 ### 🏆 **Hackathon Management**
-- **Post Hackathons**: Any user can create and organize hackathons
-- **Smart Discovery**: Find hackathons by skills, location, and mode
-- **Team Formation**: Easy join/leave functionality with real-time updates
-- **Status Management**: Open/closed hackathon states with proper restrictions
-- **Required Skills**: Specify skills needed for better team matching
-- **Recommended Profiles**: AI-powered suggestions for team members
+- **Create Hackathons** — Post with title, description, poster image (≤750KB), venue, date/time, mode (online/in-person/hybrid), team size (1–20), gender preference, required skills, and technology domains
+- **Duplicate Detection** — Prevents duplicate hackathons by title + date + venue
+- **Smart Discovery** — Search and filter hackathons by skills, mode, and status
+- **Team Contract on Join** — Users must accept terms via `TeamContractDialog` before joining any hackathon
+- **Status Lifecycle** — Full workflow: Open → In Progress → Completed → Reopenable
+- **Creator Controls** — Edit, start, complete, reopen, or delete hackathons inline
+- **Share Button** — Native Web Share API or clipboard fallback for sharing hackathon links
+
+---
+
+### 📋 **Hackathon Details (Tabbed Interface)**
+- **Announcements Tab** — View organizer posts; organizer can create, pin, edit, and delete announcements
+- **General Chat Tab** — Real-time group chat for all participants; edit/delete own messages; URLs auto-linked
+- **Teams Tab** — Create/join teams, invite members (searches participants first, then all users), remove members, commit to project, view team contract, leave team (blocked if committed)
+- **Members Tab** *(creator only)* — View all participants, open profiles, add to team, or remove non-team members
+- **Recommended Profiles Tab** *(creator only)* — AI-suggested compatible profiles with Gemini-generated match explanations
+- **Rate Teammates Button** — Appears when a hackathon or team is completed; triggers the feedback workflow
+
+---
+
+### 📅 **Upcoming Hackathons — Community Ads (`/upcoming`)**
+- **Community-posted Ads** — Anyone can post ads for external hackathons not listed on the platform
+- **Full Poster Display** — Cards show full-size images without cropping
+- **Rich Filtering** — Search by name, venue/city, theme, and mode tabs
+- **Detail Popup** — Full-size poster, read-more expansion, date/time/venue, contact email, and external registration link
+- **Post Ad Form** — Title, description, date/time, venue, city, mode, themes (multi-select), contact email, image URL, and external link
+
+---
+
+### 👤 **User Profiles**
+- **Comprehensive Profile** — Skills, interests, bio, college, location, social links (LinkedIn, GitHub, portfolio), experience level, and work style
+- **Edit Mode** — Full in-place editing on your own profile page
+- **Looking for Team Toggle** — Flag yourself as available for new hackathon opportunities
+- **Avatar Upload** — Custom photo or gender-based default with preview
+- **Synergy Score** — Displayed when viewing another user's profile
+- **Message Button** — Opens a direct message conversation from any profile
+
+---
+
+### 🛡️ **Reliability & Trust System**
+- **4-Tier Reliability Badges** — Newbie → Reliable → Finisher → Legend, calculated from completion rate and average ratings
+- **Trust Score (0–100)** — 70% completion rate + 30% average star rating
+- **Ghost Detection** — Flags users with <50% completion after 2+ projects
+- **Achievement Badges** — Veteran (10+ hackathons), Never Ghosted (100% rate, 5+ projects), Highly Rated (≥4.5 avg), Perfect Record
+- **Team Feedback Modal** — Rate each teammate after hackathon completion: contribution check + 1–5 star rating
+
+---
+
+### ⚡ **Synergy Matching Algorithm**
+- **TF-IDF Cosine Similarity** — Profile token matching on skills, interests, and bio keywords
+- **Complementary Skill Scoring** — Peaks at 20–50% skill overlap; avoids "too similar" and "no overlap" extremes
+- **5-Factor Weighted Scoring:**
+  - Goal match (25%) — win vs. learn alignment
+  - Time coverage (25%) — complementary schedules score higher than identical (24-hour coverage bonus)
+  - Commitment match (20%)
+  - Skill complementarity (20%)
+  - Hours availability (10%)
+- **0–100 Synergy Score** — Shown on profile cards and sorted in the Profiles discovery page
+- **Detailed Breakdown** — See exactly why you match or don't for each factor
+
+---
+
+### 🤖 **AI-Powered Features**
+- **AI Assistant (Floating Widget)** — Powered by Gemini 2.5 Flash; context-aware with your full profile loaded into the system prompt
+  - Scoped strictly to HackMates and hackathon topics
+  - Quick reply chips: "How do I create a team?", "Find teammates", "Project ideas", "Report a user"
+  - Rate limited to 10 calls per 60 seconds
+  - Maintains last 5 messages as conversation history
+- **AI Match Reasons** — Gemini generates a one-sentence explanation for each recommended profile in the Hackathon Details → Recommended Profiles tab (batch request for up to 5 candidates)
+
+---
+
+### 🔰 **GitHub Verification**
+- **Activity Check** — Verifies your GitHub username and checks push events in the last 3 months via GitHub Events API
+- **Activity Levels** — Inactive (0) / Low (1–9) / Moderate (10–29) / High (30–59) / Very High (60+ commits)
+- **Trust Score Impact** — −15 (inactive) to +15 (very high activity)
+- **Badges on Profile** — Inactive Developer / Active Coder / Prolific Coder
+- **Auto-stale After 7 Days** — Refresh button on profile to re-verify; result saved to Firestore
+
+---
 
 ### 👥 **Profile & Team Discovery**
-- **Comprehensive Profiles**: Showcase skills, experience, and work style
-- **Smart Matching**: Find teammates by complementary skills and synergy
-- **Advanced Filtering**: Search by experience, reliability, and availability
-- **Work Style Preferences**: Display goals, time preferences, and commitment
-- **Social Integration**: LinkedIn, GitHub, and portfolio links
-- **Looking for Team**: Flag yourself as available for opportunities
+- **Profiles Page (`/profiles`)** — Grid of all users excluding yourself; sorted by synergy score if work style is set
+- **Advanced Filtering** — Search by name/bio, skills, interests, location, availability, and experience level
+- **UserProfileModal** — Full inline profile modal without leaving the page; includes message button
+- **Synergy Badge** — Visual indicator (high/medium/low) on each profile card
 
-### 💬 **Real-time Communication**
-- **Direct Messaging**: One-on-one conversations with team members
-- **Hackathon Chat**: Event-specific group discussions
-- **Live Updates**: Real-time message delivery and notifications
-- **Auto-Message Templates**: Quick invites with personalized content
-- **Rich Content**: Support for links and media sharing
+---
 
-### 📢 **Announcements & Notifications**
-- **Hackathon Announcements**: Organizers can post important updates
-- **Unread Tracking**: Visual indicators for new announcements
-- **Real-time Delivery**: Instant notifications to all team members
-- **Pin Important Updates**: Keep critical info at the top
-- **Notification Bell**: Centralized notification center with counts
-- **Mark as Read**: Track which announcements you've seen
+### 👨‍👩‍👧‍👦 **Teams**
+- **Platform Teams** — Teams within hackathons listed on HackMates; manage members, project details, and team chat
+- **Off-Platform Teams** — Create teams for hackathons not on the platform; invite members by name/skill, remove members (sends removal email to removed member), delete with confirmation
+- **Team Project Details** — Leader can set project title, description, and tech stack (searchable dropdown of 40+ technologies)
+- **Commit to Project** — Once a member commits, they cannot leave the team (protects the reliability score)
+- **Team Chat** — Separate real-time chat per team; edit/delete own messages via right-click/long-press context menu
+
+---
+
+### 💬 **Direct Messages**
+- **WhatsApp-style Layout** — Two-panel (conversation list + chat); list hides on mobile when a chat is open
+- **Unread Count Badges** — Per-conversation unread counters in the conversation list
+- **Read Receipts** — Single check (sent) and blue double-check (read) delivery indicators
+- **Message Edit/Delete** — Long-press (500ms) or right-click to open context menu for own messages
+- **Link Auto-detection** — URLs are automatically rendered as clickable links in all chats
+- **Profile Modal from Chat** — Click an avatar in any chat to open that user's profile inline
+
+---
+
+### 📢 **Announcements (`/announcements`)**
+- **Aggregated View** — All announcements from every hackathon you've joined in one place
+- **Pinned First** — Pinned announcements always appear at the top
+- **Unread Indicators** — Orange left border and "New" badge for unseen announcements
+- **Mark as Read / Mark All as Read** — Per-announcement and bulk read controls
+- **Author & Hackathon Context** — Shows the poster's avatar and which hackathon the announcement is from
+- **Relative Timestamps** — Human-friendly time with full date on hover; URLs auto-linked in content
+
+---
+
+### 🔔 **Notifications**
+- **In-App Notification Bell** — Real-time unread count badge in the header; notification list in a dropdown
+- **Push Notifications (FCM)** — Firebase Cloud Messaging for background and foreground notifications
+- **Permission Banner** — `NotificationPermissionBanner` prompts users to enable push notifications
+- **FCM Token Storage** — Token saved to the user's Firestore profile for targeted delivery
+- **Foreground Toast** — Notifications received while the app is open display as toast messages
+
+---
 
 ### 📧 **Email Notifications**
-- **Welcome Emails**: Beautiful HTML emails with account credentials on registration
-- **Team Invitations**: Automated emails when added to hackathon teams
-- **Announcement Alerts**: Email notifications for all hackathon announcements
-- **Professional Templates**: Responsive HTML designs with branding
-- **Google Apps Script**: Unlimited free email sending via Google infrastructure
-- **No Rate Limits**: Send as many emails as needed without restrictions
+- **Delivery via Google Apps Script** — No rate limits, no third-party email service costs
+- **Welcome Email (Email Signup)** — Branded HTML email with account credentials
+- **Welcome Email (Google Signup)** — Variant without password
+- **Team Addition Email** — Sent when added to any team (platform or off-platform)
+- **Team Removal Email** — Sent when removed from a team by a leader
+- **Announcement Email** — Sent to all hackathon participants when a new announcement is posted
+- **Admin Credentials Email** — Sent when an admin creates a new admin account
 
-### 🎨 **Modern User Experience**
-- **Responsive Design**: Optimized for all devices and screen sizes
-- **Theme Support**: Light, dark, and system theme modes
-- **Mobile Navigation**: Touch-friendly interface with bottom navigation
-- **Performance Optimized**: Fast loading with efficient caching
-- **Text Formatting**: Smart formatting for better readability
-- **Avatar System**: Gender-based default avatars with custom upload
+---
+
+### 🚨 **Report User System**
+- **3-Step Wizard:**
+  1. Live user search (≥2 characters; searches by name, email, and skills)
+  2. Reason selection from 8 categories + free-text description (≥10 characters required)
+  3. Proof image upload (up to 5 files, ≤1MB each, with image preview grid)
+- **Submitted to Firestore** — Reports stored in `reports` collection with status "pending"
+- **Admin Review** — Reports visible and actionable in the Admin Panel
+
+---
+
+### 🛠️ **Admin Panel (`/admin/*`)** — Admin Role Only
+- **Admin Layout** — Separate sidebar layout, fully role-gated
+- **Overview Dashboard** — 6 stat cards + 4 Recharts bar charts: user growth (6 months), reports by status, hackathons by mode, active vs. blocked users; recent reports list
+- **User Management** — List all users, search/filter, block/unblock (cascade deletes user content), "Add Admin" dialog (creates Firebase Auth user + Firestore doc via secondary app instance, sends credentials email)
+- **Report Management** — Filter reports by status, expand for description + proof images, mark as reviewed/resolved, block the reported user directly
+- **Hackathon Management** — Tabs for Platform Hackathons and Upcoming Hackathons; delete platform hackathons; edit/delete upcoming hackathon ads via inline dialog
+
+---
+
+### 🎨 **UI & UX**
+- **Theme System** — Light / Dark / System via `ThemeContext` with persistent toggle in the header
+- **Responsive Layout** — `DashboardLayout` with collapsible sidebar on desktop + bottom navigation bar on mobile
+- **Error Boundary** — Catches and displays React errors gracefully throughout the app
+- **Confirm Dialogs** — Custom `ConfirmDialog` component replaces native `window.confirm()` everywhere
+- **Relative Timestamps** — `RelativeTime` component with full date tooltip on hover
+- **Text Formatter** — Preserves line breaks and smart formatting in descriptions
+- **Link Detector** — Auto-renders URLs as clickable `<a>` tags in messages and announcements
+- **Message Context Menu** — Right-click or long-press (500ms) for edit/delete on own messages
+- **TypewriterText** — Animated headline text on the landing page
+- **Loading States** — Consistent skeleton and spinner components throughout
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### **Frontend**
-- **React 18** - Modern React with hooks and concurrent features
-- **TypeScript** - Type-safe development with excellent IDE support
-- **Vite** - Lightning-fast build tool and development server
-- **Tailwind CSS** - Utility-first CSS framework for rapid styling
+- **React 18** — Modern React with hooks and concurrent features
+- **TypeScript** — Type-safe development with excellent IDE support
+- **Vite** — Lightning-fast build tool and development server
+- **Tailwind CSS** — Utility-first CSS framework for rapid styling
 
 ### **UI Components**
-- **Radix UI** - Accessible, unstyled UI primitives
-- **shadcn/ui** - Beautiful, customizable component library
-- **Lucide React** - Consistent and customizable icon library
-- **Sonner** - Beautiful toast notifications
+- **Radix UI** — Accessible, unstyled UI primitives
+- **shadcn/ui** — Beautiful, customizable component library
+- **Lucide React** — Consistent and customizable icon library
+- **Recharts** — Composable charting library (used in Admin analytics)
+- **Sonner** — Beautiful toast notifications
 
 ### **Backend & Database**
-- **Firebase Firestore** - NoSQL database with real-time capabilities
-- **Firebase Authentication** - Secure user authentication system
-- **Firebase Storage** - Cloud storage for images and files
-- **Real-time Listeners** - Live data synchronization
+- **Firebase Firestore** — NoSQL real-time database (8+ collections)
+- **Firebase Authentication** — Secure email/password + Google OAuth
+- **Firebase Storage** — Cloud storage for images and files
+- **Firebase Cloud Messaging (FCM)** — Push notifications (web + background via service worker)
+- **Real-time Listeners** — Live data synchronization across all features
+
+### **AI & External Services**
+- **Google Gemini 2.5 Flash** — AI Assistant + AI Match Reason generation
+- **GitHub Events API** — GitHub activity verification
+- **Google Apps Script** — Email notification delivery (unlimited, free)
 
 ### **State Management**
-- **React Context** - Authentication and theme management
-- **Custom Hooks** - Reusable logic for data fetching and business logic
-- **Firebase SDK** - Direct integration with Firebase services
+- **React Context** — Authentication and theme management
+- **Custom Hooks** — Reusable logic for all data fetching and business logic
+- **Firebase SDK** — Direct integration with Firebase services
 
 ### **Development Tools**
-- **ESLint** - Code linting and quality assurance
-- **PostCSS** - CSS processing and optimization
-- **TypeScript Config** - Strict type checking configuration
+- **ESLint** — Code linting and quality assurance
+- **PostCSS** — CSS processing and optimization
+- **TypeScript Config** — Strict type checking
 
 ---
 
@@ -153,6 +284,7 @@ To become the go-to platform where India's next breakthrough innovations are bor
 - **Node.js** (v18 or higher)
 - **npm** or **yarn** package manager
 - **Firebase Account** for backend services
+- **Google Gemini API Key** (optional, for AI features)
 
 ### 1. Clone the Repository
 ```bash
@@ -179,7 +311,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_sender_id
 VITE_FIREBASE_APP_ID=your_firebase_app_id
 VITE_FIREBASE_VAPID_KEY=your_firebase_vapid_key
 
-# Google Gemini AI (Optional - for AI Assistant feature)
+# Google Gemini AI (for AI Assistant + AI Match Reasons)
 VITE_GEMINI_API_KEY=your_gemini_api_key
 
 # Google Apps Script Email Service
@@ -193,11 +325,9 @@ npm run dev
 yarn dev
 ```
 
-Visit `http://localhost:5173` to see the application running! 🎉
+Visit `http://localhost:5173` to see the application. 🎉
 
 ---
-
-
 
 ## 🔧 Installation
 
@@ -212,47 +342,51 @@ Visit `http://localhost:5173` to see the application running! 🎉
 
 2. **Firebase Setup**
    - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com)
-   - Enable Authentication (Email/Password)
+   - Enable Authentication (Email/Password + Google)
    - Create Firestore Database
    - Enable Storage
+   - Enable Cloud Messaging (for push notifications)
    - Copy configuration to `.env` file
 
 3. **Database Collections**
-   The following Firestore collections will be created automatically:
-   - `users` - User profiles and information
-   - `hackathons` - Hackathon events and details
-   - `hackathonChat` - Real-time chat messages
-   - `teamChats` - Team-specific conversations
-   - `directMessages` - Private conversations
-   - `announcements` - Event announcements
-   - `teamFeedback` - Post-hackathon ratings and reviews
+   The following Firestore collections are created automatically:
+   - `users` — User profiles, work style, GitHub verification, FCM tokens
+   - `hackathons` — Hackathon events and details
+   - `hackathonChat` — Real-time group chat messages
+   - `teamChats` — Team-specific conversations
+   - `directMessages` — Private one-on-one conversations
+   - `announcements` — Event announcements (with pinning support)
+   - `teamFeedback` — Post-hackathon ratings and reviews
+   - `reports` — User-submitted abuse reports
+   - `upcomingHackathons` — Community-posted external hackathon ads
+   - `notifications` — In-app notification records
 
 4. **Firestore Indexes**
    Create these composite indexes in Firebase Console → Firestore → Indexes:
-   
+
    **teamChats Index:**
    - Collection: `teamChats`
    - Fields: `hackathonId` (Ascending), `teamId` (Ascending), `createdAt` (Ascending)
-   
+
    **announcements Index:**
    - Collection: `announcements`
    - Fields: `hackathonId` (Ascending), `createdAt` (Descending)
-   
+
    **directMessages Index:**
    - Collection: `directMessages`
    - Fields: `participants` (Array), `createdAt` (Descending)
 
-5. **Storage Buckets**
-   Configure Firebase Storage rules for:
-   - `hackathon-images` - Event posters and media
-   - `user-avatars` - Profile pictures
-
-6. **Email Service Setup (Optional)**
+5. **Email Service Setup (Optional)**
    To enable email notifications:
    - Create a Google Apps Script project
    - Deploy as Web App with "Anyone" access
-   - Add deployment URL to `VITE_GOOGLE_SCRIPT_URL` in `.env`
-   - See `docs/EMAIL_SETUP.md` for detailed instructions
+   - Add the deployment URL to `VITE_GOOGLE_SCRIPT_URL` in `.env`
+
+6. **Push Notifications Setup (Optional)**
+   - Enable Firebase Cloud Messaging in your Firebase project
+   - Generate a VAPID key in Project Settings → Cloud Messaging
+   - Add the key to `VITE_FIREBASE_VAPID_KEY` in `.env`
+   - The service worker (`public/firebase-messaging-sw.js`) handles background messages automatically
 
 ---
 
@@ -260,35 +394,13 @@ Visit `http://localhost:5173` to see the application running! 🎉
 
 ### Firebase Security Rules
 
-**Firestore Rules:**
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users can read all profiles but only edit their own
-    match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Hackathons are readable by all, writable by authenticated users
-    match /hackathons/{hackathonId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-        (request.auth.uid == resource.data.creatorId || 
-         request.auth.uid in resource.data.teamMembers);
-    }
-    
-    // Messages are private between sender and recipient
-    match /directMessages/{messageId} {
-      allow read, write: if request.auth != null && 
-        (request.auth.uid == resource.data.senderId || 
-         request.auth.uid == resource.data.recipientId);
-    }
-  }
-}
-```
+The project uses granular Firestore security rules. See `firestore.rules` in the root for the full ruleset. Key access patterns:
+
+- **Users** — Public read; own-document write only
+- **Hackathons** — Public read; authenticated create; creator/member write
+- **Direct Messages** — Private to sender and recipient
+- **Reports** — Write by authenticated users; admin read/write
+- **Upcoming Hackathons** — Public read; authenticated create; creator/admin write
 
 **Storage Rules:**
 ```javascript
@@ -299,7 +411,6 @@ service firebase.storage {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
-    
     match /hackathon-images/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null;
@@ -320,7 +431,7 @@ service firebase.storage {
    - Import the HackMates repository
 
 2. **Environment Variables**
-   Add the following environment variables in Vercel dashboard:
+   Add these in the Vercel dashboard:
    ```
    VITE_FIREBASE_API_KEY
    VITE_FIREBASE_AUTH_DOMAIN
@@ -329,20 +440,19 @@ service firebase.storage {
    VITE_FIREBASE_MESSAGING_SENDER_ID
    VITE_FIREBASE_APP_ID
    VITE_FIREBASE_VAPID_KEY
-   VITE_GEMINI_API_KEY (optional - for AI Assistant)
-   VITE_GOOGLE_SCRIPT_URL (optional - for Email Notifications)
+   VITE_GEMINI_API_KEY
+   VITE_GOOGLE_SCRIPT_URL
    ```
 
 3. **Deploy**
-   - Vercel will automatically build and deploy your application
-   - Your app will be available at `https://your-app-name.vercel.app`
+   Vercel will automatically build and deploy. Your app will be live at `https://your-app-name.vercel.app`.
 
-### Alternative Deployment Options
+### Alternative Options
 
 **Netlify:**
 ```bash
 npm run build
-# Upload dist folder to Netlify
+# Upload dist/ folder to Netlify
 ```
 
 **Firebase Hosting:**
@@ -358,17 +468,15 @@ firebase deploy
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Here's how you can help:
+We welcome contributions from the community!
 
 ### 🐛 Bug Reports
 - Use the [GitHub Issues](https://github.com/PAVAN2627/HackMates/issues) page
-- Provide detailed reproduction steps
-- Include screenshots if applicable
+- Include detailed reproduction steps and screenshots if applicable
 
 ### 💡 Feature Requests
 - Open an issue with the "enhancement" label
 - Describe the feature and its benefits
-- Discuss implementation approaches
 
 ### 🔧 Pull Requests
 1. Fork the repository
@@ -388,23 +496,7 @@ We welcome contributions from the community! Here's how you can help:
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-```
-MIT License
-
-Copyright (c) 2025 NoobcodersIND
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -425,7 +517,7 @@ copies or substantial portions of the Software.
 
 [![GitHub](https://img.shields.io/badge/GitHub-NoobcodersIND-black?style=for-the-badge&logo=github)](https://github.com/PAVAN2627)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/your-profile)
-[![Twitter](https://img.shields.io/badge/Twitter-Follow-1DA1F2?style=for-the-badge&logo=twitter)](https://twitter.com/your-handle)
+[![Instagram](https://img.shields.io/badge/Instagram-Follow-E4405F?style=for-the-badge&logo=instagram)](https://instagram.com/your-handle)
 
 </div>
 
@@ -433,25 +525,14 @@ copies or substantial portions of the Software.
 
 ## 🚀 What's Next?
 
-### Recently Added Features ✨
-- **📧 Email Notifications** - Automated HTML emails for welcome, team invites, and announcements
-- **🤖 AI Assistant** - Gemini-powered hackathon mentor with personalized guidance
-- **🛡️ Reliability Badges** - 4-tier trust system (Newbie → Reliable → Finisher → Legend)
-- **⚡ Synergy Matching** - Smart compatibility scoring based on work style and goals
-- **📢 Announcements** - Real-time hackathon updates with unread tracking
-- **🎯 Smart Recommendations** - AI-powered profile matching with skill analysis
-- **📊 Team Feedback** - Post-hackathon rating system to build community trust
-- **🎨 Work Style Matching** - Find teammates with compatible schedules and commitment
-
 ### Upcoming Features
-- **Advanced AI Features** - Team composition analysis and project success prediction
-- **Video Integration** - Built-in video calls for team meetings
-- **Project Showcase** - Portfolio section for completed hackathon projects
-- **Leaderboards** - Gamification with points and achievements
-- **Mobile App** - Native iOS and Android applications
-- **API Access** - Public API for third-party integrations
-- **Mentor Matching** - Connect with experienced mentors
-- **Skill Verification** - Badge system for verified skills
+- **Video Integration** — Built-in video calls for team meetings
+- **Project Showcase** — Portfolio section for completed hackathon projects
+- **Leaderboards** — Gamification with points and achievements
+- **Mobile App** — Native iOS and Android applications
+- **Public API** — Open API for third-party integrations
+- **Mentor Matching** — Connect with experienced mentors
+- **Advanced AI** — Team composition analysis and project success prediction
 
 ### Community Goals
 - **10,000+ Registered Developers** by end of 2025
@@ -471,6 +552,6 @@ copies or substantial portions of the Software.
 
 *Made with ❤️ for the Indian developer community*
 
-**HackMates** - *Where Innovation Meets Collaboration*
+**HackMates** — *Where Innovation Meets Collaboration*
 
 </div>
