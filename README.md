@@ -1,15 +1,11 @@
 # 🚀 HackMates - India's Premier Hackathon Community Platform
 
 <div align="center">
-  <img src="public/assets/roundlogohackmates.png" alt="HackMates Logo" width="120" height="120" style="border-radius: 50%;">
+  <img src="public/assets/hackmATESLOGO-Photoroom.png" alt="HackMates Logo" width="200" height="120">
   
   **Find Your Perfect Hack Partner**
   
-  [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge)](https://hackmates.vercel.app)
-  [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/PAVAN2627/HackMates)
-  [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
-  
-  *Built with ❤️ by NoobcodersIND*
+  *Developed by HackMates Developer Team*
 </div>
 
 ---
@@ -504,20 +500,26 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 <div align="center">
 
-### NoobcodersIND Development Team
+### HackMates Developer Team
 
 **Lead Developer & Project Architect**  
 [PAVAN MALI](https://github.com/PAVAN2627)
 
-*Passionate about building innovative solutions that connect developers and foster collaboration in the tech community.*
+*Passionate about building innovative solutions that connect developers and foster collaboration in India's vibrant tech community.*
+
+---
+
+### 🌐 Official Website
+
+Visit [hackmates.tech](https://hackmates.tech) for more information about our platform, team, and latest updates.
 
 ---
 
 ### 🌟 Connect With Us
 
-[![GitHub](https://img.shields.io/badge/GitHub-NoobcodersIND-black?style=for-the-badge&logo=github)](https://github.com/PAVAN2627)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/your-profile)
-[![Instagram](https://img.shields.io/badge/Instagram-Follow-E4405F?style=for-the-badge&logo=instagram)](https://instagram.com/your-handle)
+[![GitHub](https://img.shields.io/badge/GitHub-HackMates-black?style=for-the-badge&logo=github)](https://github.com/PAVAN2627/HackMates)
+[![Website](https://img.shields.io/badge/Website-hackmates.tech-blueviolet?style=for-the-badge)](https://hackmates.tech)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://linkedin.com/company/hackmatestech)
 
 </div>
 
