@@ -48,7 +48,7 @@ const hackathonSchema = z.object({
 
 export default function EditHackathon() {
   const { id } = useParams();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { hackathon, loading: hackathonLoading } = useHackathon(id || '');
   const { updateHackathon } = useHackathons();
@@ -123,13 +123,13 @@ export default function EditHackathon() {
     );
   }
 
-  // Check if user is the creator
-  if (user.uid !== hackathon.creatorId) {
+  // Check if user is the creator or an admin
+  if (user.uid !== hackathon.creatorId && !profile?.isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
-          <p className="text-muted-foreground mb-4">You can only edit hackathons you created.</p>
+          <p className="text-muted-foreground mb-4">You can only edit hackathons you created or have admin access.</p>
           <Button onClick={() => navigate(`/hackathons/${id}`)} variant="outline">
             Back to Hackathon
           </Button>

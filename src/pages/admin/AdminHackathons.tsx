@@ -46,16 +46,26 @@ export default function AdminHackathons() {
 
   const handleDelete = async (h: any) => {
     if (!confirm(`Delete "${h.title}"? This cannot be undone.`)) return;
-    await deleteDoc(doc(db, 'hackathons', h.id));
-    setHackathons(prev => prev.filter(x => x.id !== h.id));
-    toast({ title: `"${h.title}" deleted` });
+    try {
+      await deleteDoc(doc(db, 'hackathons', h.id));
+      setHackathons(prev => prev.filter(x => x.id !== h.id));
+      toast({ title: `"${h.title}" deleted` });
+    } catch (err: any) {
+      console.error('Delete hackathon error:', err);
+      toast({ title: 'Error deleting hackathon', variant: 'destructive', description: err.message });
+    }
   };
 
   const handleDeleteUpcoming = async (h: any) => {
     if (!confirm(`Delete Upcoming Hackathon "${h.title}"? This cannot be undone.`)) return;
-    await deleteDoc(doc(db, COLLECTIONS.UPCOMING_HACKATHONS, h.id));
-    setUpcoming(prev => prev.filter(x => x.id !== h.id));
-    toast({ title: `"${h.title}" deleted` });
+    try {
+      await deleteDoc(doc(db, COLLECTIONS.UPCOMING_HACKATHONS, h.id));
+      setUpcoming(prev => prev.filter(x => x.id !== h.id));
+      toast({ title: `"${h.title}" deleted` });
+    } catch (err: any) {
+      console.error('Delete upcoming hackathon error:', err);
+      toast({ title: 'Error deleting hackathon', variant: 'destructive', description: err.message });
+    }
   };
 
   const openEditUpcoming = (h: any) => {
@@ -80,7 +90,8 @@ export default function AdminHackathons() {
       toast({ title: 'Upcoming hackathon updated successfully' });
       setEditingUpcoming(null);
     } catch (err: any) {
-      toast({ title: 'Error updating hackathon' });
+      console.error('Save upcoming hackathon error:', err);
+      toast({ title: 'Error updating hackathon', variant: 'destructive', description: err.message });
     } finally {
       setSaving(false);
     }

@@ -5,6 +5,11 @@
   
   **Find Your Perfect Hack Partner**
   
+  [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge)](https://hackmates.vercel.app)
+  [![Website](https://img.shields.io/badge/Website-hackmates.tech-blueviolet?style=for-the-badge)](https://hackmates.tech)
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/PAVAN2627/HackMates)
+  [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+  
   *Developed by HackMates Developer Team*
 </div>
 
