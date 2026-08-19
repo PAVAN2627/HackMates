@@ -18,6 +18,7 @@ interface ChatSectionProps {
   onDeleteMessage?: (messageId: string) => void;
   onProfileClick?: (userId: string, userName: string) => void;
   loading?: boolean;
+  isAdmin?: boolean;
   hackathon?: {
     id: string;
     teamMembers?: string[];
@@ -26,7 +27,7 @@ interface ChatSectionProps {
   };
 }
 
-export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMessage, onProfileClick, loading, hackathon }: ChatSectionProps) {
+export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMessage, onProfileClick, loading, isAdmin, hackathon }: ChatSectionProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
@@ -338,10 +339,10 @@ export function ChatSection({ messages, onSendMessage, onEditMessage, onDeleteMe
           ) : (
             <div className="text-center space-y-2">
               <p className="text-sm text-muted-foreground">
-                Only hackathon members can send messages in this chat.
+                {isAdmin ? 'Admin viewing mode - Read-only access to chat.' : 'Only hackathon members can send messages in this chat.'}
               </p>
               <p className="text-xs text-muted-foreground">
-                Join the hackathon to participate in the discussion.
+                {!isAdmin && 'Join the hackathon to participate in the discussion.'}
               </p>
             </div>
           )

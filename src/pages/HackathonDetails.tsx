@@ -48,7 +48,7 @@ import { toast } from 'sonner';
 
 export default function HackathonDetails() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'announcements');
@@ -93,6 +93,8 @@ export default function HackathonDetails() {
   
   // Calculate derived values
   const isHackathonCreator = user?.uid === hackathon?.creatorId;
+  const isAdmin = profile?.isAdmin || false;
+  const isCreatorOrAdmin = isHackathonCreator || isAdmin;
   const isUserJoined = hackathon?.teamMembers?.includes(user?.uid || '') || false;
   const userTeam = getUserTeam(hackathon?.teams, user?.uid || '');
   const isUserInTeam = isUserInAnyTeam(hackathon?.teams, user?.uid || '');
@@ -108,10 +110,15 @@ export default function HackathonDetails() {
   }, [userTeam, hackathon?.committedMembers]);
   
   // Any joined member can see the Teams tab (to create or view their team)
-  const canSeeTeamsTab = isUserJoined || isHackathonCreator;
+  // Admins should NOT see teams tab - they're not participants
+  const canSeeTeamsTab = (isUserJoined || isHackathonCreator) && !isAdmin;
   
-  // Members tab is ONLY visible to creator (not team members)
-  const canSeeMembersTab = isHackathonCreator;
+  // Members tab is ONLY visible to creator or admin (for management)
+  const canSeeMembersTab = isCreatorOrAdmin;
+  
+  // Only creator can manage announcements/teams, admins can only view
+  const canManageHackathon = isHackathonCreator;
+  const canViewOnly = isAdmin;
 
   if (loading) {
     return (
@@ -223,7 +230,7 @@ export default function HackathonDetails() {
   };
 
   const handleStatusToggle = async () => {
-    if (!hackathon || !isHackathonCreator) return;
+    if (!hackathon || !isCreatorOrAdmin) return;
     
     try {
       let newStatus: 'open' | 'in-progress' | 'completed';
@@ -248,7 +255,7 @@ export default function HackathonDetails() {
   };
 
   const handleDelete = async () => {
-    if (!hackathon || !isHackathonCreator) return;
+    if (!hackathon || !isCreatorOrAdmin) return;
     try {
       await deleteHackathon(hackathon.id);
       toast.success('Hackathon deleted successfully!');
@@ -379,8 +386,8 @@ export default function HackathonDetails() {
               
               {/* Action Buttons - Mobile Responsive */}
               <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                {/* Join/Leave Button for Non-Creators */}
-                {!isHackathonCreator && (
+                {/* Join/Leave Button for Non-Creators/Admins */}
+                {!isCreatorOrAdmin && (
                   <Button
                     variant={isUserJoined ? 'outline' : 'default'}
                     size="sm"
@@ -410,8 +417,8 @@ export default function HackathonDetails() {
                   </Button>
                 )}
                 
-                {/* Creator Actions */}
-                {isHackathonCreator && (
+                {/* Creator/Admin Actions */}
+                {isCreatorOrAdmin && (
                   <>
                     <Button
                       variant="outline"
@@ -653,11 +660,12 @@ export default function HackathonDetails() {
         <TabsContent value="chat" className="space-y-6">
           <ChatSection
             messages={messages}
-            onSendMessage={handleSendMessage}
-            onEditMessage={editMessage}
-            onDeleteMessage={deleteMessage}
+            onSendMessage={!canViewOnly ? handleSendMessage : undefined}
+            onEditMessage={!canViewOnly ? editMessage : undefined}
+            onDeleteMessage={!canViewOnly ? deleteMessage : undefined}
             onProfileClick={handleProfileClick}
             loading={chatLoading}
+            isAdmin={canViewOnly}
             hackathon={hackathon ? {
               id: hackathon.id,
               teamMembers: hackathon.teamMembers,
@@ -760,7 +768,7 @@ export default function HackathonDetails() {
                             </Badge>
                           )}
                         </div>
-                        {isHackathonCreator && hackathon.status === 'open' && (
+                        {isCreatorOrAdmin && hackathon.status === 'open' && (
                           <Button
                             variant="ghost" size="sm"
                             onClick={() => openDeleteTeamDialog(team)}
