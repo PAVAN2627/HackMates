@@ -93,21 +93,37 @@ export default function HackathonDetails() {
   
   // Calculate derived values
   const isHackathonCreator = user?.uid === hackathon?.creatorId;
-  const isAdmin = profile?.isAdmin || false;
+  
+  // Check admin status - first from profile context, then fallback to localStorage cache if needed
+  let isAdmin = profile?.isAdmin || false;
+  if (!isAdmin && user) {
+    // Fallback: Check localStorage cache in case profile hasn't loaded yet
+    try {
+      const cachedProfileStr = localStorage.getItem(`profile_cache_${user.uid}`);
+      if (cachedProfileStr) {
+        const cachedProfile = JSON.parse(cachedProfileStr);
+        isAdmin = cachedProfile.isAdmin || false;
+      }
+    } catch (e) {
+      console.error('Error reading cached profile:', e);
+    }
+  }
+  
   const isCreatorOrAdmin = isHackathonCreator || isAdmin;
   const isUserJoined = hackathon?.teamMembers?.includes(user?.uid || '') || false;
   const userTeam = getUserTeam(hackathon?.teams, user?.uid || '');
   const isUserInTeam = isUserInAnyTeam(hackathon?.teams, user?.uid || '');
   
-  // Debug: Log team information (always call useEffect, but conditionally log)
+  // Debug: Log admin status when page loads
   useEffect(() => {
-    if (userTeam) {
-      console.log('User Team:', userTeam);
-      console.log('Team Member IDs:', userTeam.memberIds);
-      console.log('Total members in team:', userTeam.memberIds.length);
-      console.log('Committed members:', hackathon?.committedMembers);
-    }
-  }, [userTeam, hackathon?.committedMembers]);
+    console.log('HackathonDetails loaded:', {
+      isAdmin,
+      isHackathonCreator,
+      hasProfile: !!profile,
+      userId: user?.uid,
+      hackathonCreatorId: hackathon?.creatorId
+    });
+  }, [isAdmin, isHackathonCreator, profile, user?.uid, hackathon?.creatorId]);
   
   // Any joined member can see the Teams tab (to create or view their team)
   // Admins should NOT see teams tab - they're not participants
