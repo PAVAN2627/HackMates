@@ -50,6 +50,9 @@ export default function EditHackathon() {
   const { id } = useParams();
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  
+  // Check if user is admin
+  const isAdmin = profile?.isAdmin || false;
   const { hackathon, loading: hackathonLoading } = useHackathon(id || '');
   const { updateHackathon } = useHackathons();
   
@@ -237,11 +240,20 @@ export default function EditHackathon() {
 
       if (updateSuccessful) {
         toast.success('Hackathon updated successfully!');
-        navigate(`/hackathons/${hackathon.id}`);
+        // If admin, redirect back to admin panel; otherwise redirect to hackathon details
+        if (isAdmin) {
+          navigate('/admin/hackathons');
+        } else {
+          navigate(`/hackathons/${hackathon.id}`);
+        }
       } else {
         // Show success message but indicate potential sync issue
         toast.success('Hackathon updated! Changes may take a moment to sync.');
-        navigate(`/hackathons/${hackathon.id}`);
+        if (isAdmin) {
+          navigate('/admin/hackathons');
+        } else {
+          navigate(`/hackathons/${hackathon.id}`);
+        }
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to update hackathon');
