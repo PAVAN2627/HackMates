@@ -386,8 +386,8 @@ export default function HackathonDetails() {
               
               {/* Action Buttons - Mobile Responsive */}
               <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                {/* Join/Leave Button for Non-Creators/Admins */}
-                {!isCreatorOrAdmin && (
+                {/* Join/Leave Button for Regular Users Only (Not Creators/Admins) */}
+                {!isHackathonCreator && !isAdmin && (
                   <Button
                     variant={isUserJoined ? 'outline' : 'default'}
                     size="sm"
