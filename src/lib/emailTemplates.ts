@@ -90,7 +90,7 @@ export const getAdminWelcomeEmailHTML = (userName: string, userEmail: string, us
               <p style="color: #4b5563; line-height: 1.6; margin: 24px 0 0 0;">
                 Welcome to the team!<br>
                 <strong style="color: #1f2937;">HackMates Platform</strong><br>
-                <span style="font-size: 13px; color: #9ca3af;">Built with ❤️ by NoobcodersIND</span>
+                <span style="font-size: 13px; color: #9ca3af;">Developed by HackMates Team</span>
               </p>
             </td>
           </tr>
@@ -608,7 +608,7 @@ export const getTeamRemovalEmailHTML = (
               <p style="color: #4b5563; line-height: 1.6; margin: 24px 0 0 0;">
                 We hope to see you back in action soon! 💪<br>
                 <strong style="color: #1f2937;">The HackMates Team</strong><br>
-                <span style="font-size: 13px; color: #9ca3af;">Built with ❤️ by NoobcodersIND</span>
+                <span style="font-size: 13px; color: #9ca3af;">Developed by HackMates Team</span>
               </p>
             </td>
           </tr>
