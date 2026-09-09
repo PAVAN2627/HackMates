@@ -11,7 +11,6 @@ import { toast } from 'sonner';
 import { Hackathon, HackathonTeam } from '@/types';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useProfiles } from '@/hooks/useProfiles';
-import { TeamContract } from '@/components/hackathon/TeamContract';
 import { MessageContextMenu } from '@/components/MessageContextMenu';
 import { sendTeamAdditionEmail, sendTeamRemovalEmail } from '@/lib/emailService';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';

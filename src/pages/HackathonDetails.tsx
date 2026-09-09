@@ -28,7 +28,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { AnnouncementSection } from '@/components/hackathon/AnnouncementSection';
 import { ChatSection } from '@/components/hackathon/ChatSection';
-import { TeamContract } from '@/components/hackathon/TeamContract';
 import { TeamContractDialog } from '@/components/TeamContractDialog';
 import { RecommendedProfiles } from '@/components/hackathon/RecommendedProfiles.tsx';
 import { TeamManagement } from '@/components/hackathon/TeamManagement';
@@ -941,29 +940,15 @@ export default function HackathonDetails() {
                         </div>
                       )}
 
-                      {/* Contract + Leave — team members only */}
+                      {/* Leave button — team members only */}
                       {isMemberOfThisTeam && (
                         <div className="space-y-3 pt-3 border-t border-border">
-                          <TeamContract
-                            hackathonId={hackathon.id}
-                            teamId={team.id}
-                            teamMembers={team.memberIds?.map(memberId => {
-                              const p = getProfileById(memberId);
-                              return { userId: memberId, userName: p?.name || memberId, userAvatar: p?.avatar };
-                            }) || []}
-                            committedMembers={team.committedMemberIds || []}
-                            isLocked={team.isTeamLocked || false}
-                            teams={hackathon.teams || []}
-                            onContractUpdate={() => {}}
-                          />
-                          {!hasCommitted && (
-                            <Button
-                              variant="destructive" size="sm" className="w-full gap-2"
-                              onClick={() => setConfirmLeaveTeam({ teamId: team.id })}
-                            >
-                              <UserMinus className="h-4 w-4" /> Leave Team
-                            </Button>
-                          )}
+                          <Button
+                            variant="destructive" size="sm" className="w-full gap-2"
+                            onClick={() => setConfirmLeaveTeam({ teamId: team.id })}
+                          >
+                            <UserMinus className="h-4 w-4" /> Leave Team
+                          </Button>
                         </div>
                       )}
                     </div>
