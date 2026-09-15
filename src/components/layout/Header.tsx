@@ -30,14 +30,14 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 backdrop-blur-lg px-4 md:px-6">
-      {/* Logo/Brand - Visible on Mobile */}
-      <div className="flex items-center gap-2 md:hidden ml-14">
+      {/* Logo/Brand - Visible on All Devices */}
+      <div className="flex items-center gap-2 md:gap-3">
         <img 
           src="/assets/hackmatesroundlogo.png" 
           alt="HackMates Logo" 
-          className="h-8 w-14 rounded-lg object-contain"
+          className="h-8 w-14 md:h-10 md:w-16 rounded-lg object-contain"
         />
-        <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+        <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent hidden sm:inline">
           HackMates
         </span>
       </div>
