@@ -496,7 +496,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Auth method decision:', {
         isMobile,
         isInAppBrowser,
-        userAgent: navigator.userAgent
+        userAgent: navigator.userAgent,
+        origin: window.location.origin
       });
       
       // Only use redirect for in-app browsers where popup definitely won't work
@@ -553,7 +554,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw popupError;
         }
         
-        console.error('Popup error:', popupError.code, popupError.message);
+        console.error('Popup error details:', {
+          code: popupError.code,
+          message: popupError.message,
+          customData: popupError.customData,
+          stack: popupError.stack
+        });
+        
+        // Log detailed error info for debugging
+        console.error('Full popup error:', popupError);
         
         // If popup was blocked or failed on mobile, try redirect as fallback
         if (popupError.code === 'auth/popup-blocked' || 
@@ -572,6 +581,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             throw new Error('Pop-up was blocked. Please allow pop-ups for this site and try again.');
           }
           throw new Error('Sign-in was cancelled');
+        }
+        
+        // Handle 500 errors and other network/config issues
+        if (popupError.code === 'auth/network-request-failed' || 
+            popupError.code === 'auth/internal-error' ||
+            popupError.message?.includes('500')) {
+          console.error('Firebase Auth network or configuration error - check Google OAuth setup:', {
+            origin: window.location.origin,
+            firebaseProjectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+            authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN
+          });
+          throw new Error('Authentication service temporarily unavailable. Please ensure your domain is authorized in Google Cloud Console OAuth 2.0 credentials.');
         }
         
         throw new Error(popupError.message || 'Failed to sign in with Google. Please try again.');

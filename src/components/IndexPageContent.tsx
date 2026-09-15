@@ -110,6 +110,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
               onClick={handleExploreHackathons}
             >
               Explore Hackathons
+              <Trophy className="h-4 w-4 ml-2" />
             </Button>
             <Button 
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
@@ -194,7 +195,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                 lines={["Find Your", "Perfect", "Hack Partner"]}
                 delay={120}
                 lineDelay={800}
-                className="space-y-1 md:space-y-2"
+                className="space-y-2 md:space-y-4"
               />
             </h1>
             
@@ -210,7 +211,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                 onClick={handleGetStarted}
               >
                 Start Your Journey
-                <Rocket className="h-4 md:h-5 w-4 md:w-5 ml-2" />
+                <ArrowRight className="h-4 md:h-5 w-4 md:w-5 ml-2" />
               </Button>
               <Button 
                 variant="outline" 
@@ -281,56 +282,36 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             </div>
             
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl md:rounded-2xl p-6 md:p-8 border border-purple-200 dark:border-purple-700 mx-4">
-              <h3 className="text-xl md:text-2xl font-bold mb-4 text-slate-800 dark:text-slate-200">
+              <h3 className="text-xl md:text-2xl font-bold mb-6 text-slate-800 dark:text-slate-200">
                 Why Choose HackMates?
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-left">
-                <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">AI-powered hackathon mentor & guidance</span>
+                    <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">AI-powered team matching based on work style & goals</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-500 flex-shrink-0" />
                     <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">4-tier reliability & trust badge system</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Smart synergy matching algorithm</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-500 flex-shrink-0" />
                     <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Real-time communication & announcements</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Team feedback & rating system</span>
-                  </div>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Intelligent profile recommendations</span>
+                    <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Comprehensive hackathon discovery across India</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Work style & commitment matching</span>
+                    <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Report & block system for community safety</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Comprehensive hackathon discovery</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Open to all — students, professionals, anyone</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Off-platform team support for any hackathon</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Report & block bad actors with proof uploads</span>
+                    <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300">Smart email notifications & team feedback</span>
                   </div>
                 </div>
               </div>
@@ -396,6 +377,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                   onClick={handleExploreHackathons}
                 >
                   Explore Hackathons
+                  <Trophy className="h-4 w-4 ml-2" />
                 </Button>
               </div>
             </div>
@@ -406,7 +388,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
       {/* Footer - Mobile Optimized */}
       <footer className="border-t border-white/20 py-8 md:py-12 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm pb-24 md:pb-8">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-4">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                 <img 
@@ -474,7 +456,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             </div>
           </div>
           
-          <div className="border-t border-white/20 mt-6 md:mt-8 pt-6 md:pt-8 text-center">
+          <div className="border-t border-white/20 mt-6 md:mt-8 pt-6 md:pt-8 text-left">
             <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 px-4">
               © 2026 HackMates. Built by <a href="https://hackmates.tech" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline font-medium">hackmates.tech</a>
             </p>
