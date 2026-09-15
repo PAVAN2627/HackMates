@@ -194,7 +194,7 @@ export default function Dashboard() {
                   {ad.imageUrl && (
                     <div className="w-full bg-black flex items-center justify-center max-h-40 overflow-hidden">
                       <img src={ad.imageUrl} alt={ad.title} className="w-full object-contain max-h-40"
-                        onError={e => { (e.target as HTMLImageElement).src = '/assets/hackmatesroundlogo.png'; }} />
+                        onError={e => { (e.target as HTMLImageElement).src = '/hackmateslogo-removebg-preview.png'; }} />
                     </div>
                   )}
                   <div className="p-4 flex-1 flex flex-col">

@@ -39,7 +39,7 @@ export function HackathonCard({
             src={hackathon.image} 
             alt={hackathon.title}
             className="w-full h-full object-cover"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/assets/hackmatesroundlogo.png'; }}
+            onError={(e) => { (e.target as HTMLImageElement).src = '/hackmateslogo-removebg-preview.png'; }}
           />
           <div className="absolute top-4 right-4 flex gap-2">
             <span className={`text-xs px-2 py-1 rounded-full font-bold shadow-sm ${

@@ -262,7 +262,7 @@ export default function Auth() {
         <div className="relative z-10 flex flex-col justify-center items-center w-full p-12">
           <div className="flex items-center gap-3 mb-8">
             <img 
-              src="/assets/hackmatesroundlogo.png" 
+              src="/hackmateslogo-removebg-preview.png" 
               alt="HackMates Logo" 
               className="h-14 w-24 rounded-xl object-contain"
             />
@@ -287,7 +287,7 @@ export default function Auth() {
           <div className="flex lg:hidden items-center justify-between mb-8">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <img 
-                src="/assets/hackmatesroundlogo.png" 
+                src="/hackmateslogo-removebg-preview.png" 
                 alt="HackMates Logo" 
                 className="h-8 w-12 rounded-lg object-contain"
               />

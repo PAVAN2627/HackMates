@@ -94,7 +94,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <img 
-              src="/assets/hackmatesroundlogo.png" 
+              src="/hackmateslogo-removebg-preview.png" 
               alt="HackMates Logo" 
               className="h-10 w-16 rounded-lg object-contain"
             />
@@ -134,7 +134,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
               </SheetTrigger>
               <SheetContent side="left" className="w-[80vw] sm:w-[350px] p-0 flex flex-col bg-slate-50 dark:bg-slate-900 border-r border-border/50">
                 <div className="p-6 pb-4 border-b border-border flex items-center gap-3">
-                  <img src="/assets/hackmatesroundlogo.png" alt="HackMates" className="h-8 w-12 object-contain" />
+                  <img src="/hackmateslogo-removebg-preview.png" alt="HackMates" className="h-8 w-12 object-contain" />
                   <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</span>
                 </div>
                 <div className="flex-1 overflow-auto py-4 px-3 flex flex-col gap-2">
@@ -160,7 +160,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             </Sheet>
             
             <img 
-              src="/assets/hackmatesroundlogo.png" 
+              src="/hackmateslogo-removebg-preview.png" 
               alt="HackMates Logo" 
               className="h-8 w-14 rounded-lg object-contain"
             />
@@ -410,7 +410,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                 <img 
-                  src="/assets/hackmatesroundlogo.png" 
+                  src="/hackmateslogo-removebg-preview.png" 
                   alt="HackMates Logo" 
                   className="h-8 w-14 md:h-10 md:w-16 rounded-lg object-contain"
                 />

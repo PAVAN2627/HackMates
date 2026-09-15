@@ -75,7 +75,7 @@ export function Sidebar() {
             {!collapsed && (
               <div className="flex items-center gap-2">
                 <img 
-                  src="/assets/hackmatesroundlogo.png" 
+                  src="/hackmateslogo-removebg-preview.png" 
                   alt="HackMates Logo" 
                   className="h-8 w-14 rounded-lg object-contain"
                 />
@@ -87,7 +87,7 @@ export function Sidebar() {
             )}
             {collapsed && (
               <img 
-                src="/assets/hackmatesroundlogo.png" 
+                src="/hackmateslogo-removebg-preview.png" 
                 alt="HackMates Logo" 
                 className="h-8 w-14 rounded-lg object-contain mx-auto"
               />
@@ -158,7 +158,7 @@ export function Sidebar() {
               {/* Logo */}
               <div className="flex h-16 items-center px-4 border-b border-sidebar-border mt-8">
                 <div className="flex items-center gap-2">
-                  <img src="/assets/hackmatesroundlogo.png" alt="HackMates Logo" className="h-8 w-14 rounded-lg object-contain" />
+                  <img src="/hackmateslogo-removebg-preview.png" alt="HackMates Logo" className="h-8 w-14 rounded-lg object-contain" />
                   <div>
                     <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">HackMates</span>
                   </div>

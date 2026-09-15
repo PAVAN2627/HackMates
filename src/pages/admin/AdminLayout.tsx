@@ -38,7 +38,7 @@ export default function AdminLayout() {
       <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 h-screen bg-sidebar border-r border-sidebar-border z-40">
         <div className="flex h-16 items-center gap-2 px-4 border-b border-sidebar-border">
           <img
-            src="/assets/hackmatesroundlogo.png"
+            src="/hackmateslogo-removebg-preview.png"
             alt="HackMates"
             className="h-8 w-14 object-contain rounded-lg"
           />

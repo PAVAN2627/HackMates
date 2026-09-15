@@ -180,7 +180,7 @@ export default function UpcomingHackathons() {
                 <div className="w-full bg-muted flex items-center justify-center">
                   <img src={ad.imageUrl} alt={ad.title}
                     className="w-full object-contain max-h-64"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/hackmatesroundlogo.png'; }} />
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/hackmateslogo-removebg-preview.png'; }} />
                 </div>
               )}
               <div className="p-5 flex-1 flex flex-col">
@@ -242,7 +242,7 @@ export default function UpcomingHackathons() {
                     src={selectedAd.imageUrl}
                     alt={selectedAd.title}
                     className="w-full object-contain max-h-[420px]"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/hackmatesroundlogo.png'; }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/hackmateslogo-removebg-preview.png'; }}
                   />
                 </div>
               )}

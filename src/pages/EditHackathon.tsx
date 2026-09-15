@@ -255,7 +255,7 @@ export default function EditHackathon() {
           <div className="mb-6 md:mb-8">
             <div className="flex items-center justify-center gap-2 mb-3 md:mb-4">
               <img 
-                src="/assets/hackmatesroundlogo.png" 
+                src="/hackmateslogo-removebg-preview.png" 
                 alt="HackMates Logo" 
                 className="h-8 w-14 md:h-10 md:w-16 rounded-lg object-contain"
               />
