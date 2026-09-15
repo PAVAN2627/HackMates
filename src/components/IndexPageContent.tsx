@@ -173,7 +173,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
       </nav>
 
       {/* Hero Section - Mobile Optimized */}
-      <section className="relative pt-20 md:pt-32 pb-2 md:pb-4 overflow-hidden">
+      <section className="relative pt-28 md:pt-40 pb-2 md:pb-4 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-purple-400/30 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-48 md:w-96 h-48 md:h-96 bg-blue-400/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '-3s' }} />
@@ -215,7 +215,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="border-2 border-purple-200 hover:border-purple-400 text-purple-600 hover:bg-purple-50 text-base md:text-lg px-6 md:px-8 py-3 md:py-4 h-auto"
+                className="border-2 border-purple-200 hover:border-purple-400 text-purple-600 hover:bg-purple-50 text-base md:text-lg px-6 md:px-8 py-3 md:py-4 h-auto dark:text-purple-400 dark:border-purple-600 dark:hover:bg-purple-900/20"
                 onClick={handleExploreHackathons}
               >
                 Explore Hackathons
@@ -227,16 +227,9 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
       </section>
 
       {/* About Platform Section - Mobile Optimized */}
-      <section id="about-section" className="py-4 md:py-6 relative">
+      <section id="about-section" className="py-8 md:py-12 relative">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="flex justify-center mb-4 md:mb-6">
-              <img 
-                src="/assets/hackmatesroundlogo.png" 
-                alt="HackMates Platform Logo" 
-                className="h-20 w-32 md:h-28 md:w-48 lg:h-32 lg:w-56 object-contain hover:scale-105 transition-transform duration-300"
-              />
-            </div>
             
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
               About{' '}
@@ -258,7 +251,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                   <Target className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
                 <h3 className="text-base md:text-lg font-bold mb-2 text-slate-800 dark:text-slate-200">Our Mission</h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                <p className="text-slate-700 dark:text-slate-300 text-sm md:text-base leading-relaxed">
                   To democratize innovation by connecting passionate developers, designers, and creators 
                   across India's vibrant tech ecosystem.
                 </p>
@@ -269,7 +262,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                   <Heart className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
                 <h3 className="text-base md:text-lg font-bold mb-2 text-slate-800 dark:text-slate-200">Our Values</h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                <p className="text-slate-700 dark:text-slate-300 text-sm md:text-base leading-relaxed">
                   Collaboration, innovation, and inclusivity drive everything we do. We celebrate 
                   diversity and believe every voice matters in shaping the future.
                 </p>
@@ -280,7 +273,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
                   <Rocket className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
                 <h3 className="text-base md:text-lg font-bold mb-2 text-slate-800 dark:text-slate-200">Our Vision</h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                <p className="text-slate-700 dark:text-slate-300 text-sm md:text-base leading-relaxed">
                   To become the go-to platform where India's next breakthrough innovations are born 
                   through meaningful collaborations and hackathon experiences.
                 </p>
@@ -361,8 +354,8 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-4 mb-6 md:mb-8">
-            {features.slice(0, 6).map((feature) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-4 mb-8 md:mb-12">
+            {features.map((feature) => (
               <div key={feature.title} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 hover:shadow-xl transition-all duration-300 hover:scale-105 group">
                 <div className={`h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 md:mb-6 group-hover:shadow-lg group-hover:scale-110 transition-all`}>
                   <feature.icon className="h-6 w-6 md:h-8 md:w-8 text-white" />
@@ -372,28 +365,11 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
               </div>
             ))}
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 px-4">
-            {features.slice(6).map((feature) => (
-              <div key={feature.title} className={`relative overflow-hidden rounded-xl md:rounded-2xl p-5 md:p-6 bg-gradient-to-br ${feature.gradient} text-white group hover:shadow-2xl hover:scale-[1.03] transition-all duration-300`}>
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors" />
-                <div className="relative z-10 flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:bg-white/30 transition-colors">
-                    <feature.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-base md:text-lg font-bold mb-1.5">{feature.title}</h3>
-                    <p className="text-xs md:text-sm leading-relaxed text-white/85">{feature.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
       {/* CTA Section - Mobile Optimized */}
-      <section className="py-16 md:py-20 relative">
+      <section className="py-16 md:py-20 relative mt-12 md:mt-16">
         <div className="container mx-auto px-4">
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl md:rounded-3xl p-8 md:p-12 text-center text-white relative overflow-hidden mx-4">
             <div className="absolute inset-0 bg-black/10" />
@@ -474,7 +450,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             </div>
             
             <div>
-              <h4 className="font-bold text-sm md:text-base text-slate-800 dark:text-slate-200 mb-3 md:mb-4">Platform</h4>
+              <h3 className="font-bold text-sm md:text-base text-slate-800 dark:text-slate-200 mb-3 md:mb-4">Platform</h3>
               <ul className="space-y-1 md:space-y-2">
                 <li><Link to="/explore" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Browse Hackathons</Link></li>
                 <li><Link to="/auth" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Get Started</Link></li>
@@ -484,7 +460,7 @@ export function IndexPageContent({ hackathons }: IndexPageContentProps) {
             </div>
             
             <div>
-              <h4 className="font-bold text-sm md:text-base text-slate-800 dark:text-slate-200 mb-3 md:mb-4">Legal</h4>
+              <h3 className="font-bold text-sm md:text-base text-slate-800 dark:text-slate-200 mb-3 md:mb-4">Legal</h3>
               <ul className="space-y-1 md:space-y-2">
                 <li><Link to="/faq" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">FAQ</Link></li>
                 <li><Link to="/privacy" className="text-xs md:text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600">Privacy Policy</Link></li>
